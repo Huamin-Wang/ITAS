@@ -4,7 +4,7 @@ from xxy.iqa import ask_question
 
 app = Flask(__name__)
 CORS(app)
-
+#！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 @app.route('/')
 def hello_world():
     return render_template('index.html')
