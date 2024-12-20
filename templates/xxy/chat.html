@@ -11,6 +11,20 @@
             padding: 20px;
             background-color: #f0f2f5;
         }
+          .alert-box {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            width: 300px;
+            padding: 15px;
+            background-color: #f9edbe;
+            border: 1px solid #f0c36d;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            color: #856404;
+            z-index: 1000;
+        }
         .chat-container {
             max-width: 800px;
             margin: 0 auto;
@@ -85,6 +99,9 @@
     </style>
 </head>
 <body>
+ <div class="alert-box">
+        <p>由于运行成本，本聊天不具备上下文记忆功能，有更复杂的需求请访问其他大模型。</p>
+    </div>
     <div class="chat-container">
         <div class="chat-history" id="chatHistory">
             {% for message in conversation %}
