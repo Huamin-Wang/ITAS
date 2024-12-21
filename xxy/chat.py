@@ -144,27 +144,53 @@ class SparkAPIHandler:
 spark_handler = SparkAPIHandler()
 
 
-@app.route('/')
-def home():
-    return render_template('chat.html', conversation=conversation_history)
+# @app.route('/')
+# def home():
+#     return render_template('chat.html', conversation=conversation_history)
 
 
 
+# def chat():
 def chat():
     user_message = request.json.get('message', '')
 
     # 调用讯飞星火API
     ai_response = spark_handler.get_spark_response(user_message)
 
+    # 判断内容格式
+    if '```' in ai_response:
+        format_type = 'code'
+    # elif '#' in ai_response or '*' in ai_response or '_' in ai_response:
+    #     format_type = 'markdown'
+    else:
+        format_type = 'markdown'
+
     # 保存对话历史
     conversation_history.append({"role": "user", "content": user_message})
-    conversation_history.append({"role": "assistant", "content": ai_response})
+    conversation_history.append({"role": "assistant", "content": ai_response, "format": format_type})
 
     # 保持对话历史在合理范围内
     while len(conversation_history) > 20:  # 保留最近的10轮对话
         conversation_history.pop(0)
 
     return jsonify({
-        "response": ai_response
+        "response": ai_response,
+        "format": format_type
     })
+#     user_message = request.json.get('message', '')
+#
+#     # 调用讯飞星火API
+#     ai_response = spark_handler.get_spark_response(user_message)
+#
+#     # 保存对话历史
+#     conversation_history.append({"role": "user", "content": user_message})
+#     conversation_history.append({"role": "assistant", "content": ai_response})
+#
+#     # 保持对话历史在合理范围内
+#     while len(conversation_history) > 20:  # 保留最近的10轮对话
+#         conversation_history.pop(0)
+#
+#     return jsonify({
+#         "response": ai_response
+#     })
 

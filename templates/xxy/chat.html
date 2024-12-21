@@ -164,7 +164,7 @@
             } else if (format === 'markdown') {
                 const markdownDiv = document.createElement('div');
                 markdownDiv.className = 'markdown';
-                markdownDiv.innerHTML = marked(content); // 使用 marked.js 解析 Markdown
+                markdownDiv.innerHTML = marked.parse(content); // 使用 marked.js 解析 Markdown
                 messageDiv.appendChild(markdownDiv);
             } else {
                 messageDiv.textContent = content;
