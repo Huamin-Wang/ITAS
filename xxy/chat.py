@@ -1,4 +1,6 @@
 # app.py
+from ipaddress import ip_address
+
 from flask import Flask, render_template, request, jsonify
 import json
 import _thread as thread
@@ -144,53 +146,35 @@ class SparkAPIHandler:
 spark_handler = SparkAPIHandler()
 
 
-# @app.route('/')
-# def home():
-#     return render_template('chat.html', conversation=conversation_history)
 
-
-
-# def chat():
 def chat():
     user_message = request.json.get('message', '')
+    ip_address=request.remote_addr #获取用户ip地址
 
     # 调用讯飞星火API
     ai_response = spark_handler.get_spark_response(user_message)
 
-    # 判断内容格式
+    # 判断内容格式::暂时统一按照markdown格式处理
     if '```' in ai_response:
-        format_type = 'code'
+        format_type = 'markdown'
     # elif '#' in ai_response or '*' in ai_response or '_' in ai_response:
     #     format_type = 'markdown'
     else:
         format_type = 'markdown'
 
-    # 保存对话历史
-    conversation_history.append({"role": "user", "content": user_message})
-    conversation_history.append({"role": "assistant", "content": ai_response, "format": format_type})
+    # 保存对话历史，把IP地址也存储起来
+    conversation_history.append({"role": "user", "content": user_message, "ip_address": ip_address})
+    conversation_history.append(
+        {"role": "assistant", "content": ai_response, "format": format_type, "ip_address": ip_address})
 
     # 保持对话历史在合理范围内
     while len(conversation_history) > 20:  # 保留最近的10轮对话
         conversation_history.pop(0)
 
+    # 只加载 本机IP address的历史对话
+    filtered_history = [msg for msg in conversation_history if msg["ip_address"] == ip_address]
     return jsonify({
         "response": ai_response,
-        "format": format_type
+        "format": format_type,
+        "conversation": filtered_history
     })
-#     user_message = request.json.get('message', '')
-#
-#     # 调用讯飞星火API
-#     ai_response = spark_handler.get_spark_response(user_message)
-#
-#     # 保存对话历史
-#     conversation_history.append({"role": "user", "content": user_message})
-#     conversation_history.append({"role": "assistant", "content": ai_response})
-#
-#     # 保持对话历史在合理范围内
-#     while len(conversation_history) > 20:  # 保留最近的10轮对话
-#         conversation_history.pop(0)
-#
-#     return jsonify({
-#         "response": ai_response
-#     })
-
