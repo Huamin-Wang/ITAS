@@ -22,7 +22,10 @@ def chatHandle():
     return response
 
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)
+if __name__ == '__main__':
+    # 0.0.0.0 表示监听所有可用的网络接口
+    # host='0.0.0.0' 允许外部访问
+    # port=5000 设置端口号
+    app.run(host='0.0.0.0', port=5000, debug=True)
 # 如果局域网无法访问用命令行打开：python -m flask run --host=0.0.0.0
 

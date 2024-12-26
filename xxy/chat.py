@@ -1,4 +1,6 @@
 # app.py
+import logging
+import subprocess
 from ipaddress import ip_address
 
 from flask import Flask, render_template, request, jsonify
@@ -27,7 +29,7 @@ domain = "4.0Ultra"
 Spark_url = "wss://spark-api.xf-yun.com/v4.0/chat"
 
 # 保存对话历史
-conversation_history = []
+conversation_history = {}
 
 
 class Ws_Param(object):
@@ -149,8 +151,15 @@ spark_handler = SparkAPIHandler()
 
 def chat():
     user_message = request.json.get('message', '')
-    ip_address=request.remote_addr #获取用户ip地址
 
+    ip_address=request.remote_addr #获取用户ip地址
+    # 输出信息到终端
+    print(f"IP为： {ip_address} 正在访问.")
+
+    # 执行一个 Bash 命令并输出信息
+    subprocess.run(["echo", f"-----------------------------"])
+    subprocess.run(["echo", f"IP为： {ip_address} 正在访问."])
+    subprocess.run(["echo", f"-----------------------------"])
     # 调用讯飞星火API
     ai_response = spark_handler.get_spark_response(user_message)
 
@@ -161,20 +170,21 @@ def chat():
     #     format_type = 'markdown'
     else:
         format_type = 'markdown'
-
+    # 获取该IP地址的对话历史，默认为空列表
+    if ip_address not in conversation_history.keys():
+        conversation_history[ip_address] = []
     # 保存对话历史，把IP地址也存储起来
-    conversation_history.append({"role": "user", "content": user_message, "ip_address": ip_address})
-    conversation_history.append(
-        {"role": "assistant", "content": ai_response, "format": format_type, "ip_address": ip_address})
-
+    conversation_history[ip_address].append({"role": "user", "content": user_message, "ip_address": ip_address})
+    conversation_history[ip_address].append(
+        {"role": "assistant", "content": ai_response, "format": format_type, "ip_address": ip_address}
+    )
     # 保持对话历史在合理范围内
     while len(conversation_history) > 20:  # 保留最近的10轮对话
         conversation_history.pop(0)
 
-    # 只加载 本机IP address的历史对话
-    filtered_history = [msg for msg in conversation_history if msg["ip_address"] == ip_address]
+        # 返回该IP地址的对话历史
     return jsonify({
         "response": ai_response,
         "format": format_type,
-        "conversation": filtered_history
+        "conversation": conversation_history[ip_address]
     })
