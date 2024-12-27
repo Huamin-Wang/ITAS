@@ -166,13 +166,8 @@ def chat():
     # 调用讯飞星火API
     ai_response = spark_handler.get_spark_response(user_message)
 
-    # 判断内容格式::暂时统一按照code格式处理(由于学校的机房浏览器版本太低，无法处理markdown格式)
-    if '```' in ai_response:
-        format_type = 'code'
-    # elif '#' in ai_response or '*' in ai_response or '_' in ai_response:
-    #     format_type = 'markdown'
-    else:
-        format_type = 'code'
+    # 设置内容格式:暂时统一按照code格式处理(学校的机房浏览器版本太低，chat.html已经自动处理为text格式)
+    format_type = 'markdown'
     # 获取该IP地址的对话历史，默认为空列表
     def thread_run():
         lock.acquire()  # 加锁
