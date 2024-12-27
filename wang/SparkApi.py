@@ -99,7 +99,7 @@ def on_message(ws, message):
         content = choices["text"][0]["content"]
         print(content,end ="") # 这里的content是分段传输过来的
         global answer
-       # answer += content # 最后拼接成一个显示
+        answer += content # 最后拼接成一个显示（用answer在demo那边接收）
         # print(1)
         if status == 2:
             ws.close()

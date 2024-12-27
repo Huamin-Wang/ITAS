@@ -51,9 +51,22 @@ def checklen(text):
         del text[0]
     return text
 
+
+# 对外接口  input：用户输入的问题 output：AI回答的问题
+def intelligenceAPI(Input):
+    print(f"input={Input}")
+    question = checklen(getText("user", Input))
+    SparkApi.answer = ""
+    print("星火:", end="")
+    # query: query
+    SparkApi.main(appid, api_key, api_secret, Spark_url, domain, question)
+    # print(SparkApi.answer)
+    getText("assistant", SparkApi.answer)
+    return SparkApi.answer
+
+
 # 星火api测试
 if __name__ == '__main__':
-
     while (1):
         Input = input("\n" + "我:")
         question = checklen(getText("user", Input))
@@ -61,7 +74,6 @@ if __name__ == '__main__':
         print("星火:", end="")
         # query: query
         SparkApi.main(appid, api_key, api_secret, Spark_url, domain, question)
-        #print(SparkApi.answer)
+        # print(SparkApi.answer)
         getText("assistant", SparkApi.answer)
-
-
+        # print(f"a={SparkApi.answer}")

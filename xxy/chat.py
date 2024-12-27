@@ -18,7 +18,8 @@ from time import mktime
 from urllib.parse import urlencode
 from wsgiref.handlers import format_date_time
 import websocket
-
+import threading
+lock = threading.Lock()
 app = Flask(__name__)
 
 # 配置信息
@@ -150,6 +151,7 @@ spark_handler = SparkAPIHandler()
 
 
 def chat():
+
     user_message = request.json.get('message', '')
 
     ip_address=request.remote_addr #获取用户ip地址
@@ -157,31 +159,38 @@ def chat():
     print(f"IP为： {ip_address} 正在访问.")
 
     # 执行一个 Bash 命令并输出信息
-    subprocess.run(["echo", f"-----------------------------"])
-    subprocess.run(["echo", f"IP为： {ip_address} 正在访问."])
-    subprocess.run(["echo", f"-----------------------------"])
+    # subprocess.run(["echo", f"-----------------------------"])
+    # subprocess.run(["echo", f"IP为： {ip_address} 正在访问."])
+    # subprocess.run(["echo", f"-----------------------------"])
+
     # 调用讯飞星火API
     ai_response = spark_handler.get_spark_response(user_message)
 
-    # 判断内容格式::暂时统一按照markdown格式处理
+    # 判断内容格式::暂时统一按照code格式处理(由于学校的机房浏览器版本太低，无法处理markdown格式)
     if '```' in ai_response:
-        format_type = 'markdown'
+        format_type = 'code'
     # elif '#' in ai_response or '*' in ai_response or '_' in ai_response:
     #     format_type = 'markdown'
     else:
-        format_type = 'markdown'
+        format_type = 'code'
     # 获取该IP地址的对话历史，默认为空列表
-    if ip_address not in conversation_history.keys():
-        conversation_history[ip_address] = []
-    # 保存对话历史，把IP地址也存储起来
-    conversation_history[ip_address].append({"role": "user", "content": user_message, "ip_address": ip_address})
-    conversation_history[ip_address].append(
-        {"role": "assistant", "content": ai_response, "format": format_type, "ip_address": ip_address}
-    )
-    # 保持对话历史在合理范围内
-    while len(conversation_history) > 20:  # 保留最近的10轮对话
-        conversation_history.pop(0)
-
+    def thread_run():
+        lock.acquire()  # 加锁
+        if ip_address not in conversation_history.keys():
+            conversation_history[ip_address] = []
+        # 保存对话历史，把IP地址也存储起来
+        conversation_history[ip_address].append({"role": "user", "content": user_message, "ip_address": ip_address})
+        conversation_history[ip_address].append(
+            {"role": "assistant", "content": ai_response, "format": format_type, "ip_address": ip_address}
+        )
+        # 保持对话历史在合理范围内
+        while len(conversation_history) > 20:  # 保留最近的10轮对话
+            conversation_history.pop(0)
+        lock.release()  # 释放锁
+        # 用户访问后创建新的线程
+    t=threading.Thread(target=thread_run)
+    t.start()
+    t.join()
         # 返回该IP地址的对话历史
     return jsonify({
         "response": ai_response,
