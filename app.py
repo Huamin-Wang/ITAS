@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 
-import xxy.chat as c
+import xie.chat as c
 
 app = Flask(__name__)
 
@@ -13,7 +13,7 @@ def hello_world():
 
 @app.route('/chat')
 def chat():
-    return render_template('xxy/chat.html', conversation=c.conversation_history)
+    return render_template('xie/chat.html', conversation=c.conversation_history)
 
 
 @app.route('/chatHandle', methods=['POST'])
