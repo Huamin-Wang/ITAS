@@ -23,11 +23,13 @@ lock = threading.Lock()
 app = Flask(__name__)
 
 # 配置信息
-appid = "af596305"
-api_secret = "ZmNjM2Y5OGU3NTNmNTBiNThlZGE4YTZh"
-api_key = "4ede90c6451ece9423169972af63f5a7"
+appid = "39554b86"
+api_secret = "NzIwZGRkZGIxN2Y3ZDU3MzgwZjY3ZGM5"
+api_key = "ce8eb8ca38ffa7a3fde99f78d57980c4"
 domain = "4.0Ultra"
 Spark_url = "wss://spark-api.xf-yun.com/v4.0/chat"
+
+
 
 # 保存对话历史
 conversation_history = {}
@@ -148,19 +150,20 @@ class SparkAPIHandler:
 
 spark_handler = SparkAPIHandler()
 
-
+访问总人数 = 0
 
 def chat():
-
+    global 访问总人数
     user_message = request.json.get('message', '')
 
     ip_address=request.remote_addr #获取用户ip地址
     # 输出信息到终端
     print(f"IP为： {ip_address} 正在访问.")
-
-    # 执行一个 Bash 命令并输出信息
+    if ip_address not in conversation_history.keys():
+        访问总人数 += 1
+    # # 执行一个 Bash 命令并输出信息，如果用pycharm运行，需要把下面的subprocess.run()注释掉
     # subprocess.run(["echo", f"-----------------------------"])
-    # subprocess.run(["echo", f"IP为： {ip_address} 正在访问."])
+    # subprocess.run(["echo", f"IP为： {ip_address} 正在访问，目前访问总人数为：{访问总人数}"])
     # subprocess.run(["echo", f"-----------------------------"])
 
     # 调用讯飞星火API

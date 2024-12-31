@@ -1,7 +1,6 @@
 # SparkPythondemo.py
 # coding: utf-8
 import SparkApi
-import time
 
 # 以下密钥信息从控制台获取   https://console.xfyun.cn/services/bm35
 appid = "af596305"  # 填写控制台中获取的 APPID 信息
@@ -51,6 +50,19 @@ def checklen(text):
         del text[0]
     return text
 
+# 星火api测试
+if __name__ == '__main__':
+
+    while (1):
+        Input = input("\n" + "我:")
+        question = checklen(getText("user", Input))
+        SparkApi.answer = ""
+        print("星火:", end="")
+        # query: query
+        SparkApi.main(appid, api_key, api_secret, Spark_url, domain, question)
+        #print(SparkApi.answer)
+        getText("assistant", SparkApi.answer)
+
 
 # 对外接口  input：用户输入的问题 output：AI回答的问题
 def intelligenceAPI(Input):
@@ -63,17 +75,3 @@ def intelligenceAPI(Input):
     # print(SparkApi.answer)
     getText("assistant", SparkApi.answer)
     return SparkApi.answer
-
-
-# 星火api测试
-if __name__ == '__main__':
-    while (1):
-        Input = input("\n" + "我:")
-        question = checklen(getText("user", Input))
-        SparkApi.answer = ""
-        print("星火:", end="")
-        # query: query
-        SparkApi.main(appid, api_key, api_secret, Spark_url, domain, question)
-        # print(SparkApi.answer)
-        getText("assistant", SparkApi.answer)
-        # print(f"a={SparkApi.answer}")
