@@ -16,6 +16,25 @@
             color: white;
             padding: 15px;
             text-align: center;
+            position: relative; /* 为了容纳右上角的登录容器 */
+        }
+        .login-status {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .login-status a {
+            color: white;
+            text-decoration: none;
+            padding: 5px 10px;
+            border: 1px solid white;
+            border-radius: 3px;
+            transition: background-color 0.3s ease;
+        }
+        .login-status a:hover {
+            background-color: #45a049;
         }
         .container {
             width: 90%;
@@ -42,11 +61,20 @@
     </style>
 </head>
 <body>
-    <header>
-        <h1>基于大模型的智能教学辅助系统</h1>
-        <p>提升课堂管理效率，增强学生学习体验</p>
-    </header>
 
+    <header>
+    <h1>基于大模型的智能教学辅助系统</h1>
+    <p>提升课堂管理效率，增强学生学习体验</p>
+    <div class="login-status">
+        {% if session['user_id'] %}
+            <span>欢迎, {{ session['user_name'] }}!</span>
+            <a href="/logout">登出</a>
+        {% else %}
+            <a href="/login">登录</a>
+            <a href="/register">注册</a>
+        {% endif %}
+    </div>
+</header>
     <div class="container">
         <div class="feature">
             <h2>上课考勤功能</h2>
@@ -63,8 +91,8 @@
             <p>教师布置作业后，学生提交作业，系统利用大模型智能评估并生成反馈。</p>
         </div>
 
-        <div class="feature" >
-            <h2 ><a href="/chat">智能问答助手☑️</a></h2>
+        <div class="feature">
+            <h2><a href="/chat">智能问答助手☑️</a></h2>
             <p>学生可以随时提问，系统基于大模型提供精准的即时解答，增强自学能力。</p>
         </div>
 
