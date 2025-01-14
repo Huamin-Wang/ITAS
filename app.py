@@ -14,6 +14,10 @@ def create_app():
     # 初始化数据库
     db = init_db(app)
 
+    @app.errorhandler(404)
+    def page_not_found(e):
+        print("404")
+        return render_template('wang/404.html'), 404
     # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
     @app.route('/')
     def hello_world():

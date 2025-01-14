@@ -7,3 +7,5 @@ class Quiz(db.Model):
 
     # Relationship
     responses = db.relationship('QuizResponse', backref='quiz', lazy=True)
+    def __repr__(self):
+        return f'<Quiz {self.id}>'

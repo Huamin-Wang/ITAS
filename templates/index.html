@@ -5,76 +5,178 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>基于大模型的智能教学辅助系统</title>
     <style>
+        /* 基础样式 */
         body {
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
             margin: 0;
             padding: 0;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* 确保页面至少占满整个屏幕高度 */
         }
+
         header {
             background-color: #4CAF50;
             color: white;
-            padding: 15px;
+            padding: 20px;
             text-align: center;
-            position: relative; /* 为了容纳右上角的登录容器 */
+            width: 100%;
         }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            font-size: 1.2rem;
+        }
+
         .login-status {
-            position: absolute;
-            top: 15px;
-            right: 20px;
+            margin-top: 15px;
             display: flex;
             gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
+
         .login-status a {
             color: white;
             text-decoration: none;
-            padding: 5px 10px;
+            padding: 8px 16px;
             border: 1px solid white;
-            border-radius: 3px;
+            border-radius: 4px;
             transition: background-color 0.3s ease;
         }
+
         .login-status a:hover {
             background-color: #45a049;
         }
+
         .container {
             width: 90%;
             max-width: 1200px;
             margin: 20px auto;
+            padding: 10px;
+            flex: 1; /* 允许内容区域扩展以填充剩余空间 */
         }
+
         .feature {
             background-color: #fff;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
         .feature h2 {
             color: #333;
+            margin-top: 0;
+            font-size: 1.5rem;
         }
+
+        .feature p {
+            font-size: 1rem;
+            color: #555;
+        }
+
         footer {
             background-color: #333;
             color: white;
             text-align: center;
-            padding: 10px 0;
-            margin-top: 20px;
+            padding: 15px 0;
+            width: 100%;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            header p {
+                font-size: 1rem;
+            }
+
+            .login-status {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .login-status a {
+                width: 80%;
+                text-align: center;
+                margin: 5px 0;
+            }
+
+            .container {
+                width: 95%;
+                margin: 10px auto;
+            }
+
+            .feature {
+                padding: 15px;
+                margin: 10px 0;
+            }
+
+            .feature h2 {
+                font-size: 1.3rem;
+            }
+
+            .feature p {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            header p {
+                font-size: 0.9rem;
+            }
+
+            .feature {
+                padding: 10px;
+            }
+
+            .feature h2 {
+                font-size: 1.2rem;
+            }
+
+            .feature p {
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
 <body>
 
     <header>
-    <h1>基于大模型的智能教学辅助系统</h1>
-    <p>提升课堂管理效率，增强学生学习体验</p>
-    <div class="login-status">
-        {% if session['user_id'] %}
-            <span>欢迎, {{ session['user_name'] }}!</span>
-            <a href="/logout">登出</a>
-        {% else %}
-            <a href="/login">登录</a>
-            <a href="/register">注册</a>
-        {% endif %}
-    </div>
-</header>
+        <h1>基于大模型的智能教学辅助系统</h1>
+        <p>提升课堂教学效率，增强学生学习体验</p>
+        <div class="login-status">
+            {% if session['user_id'] %}
+                <span>欢迎, {{ session['user_name'] }}!</span>
+                <a href="/logout">登出</a>
+            {% else %}
+                <a href="/login">登录</a>
+                <a href="/register">注册</a>
+            {% endif %}
+        </div>
+    </header>
+
     <div class="container">
         <div class="feature">
             <h2>上课考勤功能</h2>
