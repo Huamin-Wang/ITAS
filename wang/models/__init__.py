@@ -17,3 +17,5 @@ from .user import User
 from .assignment import Assignment
 from .quiz import Quiz
 from .quizResponse import QuizResponse
+from .enrollment import Enrollment
+from .course import Course

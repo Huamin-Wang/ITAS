@@ -4,8 +4,8 @@ from wang.models import init_db
 from wang.models.user import User
 import xie.chat as c
 
-
-
+# ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
+# 所有的路由处理函数都放到create_app()函数中
 def create_app():
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example1.db'  # 配置数据库
@@ -18,7 +18,9 @@ def create_app():
     def page_not_found(e):
         print("404")
         return render_template('wang/404.html'), 404
-    # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
+# ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
+
+    #首页
     @app.route('/')
     def hello_world():
         return render_template('index.html')
@@ -32,7 +34,11 @@ def create_app():
             name = request.form.get('name')
             email = request.form.get('email')
             password = request.form.get('password')
-
+            confirm_password = request.form.get('confirm_password')
+            # 检查密码是否一致
+            if password != confirm_password:
+                flash('密码不一致！', 'danger')
+                return redirect(url_for('register'))
             # 检查邮箱是否已存在
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
