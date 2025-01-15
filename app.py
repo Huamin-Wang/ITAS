@@ -4,6 +4,7 @@ from wang.models import init_db
 from wang.models.user import User
 import xie.chat as c
 
+
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
@@ -18,9 +19,10 @@ def create_app():
     def page_not_found(e):
         print("404")
         return render_template('wang/404.html'), 404
-# ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 
-    #首页
+    # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
+
+    # 首页
     @app.route('/')
     def hello_world():
         return render_template('index.html')
@@ -43,7 +45,7 @@ def create_app():
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
                 flash('邮箱已存在！', 'danger')
-                return redirect(url_for('register')) # 重定向到注册页面
+                return redirect(url_for('register'))  # 重定向到注册页面
 
             password_hash = generate_password_hash(password)
             user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
@@ -53,12 +55,15 @@ def create_app():
             # 注册成功后cookie保存用户信息
             session['user_id'] = user.id
             session['user_name'] = user.name
+            session['user_role'] = user.role
             flash('注册成功，您已登录！', 'success')
             return render_template('index.html')
         return render_template('wang/register.html')
+
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         return render_template('wang/login.html')
+
     @app.route('/loginHandle', methods=['POST'])
     def loginHandle():
         email = request.form.get('email')
@@ -67,28 +72,55 @@ def create_app():
         if user and user.check_password(password):
             session['user_id'] = user.id
             session['user_name'] = user.name
+            session['user_role'] = user.role
             flash('登录成功！', 'success')
             print("登录成功！")
-            return render_template('/index.html')
+            if user.role=="student":
+                return render_template('wang/student_profile.html')
+            elif user.role=="teacher":
+                return render_template('wang/teacher_profile.html')
         else:
             print("用户名或密码错误！")
             return render_template('wang/login.html', error='用户名或密码错误！')
+
     @app.route('/chat')
     def chat():
         return render_template('xie/chat.html', conversation=c.conversation_history)
+
     @app.route("/logout", methods=['GET'])
     def logout():
         session.clear()
         flash('您已退出登录！', 'success')
         return render_template('wang/login.html')
+
     @app.route('/chatHandle', methods=['POST'])
     def chatHandle():
         response = c.chat()
         return response
+    @app.route('/student_profile')
+    def student_profile():
+        return render_template('wang/student_profile.html')
+    @app.route('/teacher_profile')
+    def teacher_profile():
+        return render_template('wang/teacher_profile.html')
+    # 列出我们还需要实现的的功能
+    @app.route('/fuctions')
+    def fuctions():
+        return render_template('wang/fuctions.html')
+
+
+
+
+
+
+
+
+    # 返回app
     return app
 
+
 if __name__ == '__main__':
-    app= create_app() # 创建app
+    app = create_app()  # 创建app
     app.run(host='0.0.0.0', port=5000, debug=True)
     # 0.0.0.0 表示监听所有可用的网络接口
     # host='0.0.0.0' 允许外部访问

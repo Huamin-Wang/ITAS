@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师中心 - 基于大模型的智能教学辅助系统</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1890ff, #096dd9);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        header p {
+            margin: 10px 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .login-status {
+            margin-top: 20px;
+        }
+
+        .login-status span {
+            color: white;
+            padding: 8px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        .back-to-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+        }
+
+        .container {
+            flex: 1;
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .welcome-section h2 {
+            color: #1890ff;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .welcome-section p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .course-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e8e8e8;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .course-card h3 {
+            color: #1890ff;
+            margin-bottom: 10px;
+        }
+
+        .course-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .course-card button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .course-card button:hover {
+            background: #096dd9;
+        }
+
+        .create-course {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .create-course button {
+            background: #52c41a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .create-course button:hover {
+            background: #389e0d;
+        }
+
+        footer {
+            background-color: #001529;
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.6em;
+            }
+
+            .container {
+                width: 95%;
+                margin: 15px auto;
+                padding: 15px;
+            }
+
+            .course-card {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="/" class="back-to-home">返回首页</a>
+    <h1>基于大模型的智能教学辅助系统</h1>
+    <p>教师中心 - 提升教学效率，优化教学管理</p>
+    <div class="login-status">
+        <span>欢迎, {{ session['user_name'] }}老师!</span>
+        <span> <a href="/logout" onclick="return confirm('确定要登出吗？')" style="font-size: 0.5em;">登出</a></span>
+    </div>
+</header>
+
+<div class="container">
+    <div class="welcome-section">
+        <h2>欢迎, {{ session['user_name'] }}老师!</h2>
+        <p>以下是您教授的课程列表，点击课程进入管理页面。</p>
+    </div>
+
+    <div class="course-grid">
+        <div class="course-card">
+            <h3>数学分析</h3>
+            <p>课程代码：MATH101</p>
+            <p>学生人数：50</p>
+            <button onclick="location.href='/course/MATH101'">进入课程</button>
+        </div>
+
+        <div class="course-card">
+            <h3>数据结构与算法</h3>
+            <p>课程代码：CS201</p>
+            <p>学生人数：45</p>
+            <button onclick="location.href='/course/CS201'">进入课程</button>
+        </div>
+
+        <div class="course-card">
+            <h3>人工智能导论</h3>
+            <p>课程代码：CS301</p>
+            <p>学生人数：40</p>
+            <button onclick="location.href='/course/CS301'">进入课程</button>
+        </div>
+    </div>
+
+    <div class="create-course">
+        <button onclick="location.href='/create-course'">创建新课程</button>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
+</footer>
+
+</body>
+</html>

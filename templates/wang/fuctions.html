@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于大模型的智能教学辅助系统</title>
+    <style>
+        /* 基础样式 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* 确保页面至少占满整个屏幕高度 */
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            font-size: 1.2rem;
+        }
+
+        .login-status {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .login-status a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border: 1px solid white;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-status a:hover {
+            background-color: #45a049;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 10px;
+            flex: 1; /* 允许内容区域扩展以填充剩余空间 */
+        }
+
+        .feature {
+            background-color: #fff;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature h2 {
+            color: #333;
+            margin-top: 0;
+            font-size: 1.5rem;
+        }
+
+        .feature p {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            width: 100%;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            header p {
+                font-size: 1rem;
+            }
+
+            .login-status {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .login-status a {
+                width: 80%;
+                text-align: center;
+                margin: 5px 0;
+            }
+
+            .container {
+                width: 95%;
+                margin: 10px auto;
+            }
+
+            .feature {
+                padding: 15px;
+                margin: 10px 0;
+            }
+
+            .feature h2 {
+                font-size: 1.3rem;
+            }
+
+            .feature p {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            header p {
+                font-size: 0.9rem;
+            }
+
+            .feature {
+                padding: 10px;
+            }
+
+            .feature h2 {
+                font-size: 1.2rem;
+            }
+
+            .feature p {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>基于大模型的智能教学辅助系统</h1>
+    <p>急需实现的功能如下：</p>
+    <div class="login-status">
+
+
+        <a href="/">返回首页</a>
+
+    </div>
+</header>
+
+<div class="container">
+    <div class="feature">
+        <h2>上课考勤功能</h2>
+        <p>教师通过网页端发起考勤，学生通过微信端扫码签到，系统自动生成考勤报告。</p>
+    </div>
+
+    <div class="feature">
+        <h2>课上抢答功能</h2>
+        <p>教师可以发起抢答活动，学生实时参与，系统记录学生回答情况并反馈。</p>
+    </div>
+
+    <div class="feature">
+        <h2>作业布置与自动批改</h2>
+        <p>教师布置作业后，学生提交作业，系统利用大模型智能评估并生成反馈。</p>
+    </div>
+
+    <div class="feature">
+        <h2><a href="/chat">智能问答助手☑️</a></h2>
+        <p>学生可以随时提问，系统基于大模型提供精准的即时解答，增强自学能力。</p>
+    </div>
+
+    <div class="feature">
+        <h2>个性化学习路径推荐</h2>
+        <p>系统根据学生表现生成学习路径，并推荐相关学习资源，帮助学生提升。</p>
+    </div>
+
+    <div class="feature">
+        <h2>数据分析与智能报告</h2>
+        <p>系统生成考勤、抢答和作业数据分析报告，帮助教师调整教学策略。</p>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
+</footer>
+</body>
+</html>

@@ -5,212 +5,241 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>基于大模型的智能教学辅助系统</title>
     <style>
-        /* 基础样式 */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f0f2f5;
             margin: 0;
             padding: 0;
-            line-height: 1.6;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh; /* 确保页面至少占满整个屏幕高度 */
+            justify-content: space-between;
         }
 
         header {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #54fc25, #096dd9);
             color: white;
-            padding: 20px;
             text-align: center;
-            width: 100%;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
         header h1 {
             margin: 0;
-            font-size: 2rem;
+            font-size: 2em;
+            font-weight: bold;
         }
 
         header p {
-            margin: 10px 0 0;
-            font-size: 1.2rem;
+            margin: 10px 0;
+            font-size: 1.1em;
+            opacity: 0.9;
         }
 
         .login-status {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
+            margin-top: 20px;
         }
 
         .login-status a {
             color: white;
             text-decoration: none;
-            padding: 8px 16px;
-            border: 1px solid white;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
+            padding: 8px 20px;
+            border: 1px solid rgba(255,255,255,0.8);
+            border-radius: 20px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            display: inline-block;
         }
 
         .login-status a:hover {
-            background-color: #45a049;
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
         }
 
         .container {
+            flex: 1;
             width: 90%;
             max-width: 1200px;
-            margin: 20px auto;
-            padding: 10px;
-            flex: 1; /* 允许内容区域扩展以填充剩余空间 */
-        }
-
-        .feature {
-            background-color: #fff;
+            margin: 30px auto;
             padding: 20px;
-            margin: 15px 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            position: relative;
+        }
+
+        .login-prompt {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 15px 30px;
+            background-color: rgba(255, 255, 255, 0.8);
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 3px 15px rgba(0,0,0,0.15);
+            z-index: 2;
         }
 
-        .feature h2 {
-            color: #333;
-            margin-top: 0;
-            font-size: 1.5rem;
+        .login-prompt h2 {
+            margin: 0;
+            color: #1890ff;
+            font-size: 1.5em;
         }
 
-        .feature p {
-            font-size: 1rem;
-            color: #555;
+        .login-prompt p {
+            margin: 10px 0;
+            color: #666;
+            font-size: 1em;
+        }
+
+        .login-prompt a {
+            text-decoration: none;
+            color: white;
+            background: #1890ff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .login-prompt a:hover {
+            background: #096dd9;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e8e8e8;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .feature-card h3 {
+            color: #1890ff;
+            margin-bottom: 10px;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
         }
 
         footer {
-            background-color: #333;
-            color: white;
+            background-color: #001529;
+            color: rgba(255,255,255,0.8);
             text-align: center;
-            padding: 15px 0;
-            width: 100%;
+            padding: 20px 0;
         }
 
-        footer p {
-            margin: 0;
-            font-size: 0.9rem;
-        }
-
-        /* 响应式设计 */
         @media (max-width: 768px) {
             header h1 {
-                font-size: 1.8rem;
-            }
-
-            header p {
-                font-size: 1rem;
-            }
-
-            .login-status {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .login-status a {
-                width: 80%;
-                text-align: center;
-                margin: 5px 0;
+                font-size: 1.6em;
             }
 
             .container {
                 width: 95%;
-                margin: 10px auto;
-            }
-
-            .feature {
+                margin: 15px auto;
                 padding: 15px;
-                margin: 10px 0;
             }
 
-            .feature h2 {
-                font-size: 1.3rem;
-            }
-
-            .feature p {
-                font-size: 0.9rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            header h1 {
-                font-size: 1.5rem;
-            }
-
-            header p {
-                font-size: 0.9rem;
-            }
-
-            .feature {
-                padding: 10px;
-            }
-
-            .feature h2 {
-                font-size: 1.2rem;
-            }
-
-            .feature p {
-                font-size: 0.8rem;
+            .feature-card {
+                margin-bottom: 15px;
             }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>基于大模型的智能教学辅助系统</h1>
-        <p>提升课堂教学效率，增强学生学习体验</p>
-        <div class="login-status">
-            {% if session['user_id'] %}
-                <span>欢迎, {{ session['user_name'] }}!</span>
-                <a href="/logout">登出</a>
-            {% else %}
-                <a href="/login">登录</a>
-                <a href="/register">注册</a>
-            {% endif %}
-        </div>
-    </header>
+<header>
+    <h1>基于大模型的智能教学辅助系统</h1>
+    <p>提升课堂教学效率，增强学生学习体验</p>
+    <div class="login-status">
+        {% if session['user_id'] %}
+            {% if session['user_role'] == 'student' %}
+                    <span>欢迎, {{ session['user_name'] }}同学!</span>
+                {% elif session['user_role'] == 'teacher' %}
+                     <span>欢迎, {{ session['user_name'] }}老师!</span>
+                {% endif %}
 
-    <div class="container">
-        <div class="feature">
-            <h2>上课考勤功能</h2>
-            <p>教师通过网页端发起考勤，学生通过微信端扫码签到，系统自动生成考勤报告。</p>
-        </div>
+           <a href="/logout" onclick="return confirm('确定要登出吗？')" style="font-size: 0.5em;">登出</a>
+            <div class="profile">
+                {% if session['user_role'] == 'student' %}
+                    <a href="/student_profile">学生中心</a>
+                {% elif session['user_role'] == 'teacher' %}
+                    <a href="/teacher_profile">教师中心</a>
+                {% endif %}
+            </div>
+        {% else %}
+           <p style="font-family: 'Microsoft YaHei', sans-serif; color:gainsboro;font-size: 0.5em;">当下的努力，换来的是明天更好的自己！</p>
+        {% endif %}
+    </div>
+<div style=" bottom: 10px; right: 200px;"><a href="/fuctions">即将上线</a></div>
+</header>
 
-        <div class="feature">
-            <h2>课上抢答功能</h2>
-            <p>教师可以发起抢答活动，学生实时参与，系统记录学生回答情况并反馈。</p>
+<div class="container">
+    {% if not session['user_id'] %}
+        <div class="login-prompt">
+            <h2>欢迎！您尚未登录</h2>
+            <p>为了更好的使用智能教学辅助系统，请登录或注册。</p>
+            <a href="/login">登录</a>
+            <a href="/register">注册</a>
         </div>
+    {% endif %}
 
-        <div class="feature">
-            <h2>作业布置与自动批改</h2>
-            <p>教师布置作业后，学生提交作业，系统利用大模型智能评估并生成反馈。</p>
-        </div>
-
-        <div class="feature">
-            <h2><a href="/chat">智能问答助手☑️</a></h2>
-            <p>学生可以随时提问，系统基于大模型提供精准的即时解答，增强自学能力。</p>
-        </div>
-
-        <div class="feature">
-            <h2>个性化学习路径推荐</h2>
-            <p>系统根据学生表现生成学习路径，并推荐相关学习资源，帮助学生提升。</p>
-        </div>
-
-        <div class="feature">
-            <h2>数据分析与智能报告</h2>
-            <p>系统生成考勤、抢答和作业数据分析报告，帮助教师调整教学策略。</p>
-        </div>
+    <div class="welcome-section">
+        <h2>欢迎使用智能教学辅助系统</h2>
+        <p>让学习变得更智能、更高效、更有趣</p>
     </div>
 
-    <footer>
-        <p>&copy; 2024 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
-    </footer>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3>智能答疑</h3>
+            <p>基于大模型的实时问答系统，为学生提供24小时学习支持，快速解答各类学习疑问。</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>个性化学习</h3>
+            <p>根据学生的学习进度和掌握情况，提供定制化的学习建议和资源推荐。</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>课程管理</h3>
+            <p>教师可以轻松创建和管理课程内容，学生可以便捷地访问学习资料。</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>学习分析</h3>
+            <p>通过数据分析，了解学习效果，帮助教师优化教学策略，提升教学质量。</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>互动讨论</h3>
+            <p>支持师生在线交流，营造良好的学习氛围，促进知识的共享与创新。</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>作业批改</h3>
+            <p>智能辅助批改作业，提供详细的反馈，帮助学生更好地理解和改进。</p>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
+</footer>
+
 </body>
 </html>
