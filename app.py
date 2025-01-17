@@ -1,7 +1,11 @@
+from zipfile import error
+
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash
 from wang.models import init_db
 from wang.models.user import User
+from wang.models.course import Course
+from wang.models.course_students import Course_Students
 import xie.chat as c
 
 
@@ -9,7 +13,7 @@ import xie.chat as c
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example1.db'  # 配置数据库
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'  # 配置数据库
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
     # 初始化数据库
@@ -102,19 +106,111 @@ def create_app():
         return render_template('wang/student_profile.html')
     @app.route('/teacher_profile')
     def teacher_profile():
-        return render_template('wang/teacher_profile.html')
+        # 获取教师名下的课程
+        user_id = session.get('user_id')
+        courses = Course.query.filter_by(teacher_id=user_id).all()
+        print(f"用户{user_id}正在查看自己的课程！")
+        print(courses)
+        #把课程传到前端
+        return render_template('wang/teacher_profile.html', courses=courses)
+    # 创建新的课程
+    @app.route('/create_course')
+    def create_course():
+        # 获取用户数据
+        user_name = session.get('user_name')
+        print(f"{user_name}正在创建新的课程！")
+        return render_template('wang/create_course.html')
+    # 处理创建课程的请求
+    @app.route('/create_course_handle', methods=['POST'])
+    def create_course_handle():
+    # 获取课程数据
+        course_name = request.form.get('course_name')
+        semester = request.form.get('semester')
+        course_description = request.form.get('course_description')
+        code = request.form.get('course_code')
+        teacher_id = session.get('user_id')
+        # 创建课程
+        course = Course(name=course_name, semester=semester, description=course_description, code=code, teacher_id=teacher_id)
+        db.session.add(course)
+        db.session.commit()
+        flash('课程创建成功！', 'success')
+        # 解析上传的学生名单，并将学生信息添加到course_students表中
+        # 获取上传的文件
+        print("获取上传的文件")
+        file = request.files['student_list']
+        print(f"文件为：{file}")
+
+        # 读取csv文件内容存储到数据库，文件格式为：学号、姓名、拼音姓名、年级、专业、方向、行政班级、学籍状态、修课方式
+        import csv
+        import io
+        import chardet
+        try:
+            # 将文件内容读取为字符串
+            raw_data = file.stream.read()
+            # 检测文件编码
+            result = chardet.detect(raw_data)
+            encoding = result['encoding']
+            # 尝试用检测到的编码解码文件
+            try:
+                file_str = io.StringIO(raw_data.decode(encoding), newline=None)
+            except UnicodeDecodeError:
+                # 如果检测到的编码失败，尝试 utf-8 或 gbk
+                try:
+                    file_str = io.StringIO(raw_data.decode('utf-8'), newline=None)
+                except UnicodeDecodeError:
+                    file_str = io.StringIO(raw_data.decode('gbk'), newline=None)
+            # 解析CSV文件
+            csv_reader = csv.reader(file_str)
+            next(csv_reader)  # 跳过表头
+
+            students_to_add = []
+            for row in csv_reader:
+                print(row)
+                # 格式为：学号、姓名、拼音姓名、年级、专业、方向、行政班级、学籍状态、修课方式
+                #将每条数据存储到数据库
+                student_number = row[0]
+                student_name = row[1]
+                student_pinyin_name = row[2]
+                student_grade = row[3]
+                student_major = row[4]
+                student_direction = row[5]
+                student_class = row[6]
+                student_status = row[7]
+                student_course_method = row[8]
+                course_student = Course_Students(course_id=course.id, student_number=student_number, student_name=student_name, student_pinyin_name=student_pinyin_name, student_grade=student_grade, student_major=student_major, student_direction=student_direction, student_class=student_class, student_status=student_status, student_course_method=student_course_method)
+                students_to_add.append(course_student)
+            db.session.add_all(students_to_add)
+            db.session.commit()
+            flash('学生名单导入成功！', 'success')
+            #进入课程管理界面
+            return redirect(url_for('course_manage', course_id=course.id))
+        except error:
+            flash('学生名单导入失败！', 'danger')
+            return redirect(url_for('create_course'))
+    # 课程管理
+    @app.route('/course_manage/<int:course_id>')
+    def course_manage(course_id):
+        course = Course.query.get(course_id)
+        # 查看课程下应该选课的学生
+        course_students = course.course_students
+        print(f"查看课程{course.name}下的学生！")
+        for student in course_students:
+            print(student.student_name)
+        return render_template('wang/courseManager.html', course=course)
+
+
+
+
+
+
+
+
+
+
     # 列出我们还需要实现的的功能
     @app.route('/fuctions')
     def fuctions():
         return render_template('wang/fuctions.html')
-
-
-
-
-
-
-
-
     # 返回app
     return app
 

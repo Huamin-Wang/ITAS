@@ -193,33 +193,23 @@
         <h2>欢迎, {{ session['user_name'] }}老师!</h2>
         <p>以下是您教授的课程列表，点击课程进入管理页面。</p>
     </div>
-
-    <div class="course-grid">
-        <div class="course-card">
-            <h3>数学分析</h3>
-            <p>课程代码：MATH101</p>
-            <p>学生人数：50</p>
-            <button onclick="location.href='/course/MATH101'">进入课程</button>
-        </div>
-
-        <div class="course-card">
-            <h3>数据结构与算法</h3>
-            <p>课程代码：CS201</p>
-            <p>学生人数：45</p>
-            <button onclick="location.href='/course/CS201'">进入课程</button>
-        </div>
-
-        <div class="course-card">
-            <h3>人工智能导论</h3>
-            <p>课程代码：CS301</p>
-            <p>学生人数：40</p>
-            <button onclick="location.href='/course/CS301'">进入课程</button>
-        </div>
-    </div>
-
     <div class="create-course">
-        <button onclick="location.href='/create-course'">创建新课程</button>
+        <button onclick="location.href='/create_course'">创建新课程</button>
     </div>
+{#    在这里展示后端传过来的课程信息#}
+<div class="course-grid">
+    {% for course in courses %}
+    <div class="course-card">
+        <h3>{{ course.name }}</h3>
+        <p>课程代码：{{ course.code }}</p>
+        <button onclick="location.href='/course_manage/{{ course.id }}'">进入课程</button>
+    </div>
+    {% endfor %}
+        </div>
+
+
+
+
 </div>
 
 <footer>

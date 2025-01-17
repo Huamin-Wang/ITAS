@@ -21,7 +21,7 @@
             color: white;
             text-align: center;
             padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             position: relative;
         }
 
@@ -54,7 +54,7 @@
             padding: 20px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
             position: relative;
         }
 
@@ -87,13 +87,13 @@
             border-radius: 10px;
             border: 1px solid #e8e8e8;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
             text-align: center;
         }
 
         .dashboard-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
 
         .dashboard-card h3 {
@@ -122,7 +122,7 @@
 
         footer {
             background-color: #001529;
-            color: rgba(255,255,255,0.8);
+            color: rgba(255, 255, 255, 0.8);
             text-align: center;
             padding: 20px 0;
         }
@@ -148,18 +148,20 @@
 
 <header>
     <a href="/" class="back-to-home">返回首页</a>
-    <h1>数学分析 - 课程管理</h1>
-    <p>课程代码：MATH101</p>
+    <h1>{{ course.name }}</h1>
+     <p>课程代码：{{ course.code }}</p>
+    <p>应修学生人数：<strong>{{ course.course_students|length }}</strong> 人</p>
+    <p>实际加入学生人数：<strong>{{ course.students|length }}</strong> 人</p>
+
     <div class="login-status">
-        <span>身份：教师</span>
-        <span>欢迎, 李老师!</span>
-        <span>返回课程列表</span>
+        <span style="color: #2acb11;font-size: 30px">欢迎, {{ session["user_name"] }}老师！</span>
+        <a href="/teacher_profile">返回课程列表</a>
     </div>
 </header>
 
 <div class="container">
     <div class="welcome-section">
-        <h2>数学分析课程管理</h2>
+        <h2>课程管理</h2>
         <p>以下是本课程的管理功能。</p>
     </div>
 
