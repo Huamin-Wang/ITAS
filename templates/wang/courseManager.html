@@ -147,15 +147,16 @@
 <body>
 
 <header>
-    <a href="/" class="back-to-home">返回首页</a>
+
+    <a href="/teacher_profile" class="back-to-home">返回课程列表</a>
     <h1>{{ course.name }}</h1>
      <p>课程代码：{{ course.code }}</p>
     <p>应修学生人数：<strong>{{ course.course_students|length }}</strong> 人</p>
-    <p>实际加入学生人数：<strong>{{ course.students|length }}</strong> 人</p>
+   <p>实际加入学生人数：<strong>{{ enrolled_students_count }}</strong> 人</p>
 
     <div class="login-status">
         <span style="color: #2acb11;font-size: 30px">欢迎, {{ session["user_name"] }}老师！</span>
-        <a href="/teacher_profile">返回课程列表</a>
+
     </div>
 </header>
 

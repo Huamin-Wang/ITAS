@@ -29,7 +29,17 @@ def create_app():
     # 首页
     @app.route('/')
     def hello_world():
+        #防止用户从其他页面后退直接访问首页造成数据丢失
+        #从session中获取用户信息
+        user_identifier = session.get('user_identifier')
+        password = session.get('user_password')
+        print(f"用户密码为：{password}")
+        print(f"用户user_identifier为：{user_identifier}")
+        if user_identifier and password:
+            return loginHandle()
         return render_template('index.html')
+
+
 
     # 注册页面
     @app.route('/register', methods=['GET', 'POST'])
@@ -66,23 +76,50 @@ def create_app():
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
+        # 清了session中的用户信息，防止用户从其他页面后退直接访问登录页面造成数据丢失
+        session.clear()
         return render_template('wang/login.html')
 
     @app.route('/loginHandle', methods=['POST'])
     def loginHandle():
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()
+       #如果session中学号和密码为空，说明是第一次登录，从表单中获取学号和密码
+
+        if not session.get('user_identifier') and not session.get('user_password'):
+            xuehao = request.form.get('xuehao')
+            password = request.form.get('password')
+        else: #如果session中学号和密码不为空，说明是已经登录过了，从session中获取学号和密码
+            # 从session中获取用户信息
+            xuehao = session.get('user_identifier')
+            password = session.get('user_password')
+            print(f"用户输入的密码为11：{password}")
+        user = User.query.filter_by(identifier=xuehao).first()
         if user and user.check_password(password):
             session['user_id'] = user.id
             session['user_name'] = user.name
             session['user_role'] = user.role
+            session['user_identifier'] = user.identifier
+            session['user_password'] = password
             flash('登录成功！', 'success')
             print("登录成功！")
             if user.role=="student":
-                return render_template('wang/student_profile.html')
+                # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
+                course_students = Course_Students.query.filter_by(student_number=user.identifier, student_name=user.name).all()
+                #将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
+                for course_student in course_students:
+                    course_student.course_status = 'enrolled'
+                    db.session.commit() # 提交事务
+                courses = []
+                for course_student in course_students:
+                    course = Course.query.get(course_student.course_id)
+                    courses.append(course)
+                print(f"用户{user.name}正在查看自己的课程！")
+                print(courses)
+                return render_template('wang/student_profile.html', courses=courses)
             elif user.role=="teacher":
-                return render_template('wang/teacher_profile.html')
+                # 获取教师名下的课程
+                courses = Course.query.filter_by(teacher_id=user.id).all()
+
+                return render_template('wang/teacher_profile.html', courses=courses)
         else:
             print("用户名或密码错误！")
             return render_template('wang/login.html', error='用户名或密码错误！')
@@ -103,7 +140,7 @@ def create_app():
         return response
     @app.route('/student_profile')
     def student_profile():
-        return render_template('wang/student_profile.html')
+        return loginHandle()
     @app.route('/teacher_profile')
     def teacher_profile():
         # 获取教师名下的课程
@@ -193,18 +230,13 @@ def create_app():
         course = Course.query.get(course_id)
         # 查看课程下应该选课的学生
         course_students = course.course_students
-        print(f"查看课程{course.name}下的学生！")
+        #print(f"查看课程{course.name}下的学生！")
+        # In your view function
+        enrolled_students_count = len(
+            [student for student in course.course_students if student.course_status == 'enrolled'])
         for student in course_students:
             print(student.student_name)
-        return render_template('wang/courseManager.html', course=course)
-
-
-
-
-
-
-
-
+        return render_template('wang/courseManager.html', course=course, course_students=course_students, enrolled_students_count=enrolled_students_count)
 
 
     # 列出我们还需要实现的的功能
