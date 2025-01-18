@@ -29,100 +29,104 @@ def create_app():
     # 首页
     @app.route('/')
     def hello_world():
-        #防止用户从其他页面后退直接访问首页造成数据丢失
-        #从session中获取用户信息
-        user_identifier = session.get('user_identifier')
-        password = session.get('user_password')
-        print(f"用户密码为：{password}")
-        print(f"用户user_identifier为：{user_identifier}")
-        if user_identifier and password:
+        # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，返回登录页面
+        if "logged_in" not in session or session["logged_in"] == False:
+            return render_template('index.html')
+        else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
             return loginHandle()
-        return render_template('index.html')
-
-
 
     # 注册页面
     @app.route('/register', methods=['GET', 'POST'])
     def register():
-        if request.method == 'POST':
-            identifier = request.form.get('identifier')
-            role = request.form.get('role')
-            name = request.form.get('name')
-            email = request.form.get('email')
-            password = request.form.get('password')
-            confirm_password = request.form.get('confirm_password')
-            # 检查密码是否一致
-            if password != confirm_password:
-                flash('密码不一致！', 'danger')
-                return redirect(url_for('register'))
-            # 检查邮箱是否已存在
-            existing_user = User.query.filter_by(email=email).first()
-            if existing_user:
-                flash('邮箱已存在！', 'danger')
-                return redirect(url_for('register'))  # 重定向到注册页面
+        # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，才能注册
+        if "logged_in" not in session or session["logged_in"] == False:
+            if request.method == 'POST':
+                identifier = request.form.get('identifier')
+                role = request.form.get('role')
+                name = request.form.get('name')
+                email = request.form.get('email')
+                password = request.form.get('password')
+                confirm_password = request.form.get('confirm_password')
+                # 检查密码是否一致
+                if password != confirm_password:
+                    flash('密码不一致！', 'danger')
+                    return redirect(url_for('register'))
+                # 检查邮箱是否已存在
+                existing_user = User.query.filter_by(email=email).first()
+                if existing_user:
+                    flash('邮箱已存在！', 'danger')
+                    return redirect(url_for('register'))  # 重定向到注册页面
 
-            password_hash = generate_password_hash(password)
-            user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
-            db.session.add(user)
-            db.session.commit()
-            flash('注册成功，请登录！', 'success')
-            # 注册成功后cookie保存用户信息
-            session['user_id'] = user.id
-            session['user_name'] = user.name
-            session['user_role'] = user.role
-            flash('注册成功，您已登录！', 'success')
-            return render_template('index.html')
-        return render_template('wang/register.html')
+                password_hash = generate_password_hash(password)
+                user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
+                db.session.add(user)
+                db.session.commit()
+                flash('注册成功，请登录！', 'success')
+                # 注册成功后cookie保存用户信息
+                session['user_id'] = user.id
+                session['user_name'] = user.name
+                session['user_role'] = user.role
+                flash('注册成功，您已登录！', 'success')
+                return render_template('index.html')
+            return render_template('wang/register.html')
+        else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
+            # 提示已经注册过了
+            flash('您已注册过了！如需重新注册，请先登出！', 'registerError')
+            return loginHandle()
+
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
-        # 清了session中的用户信息，防止用户从其他页面后退直接访问登录页面造成数据丢失
-        session.clear()
-        return render_template('wang/login.html')
+        if "logged_in" not in session or session["logged_in"] == False:
+            return render_template('wang/login.html')
+        else:
+            flash('您已登录！', 'success')
+            return loginHandle()
 
+    # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
     @app.route('/loginHandle', methods=['POST'])
     def loginHandle():
-       #如果session中学号和密码为空，说明是第一次登录，从表单中获取学号和密码
-
-        if not session.get('user_identifier') and not session.get('user_password'):
+        # 如果session中登录状态为false，说明是第一次登录，从表单中获取学号和密码
+        if "logged_in" not in session or session["logged_in"] == False:
             xuehao = request.form.get('xuehao')
             password = request.form.get('password')
-        else: #如果session中学号和密码不为空，说明是已经登录过了，从session中获取学号和密码
-            # 从session中获取用户信息
-            xuehao = session.get('user_identifier')
-            password = session.get('user_password')
-            print(f"用户输入的密码为11：{password}")
-        user = User.query.filter_by(identifier=xuehao).first()
-        if user and user.check_password(password):
-            session['user_id'] = user.id
-            session['user_name'] = user.name
-            session['user_role'] = user.role
-            session['user_identifier'] = user.identifier
-            session['user_password'] = password
-            flash('登录成功！', 'success')
-            print("登录成功！")
-            if user.role=="student":
-                # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
-                course_students = Course_Students.query.filter_by(student_number=user.identifier, student_name=user.name).all()
-                #将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
-                for course_student in course_students:
-                    course_student.course_status = 'enrolled'
-                    db.session.commit() # 提交事务
-                courses = []
-                for course_student in course_students:
-                    course = Course.query.get(course_student.course_id)
-                    courses.append(course)
-                print(f"用户{user.name}正在查看自己的课程！")
-                print(courses)
-                return render_template('wang/student_profile.html', courses=courses)
-            elif user.role=="teacher":
-                # 获取教师名下的课程
-                courses = Course.query.filter_by(teacher_id=user.id).all()
+            # 从数据库中查找用户，与用户输入的密码进行比对
+            user = User.query.filter_by(identifier=xuehao).first()
+            if user and user.check_password(password):
+                # 在session中保存登录状态，已供全局使用
+                session["logged_in"] = True
+                session['user_id'] = user.id
+                session['user_name'] = user.name
+                session['user_role'] = user.role
+                session['user_identifier'] = user.identifier
+                flash('登录成功！', 'success')
+                print("登录成功！")
+            else:
+                print("用户名或密码错误！")
+                return render_template('wang/login.html', error='用户名或密码错误！')
+        # 登录成功后才会执行到这里
+        # 从数据库中查找用户，与用户输入的密码进行比对
+        user = User.query.filter_by(identifier=session['user_identifier']).first()
+        if user.role == "student":
+            # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
+            course_students = Course_Students.query.filter_by(student_number=user.identifier,
+                                                              student_name=user.name).all()
+            # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
+            for course_student in course_students:
+                course_student.course_status = 'enrolled'
+                db.session.commit()  # 提交事务
+            courses = []
+            for course_student in course_students:
+                course = Course.query.get(course_student.course_id)
+                courses.append(course)
+            print(f"用户{user.name}正在查看自己的课程！")
+            print(courses)
+            return render_template('wang/student_profile.html', courses=courses)
+        elif user.role == "teacher":
+            # 获取教师名下的课程
+            courses = Course.query.filter_by(teacher_id=user.id).all()
 
-                return render_template('wang/teacher_profile.html', courses=courses)
-        else:
-            print("用户名或密码错误！")
-            return render_template('wang/login.html', error='用户名或密码错误！')
+            return render_template('wang/teacher_profile.html', courses=courses)
 
     @app.route('/chat')
     def chat():
@@ -138,9 +142,11 @@ def create_app():
     def chatHandle():
         response = c.chat()
         return response
+
     @app.route('/student_profile')
     def student_profile():
         return loginHandle()
+
     @app.route('/teacher_profile')
     def teacher_profile():
         # 获取教师名下的课程
@@ -148,8 +154,9 @@ def create_app():
         courses = Course.query.filter_by(teacher_id=user_id).all()
         print(f"用户{user_id}正在查看自己的课程！")
         print(courses)
-        #把课程传到前端
+        # 把课程传到前端
         return render_template('wang/teacher_profile.html', courses=courses)
+
     # 创建新的课程
     @app.route('/create_course')
     def create_course():
@@ -157,17 +164,19 @@ def create_app():
         user_name = session.get('user_name')
         print(f"{user_name}正在创建新的课程！")
         return render_template('wang/create_course.html')
+
     # 处理创建课程的请求
     @app.route('/create_course_handle', methods=['POST'])
     def create_course_handle():
-    # 获取课程数据
+        # 获取课程数据
         course_name = request.form.get('course_name')
         semester = request.form.get('semester')
         course_description = request.form.get('course_description')
         code = request.form.get('course_code')
         teacher_id = session.get('user_id')
         # 创建课程
-        course = Course(name=course_name, semester=semester, description=course_description, code=code, teacher_id=teacher_id)
+        course = Course(name=course_name, semester=semester, description=course_description, code=code,
+                        teacher_id=teacher_id)
         db.session.add(course)
         db.session.commit()
         flash('课程创建成功！', 'success')
@@ -204,7 +213,7 @@ def create_app():
             for row in csv_reader:
                 print(row)
                 # 格式为：学号、姓名、拼音姓名、年级、专业、方向、行政班级、学籍状态、修课方式
-                #将每条数据存储到数据库
+                # 将每条数据存储到数据库
                 student_number = row[0]
                 student_name = row[1]
                 student_pinyin_name = row[2]
@@ -214,35 +223,42 @@ def create_app():
                 student_class = row[6]
                 student_status = row[7]
                 student_course_method = row[8]
-                course_student = Course_Students(course_id=course.id, student_number=student_number, student_name=student_name, student_pinyin_name=student_pinyin_name, student_grade=student_grade, student_major=student_major, student_direction=student_direction, student_class=student_class, student_status=student_status, student_course_method=student_course_method)
+                course_student = Course_Students(course_id=course.id, student_number=student_number,
+                                                 student_name=student_name, student_pinyin_name=student_pinyin_name,
+                                                 student_grade=student_grade, student_major=student_major,
+                                                 student_direction=student_direction, student_class=student_class,
+                                                 student_status=student_status,
+                                                 student_course_method=student_course_method)
                 students_to_add.append(course_student)
             db.session.add_all(students_to_add)
             db.session.commit()
             flash('学生名单导入成功！', 'success')
-            #进入课程管理界面
+            # 进入课程管理界面
             return redirect(url_for('course_manage', course_id=course.id))
         except error:
             flash('学生名单导入失败！', 'danger')
             return redirect(url_for('create_course'))
+
     # 课程管理
     @app.route('/course_manage/<int:course_id>')
     def course_manage(course_id):
         course = Course.query.get(course_id)
         # 查看课程下应该选课的学生
         course_students = course.course_students
-        #print(f"查看课程{course.name}下的学生！")
+        # print(f"查看课程{course.name}下的学生！")
         # In your view function
         enrolled_students_count = len(
             [student for student in course.course_students if student.course_status == 'enrolled'])
         for student in course_students:
             print(student.student_name)
-        return render_template('wang/courseManager.html', course=course, course_students=course_students, enrolled_students_count=enrolled_students_count)
-
+        return render_template('wang/courseManager.html', course=course, course_students=course_students,
+                               enrolled_students_count=enrolled_students_count)
 
     # 列出我们还需要实现的的功能
     @app.route('/fuctions')
     def fuctions():
         return render_template('wang/fuctions.html')
+
     # 返回app
     return app
 
