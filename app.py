@@ -64,15 +64,7 @@ def create_app():
                 if existing_user:
                     flash('学号已存在！', 'danger')
                     return redirect(url_for('register'))
-                # 如果角色选择为学生，检查学生用户名和学号是否与教师上传的学生名单表中course_students匹配
-                if role=="student":
-                    course_students = Course_Students.query.all()
-                    for course_student in course_students:
-                        if course_student.student_number == identifier and course_student.student_name == name:
-                            break
-                        else:
-                            flash('学号与姓名不匹配！', 'danger')
-                            return redirect(url_for('register'))
+                
                 password_hash = generate_password_hash(password)
                 user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
                 db.session.add(user)
