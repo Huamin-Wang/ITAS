@@ -2,18 +2,19 @@ from zipfile import error
 
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash
+
+import xie.chat as c
 from wang.models import init_db
-from wang.models.user import User
 from wang.models.course import Course
 from wang.models.course_students import Course_Students
-import xie.chat as c
+from wang.models.user import User
 
 
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'  # 配置数据库
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # 配置数据库
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
     # 初始化数据库
@@ -74,7 +75,6 @@ def create_app():
             flash('您已注册过了！如需重新注册，请先登出！', 'registerError')
             return loginHandle()
 
-
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         if "logged_in" not in session or session["logged_in"] == False:
@@ -125,6 +125,13 @@ def create_app():
         elif user.role == "teacher":
             # 获取教师名下的课程
             courses = Course.query.filter_by(teacher_id=user.id).all()
+           #将course_students的所有学生的学号进行比对user表中的所有用户，如果有，已经注册为user用户的学生状态改为enrolled
+            course_students = Course_Students.query.all()
+            for course_student in course_students:
+                student = User.query.filter_by(identifier=course_student.student_number).first()
+                if student:
+                    course_student.course_status = 'enrolled'
+                    db.session.commit()
 
             return render_template('wang/teacher_profile.html', courses=courses)
 
@@ -211,7 +218,7 @@ def create_app():
 
             students_to_add = []
             for row in csv_reader:
-                print(row)
+                # print(row)
                 # 格式为：学号、姓名、拼音姓名、年级、专业、方向、行政班级、学籍状态、修课方式
                 # 将每条数据存储到数据库
                 student_number = row[0]
@@ -249,10 +256,26 @@ def create_app():
         # In your view function
         enrolled_students_count = len(
             [student for student in course.course_students if student.course_status == 'enrolled'])
-        for student in course_students:
-            print(student.student_name)
+        # for student in course_students:
+        #     print(student.student_name)
         return render_template('wang/courseManager.html', course=course, course_students=course_students,
                                enrolled_students_count=enrolled_students_count)
+
+    # 显示该课程下的选课情况
+    @app.route('/course_students/<int:course_id>')
+    def course_students(course_id):
+        course = Course.query.get(course_id)
+        course_students = course.course_students
+
+        #选课的学生名单
+        enrolled_students = [student for student in course.course_students if student.course_status == 'enrolled']
+        enrolled_students_count = len(
+            [student for student in course.course_students if student.course_status == 'enrolled'])
+        #未选课的学生名单
+        not_enrolled_students = [student for student in course.course_students if student.course_status == 'not_enrolled']
+        return render_template('wang/course_students.html', course=course, course_students=course_students,
+                               enrolled_students_count=enrolled_students_count, enrolled_students=enrolled_students,not_enrolled_students=not_enrolled_students)
+
 
     # 列出我们还需要实现的的功能
     @app.route('/fuctions')
@@ -269,4 +292,5 @@ if __name__ == '__main__':
     # 0.0.0.0 表示监听所有可用的网络接口
     # host='0.0.0.0' 允许外部访问
     # port=5000 设置端口号
-# 如果局域网无法访问用命令行打开：python -m flask run --host=0.0.0.0
+# 如果局域网无法访问用命令行打开：python -m flask run --host=0.0.0.0 --port=80  端口号可以自己设置
+# 但是这种方法无法使用debug模式

@@ -17,7 +17,7 @@ class Course_Students(db.Model):
     student_status = db.Column(db.String(20), nullable=False)
     student_course_method = db.Column(db.String(20), nullable=False)
     #加入课程状态
-    # 当学生用户加入时，状态为"enrolled"，当学生退出时，状态为"dropped"，默认为"dropped"
-    course_status = db.Column(db.String(20), nullable=False, server_default='dropped')
+    # 当学生用户加入时，状态为"enrolled"，当学生退出时，状态为"not_enrolled"，默认为"not_enrolled"
+    course_status = db.Column(db.String(20), nullable=False, server_default='not_enrolled')
     # Relationship
     course = db.relationship('Course', back_populates='course_students')
