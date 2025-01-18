@@ -42,8 +42,8 @@ def create_app():
         # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，才能注册
         if "logged_in" not in session or session["logged_in"] == False:
             if request.method == 'POST':
-                identifier = request.form.get('identifier') #学号
-                #将学号统一转成大写
+                identifier = request.form.get('identifier')  # 学号
+                # 将学号统一转成大写
                 identifier = identifier.upper()
                 role = request.form.get('role')
                 name = request.form.get('name')
@@ -59,7 +59,19 @@ def create_app():
                 if existing_user:
                     flash('邮箱已存在！', 'danger')
                     return redirect(url_for('register'))  # 重定向到注册页面
-
+                # 检查学号是否已存在
+                existing_user = User.query.filter_by(identifier=identifier).first()
+                if existing_user:
+                    flash('学号已存在！', 'danger')
+                    return redirect(url_for('register'))
+                # 检查用户名和学号是否与教师上传的学生名单表中course_students匹配
+                course_students = Course_Students.query.all()
+                for course_student in course_students:
+                    if course_student.student_number == identifier and course_student.student_name == name:
+                        break
+                    else:
+                        flash('学号与姓名不匹配！', 'danger')
+                        return redirect(url_for('register'))
                 password_hash = generate_password_hash(password)
                 user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
                 db.session.add(user)
@@ -69,6 +81,10 @@ def create_app():
                 session['user_id'] = user.id
                 session['user_name'] = user.name
                 session['user_role'] = user.role
+                session['user_identifier'] = user.identifier
+                # 在session中保存登录状态，已供全局使用
+                session["logged_in"] = True
+                print("注册成功！")
                 flash('注册成功，您已登录！', 'success')
                 return render_template('index.html')
             return render_template('wang/register.html')
@@ -91,7 +107,7 @@ def create_app():
         # 如果session中登录状态为false，说明是第一次登录，从表单中获取学号和密码
         if "logged_in" not in session or session["logged_in"] == False:
             xuehao = request.form.get('xuehao')
-            #学号统一转大写
+            # 学号统一转大写
             xuehao = xuehao.upper()
             print(f"用户输入的学号为：{xuehao}")
             password = request.form.get('password')
@@ -113,9 +129,16 @@ def create_app():
         # 从数据库中查找用户，与用户输入的密码进行比对
         user = User.query.filter_by(identifier=session['user_identifier']).first()
         if user.role == "student":
+            # 输出用戶信息
+            print(f"用户{user.name}的学号为：{user.identifier}")
+
             # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
             course_students = Course_Students.query.filter_by(student_number=user.identifier,
                                                               student_name=user.name).all()
+            print(
+                f"用户{user.name}的课程有：{course_students}")
+
+            print(f"course_students:{course_students}")
             # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
             for course_student in course_students:
                 course_student.course_status = 'enrolled'
@@ -130,7 +153,7 @@ def create_app():
         elif user.role == "teacher":
             # 获取教师名下的课程
             courses = Course.query.filter_by(teacher_id=user.id).all()
-           #将course_students的所有学生的学号进行比对user表中的所有用户，如果有，已经注册为user用户的学生状态改为enrolled
+            # 将course_students的所有学生的学号进行比对user表中的所有用户，如果有，已经注册为user用户的学生状态改为enrolled
             course_students = Course_Students.query.all()
             for course_student in course_students:
                 student = User.query.filter_by(identifier=course_student.student_number).first()
@@ -272,15 +295,16 @@ def create_app():
         course = Course.query.get(course_id)
         course_students = course.course_students
 
-        #选课的学生名单
+        # 选课的学生名单
         enrolled_students = [student for student in course.course_students if student.course_status == 'enrolled']
         enrolled_students_count = len(
             [student for student in course.course_students if student.course_status == 'enrolled'])
-        #未选课的学生名单
-        not_enrolled_students = [student for student in course.course_students if student.course_status == 'not_enrolled']
+        # 未选课的学生名单
+        not_enrolled_students = [student for student in course.course_students if
+                                 student.course_status == 'not_enrolled']
         return render_template('wang/course_students.html', course=course, course_students=course_students,
-                               enrolled_students_count=enrolled_students_count, enrolled_students=enrolled_students,not_enrolled_students=not_enrolled_students)
-
+                               enrolled_students_count=enrolled_students_count, enrolled_students=enrolled_students,
+                               not_enrolled_students=not_enrolled_students)
 
     # 列出我们还需要实现的的功能
     @app.route('/fuctions')
