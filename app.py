@@ -42,7 +42,9 @@ def create_app():
         # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，才能注册
         if "logged_in" not in session or session["logged_in"] == False:
             if request.method == 'POST':
-                identifier = request.form.get('identifier')
+                identifier = request.form.get('identifier') #学号
+                #将学号统一转成大写
+                identifier = identifier.upper()
                 role = request.form.get('role')
                 name = request.form.get('name')
                 email = request.form.get('email')
@@ -89,6 +91,9 @@ def create_app():
         # 如果session中登录状态为false，说明是第一次登录，从表单中获取学号和密码
         if "logged_in" not in session or session["logged_in"] == False:
             xuehao = request.form.get('xuehao')
+            #学号统一转大写
+            xuehao = xuehao.upper()
+            print(f"用户输入的学号为：{xuehao}")
             password = request.form.get('password')
             # 从数据库中查找用户，与用户输入的密码进行比对
             user = User.query.filter_by(identifier=xuehao).first()
