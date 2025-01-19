@@ -15,7 +15,7 @@ class Course(db.Model):
     code = db.Column(db.String(10), nullable=False)
 
     # Relationship
-    user = db.relationship('User', backref='courses')
+    teacher = db.relationship('User', backref='courses')
     course_students = db.relationship('Course_Students',  back_populates='course')
 
     def __repr__(self):

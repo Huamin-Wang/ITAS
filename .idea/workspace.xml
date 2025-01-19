@@ -4,8 +4,32 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4f2d7fa2-e8ea-454a-bd0b-e52f0dae3747" name="更改" comment="增加：&#10;1.查看注册学生名单">
+    <list default="true" id="4f2d7fa2-e8ea-454a-bd0b-e52f0dae3747" name="更改" comment="新增：学生注册时，检查学号和姓名是否与教师上传的名单匹配，如不匹配，则禁止注册">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/___.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/___1.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/___2.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/___3.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/___4.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/___5.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/在变基之前未提交的更改_[更改]/shelved.patch" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/在变基之前未提交的更改_[更改]1/shelved.patch" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/在变基之前未提交的更改_[更改]2/shelved.patch" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/在变基之前未提交的更改_[更改]3/shelved.patch" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/在变基之前未提交的更改_[更改]4/shelved.patch" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/shelf/在变基之前未提交的更改_[更改]5/shelved.patch" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/flaskProject1.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/flaskProject1.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance/test.db" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance/test1.db" beforeDir="false" afterPath="$PROJECT_DIR$/instance/test1.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/wang/courseManager.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/wang/courseManager.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/wang/course_students.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/wang/course_students.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/wang/student_profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/wang/student_profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wang/models/course.py" beforeDir="false" afterPath="$PROJECT_DIR$/wang/models/course.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wang/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/wang/models/user.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,30 +70,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Flask 服务器.Flask (app.py).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.Flask (xxy/chat.py).executor&quot;: &quot;Run&quot;,
-    &quot;Flask 服务器.flaskProject1.executor&quot;: &quot;Run&quot;,
-    &quot;Python.API.executor&quot;: &quot;Run&quot;,
-    &quot;Python.course_students.executor&quot;: &quot;Run&quot;,
-    &quot;Python.intelligenceAPI.executor&quot;: &quot;Run&quot;,
-    &quot;Python.test.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Administrator/Desktop/code/python/flaskProject&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Flask 服务器.Flask (app.py).executor": "Run",
+    "Flask 服务器.Flask (xxy/chat.py).executor": "Run",
+    "Flask 服务器.flaskProject1.executor": "Run",
+    "Python.API.executor": "Run",
+    "Python.course_students.executor": "Run",
+    "Python.intelligenceAPI.executor": "Run",
+    "Python.test.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "C:/Users/Administrator/Desktop/code/python/flaskProject",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.配色方案字体",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\嘉庚学院资料\2024-2025（1）\大创\代码\static" />
@@ -163,7 +187,12 @@
       <workItem from="1737173052897" duration="303000" />
       <workItem from="1737193335177" duration="4409000" />
       <workItem from="1737198398919" duration="705000" />
-      <workItem from="1737199117674" duration="2417000" />
+      <workItem from="1737199117674" duration="2790000" />
+      <workItem from="1737202231174" duration="96000" />
+      <workItem from="1737207302955" duration="3016000" />
+      <workItem from="1737212986023" duration="324000" />
+      <workItem from="1737213319725" duration="111000" />
+      <workItem from="1737251910518" duration="5966000" />
     </task>
     <task id="LOCAL-00001" summary="增加注释">
       <option name="closed" value="true" />
@@ -285,7 +314,31 @@
       <option name="project" value="LOCAL" />
       <updated>1737200483630</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="增加：&#10;1.用户输入学号忽略大小写">
+      <option name="closed" value="true" />
+      <created>1737210854820</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1737210854820</updated>
+    </task>
+    <task id="LOCAL-00017" summary="修复上一个版本的bug">
+      <option name="closed" value="true" />
+      <created>1737212909521</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1737212909521</updated>
+    </task>
+    <task id="LOCAL-00018" summary="新增：学生注册时，检查学号和姓名是否与教师上传的名单匹配，如不匹配，则禁止注册">
+      <option name="closed" value="true" />
+      <created>1737213419683</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1737213419683</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -316,12 +369,15 @@
     <MESSAGE value="更新：&#10;1.学生登录后显示已经被教师上传名单中的课程" />
     <MESSAGE value="修复：&#10;1.注册后点击注册页面重复注册问题&#10;2.登录后还可以重复登录问题" />
     <MESSAGE value="增加：&#10;1.查看注册学生名单" />
-    <option name="LAST_COMMIT_MESSAGE" value="增加：&#10;1.查看注册学生名单" />
+    <MESSAGE value="增加：&#10;1.用户输入学号忽略大小写" />
+    <MESSAGE value="修复上一个版本的bug" />
+    <MESSAGE value="新增：学生注册时，检查学号和姓名是否与教师上传的名单匹配，如不匹配，则禁止注册" />
+    <option name="LAST_COMMIT_MESSAGE" value="新增：学生注册时，检查学号和姓名是否与教师上传的名单匹配，如不匹配，则禁止注册" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1737201597905" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1737257830116" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/$course_students.coverage" NAME="course_students 覆盖结果" MODIFIED="1737105390581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/models" />
-    <SUITE FILE_PATH="coverage/$flaskProject1.coverage" NAME="flaskProject1 覆盖结果" MODIFIED="1737199157391" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/$flaskProject1.coverage" NAME="flaskProject1 覆盖结果" MODIFIED="1737256970114" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/flaskProject1$flaskProject1.coverage" NAME="flaskProject1 覆盖结果" MODIFIED="1730965831022" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/$API.coverage" NAME="API 覆盖结果" MODIFIED="1735642552070" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/XunfeiAPI" />
     <SUITE FILE_PATH="coverage/app_py$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1737198417827" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

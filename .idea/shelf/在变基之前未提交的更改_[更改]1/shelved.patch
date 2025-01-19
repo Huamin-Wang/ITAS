@@ -1,0 +1,135 @@
+Index: templates/xxy/iqa.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><!DOCTYPE html>\r\n<html lang=\"en\">\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n    <title>智能问答</title>\r\n    <style>\r\n        body {\r\n            font-family: Arial, sans-serif;\r\n            background-color: #f4f4f9;\r\n            margin: 0;\r\n            padding: 0;\r\n            display: flex;\r\n            flex-direction: column;\r\n            align-items: center;\r\n            justify-content: center;\r\n            height: 100vh;\r\n        }\r\n\r\n        .container {\r\n            text-align: center;\r\n            background-color: white;\r\n            padding: 20px;\r\n            border-radius: 8px;\r\n            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);\r\n            max-width: 600px;\r\n            width: 100%;\r\n        }\r\n\r\n        h1 {\r\n            color: #333;\r\n            margin-bottom: 20px;\r\n        }\r\n\r\n        #query {\r\n            width: 80%;\r\n            padding: 10px;\r\n            margin: 10px 0;\r\n            border: 1px solid #ccc;\r\n            border-radius: 4px;\r\n            font-size: 16px;\r\n        }\r\n\r\n        button {\r\n            padding: 10px 20px;\r\n            background-color: #007bff;\r\n            color: white;\r\n            border: none;\r\n            border-radius: 4px;\r\n            cursor: pointer;\r\n            font-size: 16px;\r\n        }\r\n\r\n        button:hover {\r\n            background-color: #0056b3;\r\n        }\r\n\r\n        #response {\r\n            margin-top: 20px;\r\n            padding: 10px;\r\n            width: 100%;\r\n            background-color: #f9f9f9;\r\n            border: 1px solid #ccc;\r\n            border-radius: 4px;\r\n            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\r\n            text-align: left;\r\n            white-space: pre-wrap;\r\n        }\r\n    </style>\r\n</head>\r\n<body>\r\n    <div class=\"container\">\r\n        <h1>智能问答</h1>\r\n        <input type=\"text\" id=\"query\" placeholder=\"输入你的问题\">\r\n        <button onclick=\"askQuestion()\">提问</button>\r\n        <div id=\"response\"></div>\r\n    </div>\r\n\r\n    <script>\r\n        function askQuestion() {\r\n            const query = document.getElementById('query').value;\r\n            fetch('/ask', {\r\n                method: 'POST',\r\n                headers: {\r\n                    'Content-Type': 'application/json'\r\n                },\r\n                body: JSON.stringify({\r\n                    appid: \"39554b86\",\r\n                    api_secret: \"NzIwZGRkZGIxN2Y3ZDU3MzgwZjY3ZGM5\",\r\n                    api_key: \"ce8eb8ca38ffa7a3fde99f78d57980c4\",\r\n                    Spark_url: \"wss://spark-api.xf-yun.com/v4.0/chat\",\r\n                    domain: \"4.0Ultra\",\r\n                    query: query\r\n                })\r\n            })\r\n            .then(response => response.json())\r\n            .then(data => {\r\n                document.getElementById('response').innerText = data.content;\r\n            })\r\n            .catch(error => console.error('Error:', error));\r\n        }\r\n    </script>\r\n</body>\r\n</html>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/templates/xxy/iqa.html b/templates/xxy/iqa.html
+--- a/templates/xxy/iqa.html	(revision eebe76667e0c30ca7e145a848b4e935bfc69f473)
++++ b/templates/xxy/iqa.html	(date 1734413156608)
+@@ -79,6 +79,18 @@
+     <script>
+         function askQuestion() {
+             const query = document.getElementById('query').value;
++            const eventSource = new EventSource('/ask', {
++                withCredentials: true
++            });
++
++            eventSource.onmessage = function(event) {
++                document.getElementById('response').innerText += event.data;
++            };
++
++            eventSource.onerror = function() {
++                eventSource.close();
++            };
++
+             fetch('/ask', {
+                 method: 'POST',
+                 headers: {
+@@ -92,12 +104,7 @@
+                     domain: "4.0Ultra",
+                     query: query
+                 })
+-            })
+-            .then(response => response.json())
+-            .then(data => {
+-                document.getElementById('response').innerText = data.content;
+-            })
+-            .catch(error => console.error('Error:', error));
++            });
+         }
+     </script>
+ </body>
+Index: xxy/iqa.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import _thread as thread\r\nimport base64\r\nimport hashlib\r\nimport hmac\r\nimport json\r\nimport ssl\r\nfrom datetime import datetime\r\nfrom time import mktime\r\nfrom urllib.parse import urlencode, urlparse\r\nfrom flask import request, jsonify\r\nimport websocket\r\nfrom email.utils import formatdate as format_date_time  # Import the function\r\n\r\nclass Ws_Param(object):\r\n    def __init__(self, APPID, APIKey, APISecret, gpt_url):\r\n        self.APPID = APPID\r\n        self.APIKey = APIKey\r\n        self.APISecret = APISecret\r\n        self.host = urlparse(gpt_url).netloc\r\n        self.path = urlparse(gpt_url).path\r\n        self.gpt_url = gpt_url\r\n\r\n    def create_url(self):\r\n        now = datetime.now()\r\n        date = format_date_time(mktime(now.timetuple()))\r\n        signature_origin = \"host: \" + self.host + \"\\n\"\r\n        signature_origin += \"date: \" + date + \"\\n\"\r\n        signature_origin += \"GET \" + self.path + \" HTTP/1.1\"\r\n        signature_sha = hmac.new(self.APISecret.encode('utf-8'), signature_origin.encode('utf-8'),\r\n                                 digestmod=hashlib.sha256).digest()\r\n        signature_sha_base64 = base64.b64encode(signature_sha).decode(encoding='utf-8')\r\n        authorization_origin = f'api_key=\"{self.APIKey}\", algorithm=\"hmac-sha256\", headers=\"host date request-line\", signature=\"{signature_sha_base64}\"'\r\n        authorization = base64.b64encode(authorization_origin.encode('utf-8')).decode(encoding='utf-8')\r\n        v = {\r\n            \"authorization\": authorization,\r\n            \"date\": date,\r\n            \"host\": self.host\r\n        }\r\n        url = self.gpt_url + '?' + urlencode(v)\r\n        return url\r\n\r\ndef on_error(ws, error):\r\n    print(\"### error:\", error)\r\n\r\ndef on_close(ws, close_status_code, close_msg):\r\n    print(\"### closed ###\")\r\n\r\ndef on_open(ws):\r\n    thread.start_new_thread(run, (ws,))\r\n\r\ndef run(ws, *args):\r\n    data = json.dumps(gen_params(appid=ws.appid, query=ws.query, domain=ws.domain))\r\n    ws.send(data)\r\n\r\ndef on_message(ws, message):\r\n    data = json.loads(message)\r\n    code = data['header']['code']\r\n    if code != 0:\r\n        print(f'请求错误: {code}, {data}')\r\n        ws.close()\r\n    else:\r\n        choices = data[\"payload\"][\"choices\"]\r\n        status = choices[\"status\"]\r\n        content = choices[\"text\"][0][\"content\"]\r\n        print(content, end='')\r\n        if status == 2:\r\n            print(\"#### 关闭会话\")\r\n            ws.close()\r\n\r\ndef gen_params(appid, query, domain):\r\n    data = {\r\n        \"header\": {\r\n            \"app_id\": appid,\r\n            \"uid\": \"1234\",\r\n        },\r\n        \"parameter\": {\r\n            \"chat\": {\r\n                \"domain\": domain,\r\n                \"temperature\": 0.5,\r\n                \"max_tokens\": 4096,\r\n                \"auditing\": \"default\",\r\n            }\r\n        },\r\n        \"payload\": {\r\n            \"message\": {\r\n                \"text\": [{\"role\": \"user\", \"content\": query}]\r\n            }\r\n        }\r\n    }\r\n    return data\r\n\r\ndef ask_question():\r\n    data = request.json\r\n    appid = data['appid']\r\n    api_secret = data['api_secret']\r\n    api_key = data['api_key']\r\n    Spark_url = data['Spark_url']\r\n    domain = data['domain']\r\n    query = data['query']\r\n\r\n    wsParam = Ws_Param(appid, api_key, api_secret, Spark_url)\r\n    wsUrl = wsParam.create_url()\r\n\r\n    response_data = {\"status\": \"success\", \"content\": \"\"}\r\n\r\n    def on_message(ws, message):\r\n        data = json.loads(message)\r\n        code = data['header']['code']\r\n        if code != 0:\r\n            print(f'请求错误: {code}, {data}')\r\n            ws.close()\r\n        else:\r\n            choices = data[\"payload\"][\"choices\"]\r\n            status = choices[\"status\"]\r\n            content = choices[\"text\"][0][\"content\"]\r\n            response_data[\"content\"] += content\r\n            if status == 2:\r\n                print(\"#### 关闭会话\")\r\n                ws.close()\r\n\r\n    def on_close(ws, close_status_code, close_msg):\r\n        print(\"### closed ###\")\r\n        global final_response_data\r\n        final_response_data = response_data\r\n\r\n    ws = websocket.WebSocketApp(wsUrl, on_message=on_message, on_error=on_error, on_close=on_close, on_open=on_open)\r\n    ws.appid = appid\r\n    ws.query = query\r\n    ws.domain = domain\r\n    ws.run_forever(sslopt={\"cert_reqs\": ssl.CERT_NONE})\r\n\r\n    return jsonify(final_response_data)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/xxy/iqa.py b/xxy/iqa.py
+--- a/xxy/iqa.py	(revision eebe76667e0c30ca7e145a848b4e935bfc69f473)
++++ b/xxy/iqa.py	(date 1734413156609)
+@@ -1,15 +1,15 @@
+-import _thread as thread
+-import base64
+-import hashlib
+-import hmac
++from flask import Response, request
+ import json
++import websocket
+ import ssl
++from urllib.parse import urlparse, urlencode
+ from datetime import datetime
+ from time import mktime
+-from urllib.parse import urlencode, urlparse
+-from flask import request, jsonify
+-import websocket
+-from email.utils import formatdate as format_date_time  # Import the function
++from wsgiref.handlers import format_date_time
++import hmac
++import hashlib
++import base64
++import _thread as thread
+ 
+ class Ws_Param(object):
+     def __init__(self, APPID, APIKey, APISecret, gpt_url):
+@@ -101,32 +101,29 @@
+     wsParam = Ws_Param(appid, api_key, api_secret, Spark_url)
+     wsUrl = wsParam.create_url()
+ 
+-    response_data = {"status": "success", "content": ""}
+-
+-    def on_message(ws, message):
+-        data = json.loads(message)
+-        code = data['header']['code']
+-        if code != 0:
+-            print(f'请求错误: {code}, {data}')
+-            ws.close()
+-        else:
+-            choices = data["payload"]["choices"]
+-            status = choices["status"]
+-            content = choices["text"][0]["content"]
+-            response_data["content"] += content
+-            if status == 2:
+-                print("#### 关闭会话")
+-                ws.close()
++    def generate():
++        def on_message(ws, message):
++            data = json.loads(message)
++            code = data['header']['code']
++            if code != 0:
++                print(f'请求错误: {code}, {data}')
++                ws.close()
++            else:
++                choices = data["payload"]["choices"]
++                status = choices["status"]
++                content = choices["text"][0]["content"]
++                yield f"data: {content}\n\n"
++                if status == 2:
++                    print("#### 关闭会话")
++                    ws.close()
+ 
+-    def on_close(ws, close_status_code, close_msg):
+-        print("### closed ###")
+-        global final_response_data
+-        final_response_data = response_data
++        def on_close(ws, close_status_code, close_msg):
++            print("### closed ###")
+ 
+-    ws = websocket.WebSocketApp(wsUrl, on_message=on_message, on_error=on_error, on_close=on_close, on_open=on_open)
+-    ws.appid = appid
+-    ws.query = query
+-    ws.domain = domain
+-    ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
++        ws = websocket.WebSocketApp(wsUrl, on_message=on_message, on_error=on_error, on_close=on_close, on_open=on_open)
++        ws.appid = appid
++        ws.query = query
++        ws.domain = domain
++        ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
+ 
+-    return jsonify(final_response_data)
+\ No newline at end of file
++    return Response(generate(), content_type='text/event-stream')
+\ No newline at end of file

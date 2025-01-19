@@ -1,0 +1,133 @@
+Index: app.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from flask import Flask, render_template\r\n\r\nimport xxy.chat as c\r\n\r\napp = Flask(__name__)\r\n\r\n\r\n# ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！\r\n@app.route('/')\r\ndef hello_world():\r\n    return render_template('index.html')\r\n\r\n\r\n@app.route('/chat')\r\ndef chat():\r\n    return render_template('xxy/chat.html', conversation=c.conversation_history)\r\n\r\n\r\n@app.route('/chatHandle', methods=['POST'])\r\ndef chatHandle():\r\n    response = c.chat()\r\n    return response\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    app.run(host=\"0.0.0.0\", debug=True)\r\n# 如果局域网无法访问用命令行打开：python -m flask run --host=0.0.0.0\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app.py b/app.py
+--- a/app.py	(revision e2eb2646e3192160ea89baae9a311d5ca6ef399d)
++++ b/app.py	(date 1734844984464)
+@@ -1,4 +1,4 @@
+-from flask import Flask, render_template
++from flask import Flask, render_template, request
+ 
+ import xxy.chat as c
+ 
+@@ -11,9 +11,14 @@
+     return render_template('index.html')
+ 
+ 
++@app.route('/chat')
++# def chat():
+ @app.route('/chat')
+ def chat():
+-    return render_template('xxy/chat.html', conversation=c.conversation_history)
++    ip_address = request.remote_addr
++    filtered_history = [msg for msg in c.conversation_history if msg["ip_address"] == ip_address]
++    return render_template('xxy/chat.html', conversation=filtered_history)
++#     return render_template('xxy/chat.html', conversation=c.conversation_history)
+ 
+ 
+ @app.route('/chatHandle', methods=['POST'])
+Index: templates/xxy/chat.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><!DOCTYPE html>\r\n<html lang=\"zh\">\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n    <title>讯飞星火对话</title>\r\n    <style>\r\n        body {\r\n            font-family: Arial, sans-serif;\r\n            margin: 0;\r\n            padding: 20px;\r\n            background-color: #f0f2f5;\r\n        }\r\n        .alert-box {\r\n            position: fixed;\r\n            right: 20px;\r\n            top: 20px;\r\n            width: 300px;\r\n            padding: 15px;\r\n            background-color: #f9edbe;\r\n            border: 1px solid #f0c36d;\r\n            border-radius: 8px;\r\n            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);\r\n            font-size: 14px;\r\n            color: #856404;\r\n            z-index: 1000;\r\n        }\r\n        .alert-box button {\r\n            background: transparent;\r\n            border: none;\r\n            color: #856404;\r\n            font-size: 16px;\r\n            position: absolute;\r\n            top: 5px;\r\n            right: 5px;\r\n            cursor: pointer;\r\n        }\r\n        .alert-box button:hover {\r\n            color: #d9534f;\r\n        }\r\n        .chat-container {\r\n            max-width: 800px;\r\n            margin: 0 auto;\r\n            background: white;\r\n            border-radius: 10px;\r\n            box-shadow: 0 2px 10px rgba(0,0,0,0.1);\r\n            padding: 20px;\r\n        }\r\n        .chat-history {\r\n            height: 500px;\r\n            overflow-y: auto;\r\n            padding: 20px;\r\n            border: 1px solid #ddd;\r\n            border-radius: 5px;\r\n            margin-bottom: 20px;\r\n        }\r\n        .message {\r\n            margin-bottom: 15px;\r\n            padding: 10px;\r\n            border-radius: 5px;\r\n        }\r\n        .user-message {\r\n            background-color: #e3f2fd;\r\n            margin-left: 20%;\r\n        }\r\n        .ai-message {\r\n            background-color: #f5f5f5;\r\n            margin-right: 20%;\r\n        }\r\n        .input-container {\r\n            display: flex;\r\n            gap: 10px;\r\n        }\r\n        #messageInput {\r\n            flex-grow: 1;\r\n            padding: 10px;\r\n            border: 1px solid #ddd;\r\n            border-radius: 5px;\r\n            font-size: 16px;\r\n        }\r\n        button {\r\n            padding: 10px 20px;\r\n            background-color: #1976d2;\r\n            color: white;\r\n            border: none;\r\n            border-radius: 5px;\r\n            cursor: pointer;\r\n        }\r\n        button:hover {\r\n            background-color: #1565c0;\r\n        }\r\n        button:disabled {\r\n            background-color: #ccc;\r\n            cursor: not-allowed;\r\n        }\r\n        .loading {\r\n            display: none;\r\n            margin: 10px 0;\r\n            color: #666;\r\n        }\r\n        pre.code-block {\r\n            background-color: #272822;\r\n            color: #f8f8f2;\r\n            padding: 10px;\r\n            border-radius: 5px;\r\n            overflow-x: auto;\r\n            font-family: 'Courier New', monospace;\r\n        }\r\n        .markdown {\r\n            font-size: 1rem;\r\n        }\r\n    </style>\r\n</head>\r\n<body>\r\n <div class=\"alert-box\">\r\n        <p>由于运行成本，本聊天不具备上下文记忆功能，有更复杂的需求请访问其他大模型。</p>\r\n        <button onclick=\"closeAlert()\">×</button>\r\n    </div>\r\n    <div class=\"chat-container\">\r\n        <div class=\"chat-history\" id=\"chatHistory\">\r\n            {% for message in conversation %}\r\n                <div class=\"message {% if message.role == 'user' %}user-message{% else %}ai-message{% endif %}\">\r\n                    {% if message.format == 'code' %}\r\n                        <pre class=\"code-block\">{{ message.content }}</pre>\r\n                    {% elif message.format == 'markdown' %}\r\n                        <div class=\"markdown\">{{ message.content|safe }}</div>\r\n                    {% else %}\r\n                        {{ message.content }}\r\n                    {% endif %}\r\n                </div>\r\n            {% endfor %}\r\n        </div>\r\n        <div class=\"loading\" id=\"loading\">AI正在思考中...</div>\r\n        <div class=\"input-container\">\r\n            <input type=\"text\" id=\"messageInput\" placeholder=\"请输入您的问题...\" onkeypress=\"handleKeyPress(event)\">\r\n            <button onclick=\"sendMessage()\" id=\"sendButton\">发送</button>\r\n        </div>\r\n    </div>\r\n\r\n    <!-- 引入 marked.js -->\r\n    <script src=\"https://cdn.jsdelivr.net/npm/marked/marked.min.js\"></script>\r\n    <script>\r\n        function handleKeyPress(event) {\r\n            if (event.key === 'Enter') {\r\n                sendMessage();\r\n            }\r\n        }\r\n\r\n        function scrollToBottom() {\r\n            const chatHistory = document.getElementById('chatHistory');\r\n            chatHistory.scrollTop = chatHistory.scrollHeight;\r\n        }\r\n\r\n        function appendMessage(content, isUser, format = null) {\r\n            const chatHistory = document.getElementById('chatHistory');\r\n            const messageDiv = document.createElement('div');\r\n            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;\r\n\r\n            if (format === 'code') {\r\n                const pre = document.createElement('pre');\r\n                pre.className = 'code-block';\r\n                pre.textContent = content;\r\n                messageDiv.appendChild(pre);\r\n            } else if (format === 'markdown') {\r\n                const markdownDiv = document.createElement('div');\r\n                markdownDiv.className = 'markdown';\r\n                markdownDiv.innerHTML = marked.parse(content); // 使用 marked.js 解析 Markdown\r\n                messageDiv.appendChild(markdownDiv);\r\n            } else {\r\n                messageDiv.textContent = content;\r\n            }\r\n\r\n            chatHistory.appendChild(messageDiv);\r\n            scrollToBottom();\r\n        }\r\n\r\n        async function sendMessage() {\r\n            const messageInput = document.getElementById('messageInput');\r\n            const sendButton = document.getElementById('sendButton');\r\n            const loading = document.getElementById('loading');\r\n            const message = messageInput.value.trim();\r\n\r\n            if (!message) return;\r\n\r\n            // 禁用输入和发送按钮\r\n            messageInput.disabled = true;\r\n            sendButton.disabled = true;\r\n            loading.style.display = 'block';\r\n\r\n            // 显示用户消息\r\n            appendMessage(message, true);\r\n            messageInput.value = '';\r\n\r\n            try {\r\n                const response = await fetch('/chatHandle', {\r\n                    method: 'POST',\r\n                    headers: {\r\n                        'Content-Type': 'application/json',\r\n                    },\r\n                    body: JSON.stringify({ message: message }),\r\n                });\r\n\r\n                const data = await response.json();\r\n\r\n                // 显示AI响应\r\n                appendMessage(data.response, false, data.format);\r\n            } catch (error) {\r\n                console.error('Error:', error);\r\n                appendMessage('抱歉，发生了错误，请稍后重试。', false);\r\n            } finally {\r\n                // 恢复输入和发送按钮\r\n                messageInput.disabled = false;\r\n                sendButton.disabled = false;\r\n                loading.style.display = 'none';\r\n                messageInput.focus();\r\n            }\r\n        }\r\n\r\n        function closeAlert() {\r\n            const alertBox = document.querySelector('.alert-box');\r\n            alertBox.style.display = 'none';\r\n        }\r\n\r\n        // 页面加载完成后滚动到底部\r\n        window.onload = scrollToBottom;\r\n    </script>\r\n</body>\r\n</html>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/templates/xxy/chat.html b/templates/xxy/chat.html
+--- a/templates/xxy/chat.html	(revision e2eb2646e3192160ea89baae9a311d5ca6ef399d)
++++ b/templates/xxy/chat.html	(date 1734844984464)
+@@ -113,7 +113,7 @@
+ </head>
+ <body>
+  <div class="alert-box">
+-        <p>由于运行成本，本聊天不具备上下文记忆功能，有更复杂的需求请访问其他大模型。</p>
++        <p>由于运行成本，本聊天不具备连续对话功能，有更复杂的需求请访问其他大模型。</p>
+         <button onclick="closeAlert()">×</button>
+     </div>
+     <div class="chat-container">
+Index: xxy/chat.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># app.py\r\nfrom flask import Flask, render_template, request, jsonify\r\nimport json\r\nimport _thread as thread\r\nimport base64\r\nimport datetime\r\nimport hashlib\r\nimport hmac\r\nimport time\r\nfrom urllib.parse import urlparse\r\nimport ssl\r\nfrom datetime import datetime\r\nfrom time import mktime\r\nfrom urllib.parse import urlencode\r\nfrom wsgiref.handlers import format_date_time\r\nimport websocket\r\n\r\napp = Flask(__name__)\r\n\r\n# 配置信息\r\nappid = \"af596305\"\r\napi_secret = \"ZmNjM2Y5OGU3NTNmNTBiNThlZGE4YTZh\"\r\napi_key = \"4ede90c6451ece9423169972af63f5a7\"\r\ndomain = \"4.0Ultra\"\r\nSpark_url = \"wss://spark-api.xf-yun.com/v4.0/chat\"\r\n\r\n# 保存对话历史\r\nconversation_history = []\r\n\r\n\r\nclass Ws_Param(object):\r\n    def __init__(self, APPID, APIKey, APISecret, Spark_url):\r\n        self.APPID = APPID\r\n        self.APIKey = APIKey\r\n        self.APISecret = APISecret\r\n        self.host = urlparse(Spark_url).netloc\r\n        self.path = urlparse(Spark_url).path\r\n        self.Spark_url = Spark_url\r\n\r\n    def create_url(self):\r\n        now = datetime.now()\r\n        date = format_date_time(mktime(now.timetuple()))\r\n\r\n        signature_origin = \"host: \" + self.host + \"\\n\"\r\n        signature_origin += \"date: \" + date + \"\\n\"\r\n        signature_origin += \"GET \" + self.path + \" HTTP/1.1\"\r\n\r\n        signature_sha = hmac.new(self.APISecret.encode('utf-8'), signature_origin.encode('utf-8'),\r\n                                 digestmod=hashlib.sha256).digest()\r\n\r\n        signature_sha_base64 = base64.b64encode(signature_sha).decode(encoding='utf-8')\r\n\r\n        authorization_origin = f'api_key=\"{self.APIKey}\", algorithm=\"hmac-sha256\", headers=\"host date request-line\", signature=\"{signature_sha_base64}\"'\r\n\r\n        authorization = base64.b64encode(authorization_origin.encode('utf-8')).decode(encoding='utf-8')\r\n\r\n        v = {\r\n            \"authorization\": authorization,\r\n            \"date\": date,\r\n            \"host\": self.host\r\n        }\r\n        url = self.Spark_url + '?' + urlencode(v)\r\n        return url\r\n\r\n\r\nclass SparkAPIHandler:\r\n    def __init__(self):\r\n        self.answer = \"\"\r\n\r\n    def on_message(self, ws, message):\r\n        data = json.loads(message)\r\n        code = data['header']['code']\r\n        if code != 0:\r\n            print(f'请求错误: {code}, {data}')\r\n            ws.close()\r\n        else:\r\n            choices = data[\"payload\"][\"choices\"]\r\n            status = choices[\"status\"]\r\n            content = choices[\"text\"][0][\"content\"]\r\n            self.answer += content\r\n            if status == 2:\r\n                ws.close()\r\n\r\n    def on_error(self, ws, error):\r\n        print(\"### error:\", error)\r\n\r\n    def on_close(self, ws, one, two):\r\n        print(\"### closed ###\")\r\n\r\n    def on_open(self, ws):\r\n        def run(*args):\r\n            data = json.dumps(self.gen_params(ws.appid, ws.domain, ws.question))\r\n            ws.send(data)\r\n\r\n        thread.start_new_thread(run, ())\r\n\r\n    def gen_params(self, appid, domain, question):\r\n        data = {\r\n            \"header\": {\r\n                \"app_id\": appid,\r\n                \"uid\": \"1234\"\r\n            },\r\n            \"parameter\": {\r\n                \"chat\": {\r\n                    \"domain\": domain,\r\n                    \"temperature\": 0.8,\r\n                    \"max_tokens\": 2048,\r\n                    \"top_k\": 5,\r\n                    \"auditing\": \"default\"\r\n                }\r\n            },\r\n            \"payload\": {\r\n                \"message\": {\r\n                    \"text\": [{\r\n                        \"type\": \"text\",\r\n                        \"content\": question,\r\n                        \"role\": \"user\"  # Ensure the role field is included and set to a valid value\r\n                    }]\r\n                }\r\n            }\r\n        }\r\n        return data\r\n\r\n\r\n    def get_spark_response(self, question):\r\n        self.answer = \"\"\r\n        wsParam = Ws_Param(appid, api_key, api_secret, Spark_url)\r\n        websocket.enableTrace(False)\r\n        wsUrl = wsParam.create_url()\r\n        ws = websocket.WebSocketApp(\r\n            wsUrl,\r\n            on_message=self.on_message,\r\n            on_error=self.on_error,\r\n            on_close=self.on_close,\r\n            on_open=self.on_open\r\n        )\r\n        ws.appid = appid\r\n        ws.question = question\r\n        ws.domain = domain\r\n        ws.run_forever(sslopt={\"cert_reqs\": ssl.CERT_NONE})\r\n        return self.answer\r\n\r\n\r\nspark_handler = SparkAPIHandler()\r\n\r\n\r\n# @app.route('/')\r\n# def home():\r\n#     return render_template('chat.html', conversation=conversation_history)\r\n\r\n\r\n\r\n# def chat():\r\ndef chat():\r\n    user_message = request.json.get('message', '')\r\n\r\n    # 调用讯飞星火API\r\n    ai_response = spark_handler.get_spark_response(user_message)\r\n\r\n    # 判断内容格式\r\n    if '```' in ai_response:\r\n        format_type = 'code'\r\n    # elif '#' in ai_response or '*' in ai_response or '_' in ai_response:\r\n    #     format_type = 'markdown'\r\n    else:\r\n        format_type = 'markdown'\r\n\r\n    # 保存对话历史\r\n    conversation_history.append({\"role\": \"user\", \"content\": user_message})\r\n    conversation_history.append({\"role\": \"assistant\", \"content\": ai_response, \"format\": format_type})\r\n\r\n    # 保持对话历史在合理范围内\r\n    while len(conversation_history) > 20:  # 保留最近的10轮对话\r\n        conversation_history.pop(0)\r\n\r\n    return jsonify({\r\n        \"response\": ai_response,\r\n        \"format\": format_type\r\n    })\r\n#     user_message = request.json.get('message', '')\r\n#\r\n#     # 调用讯飞星火API\r\n#     ai_response = spark_handler.get_spark_response(user_message)\r\n#\r\n#     # 保存对话历史\r\n#     conversation_history.append({\"role\": \"user\", \"content\": user_message})\r\n#     conversation_history.append({\"role\": \"assistant\", \"content\": ai_response})\r\n#\r\n#     # 保持对话历史在合理范围内\r\n#     while len(conversation_history) > 20:  # 保留最近的10轮对话\r\n#         conversation_history.pop(0)\r\n#\r\n#     return jsonify({\r\n#         \"response\": ai_response\r\n#     })\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/xxy/chat.py b/xxy/chat.py
+--- a/xxy/chat.py	(revision e2eb2646e3192160ea89baae9a311d5ca6ef399d)
++++ b/xxy/chat.py	(date 1734844984464)
+@@ -1,4 +1,6 @@
+ # app.py
++from ipaddress import ip_address
++
+ from flask import Flask, render_template, request, jsonify
+ import json
+ import _thread as thread
+@@ -144,53 +146,35 @@
+ spark_handler = SparkAPIHandler()
+ 
+ 
+-# @app.route('/')
+-# def home():
+-#     return render_template('chat.html', conversation=conversation_history)
+-
+ 
+-
+-# def chat():
+ def chat():
+     user_message = request.json.get('message', '')
++    ip_address=request.remote_addr #获取用户ip地址
+ 
+     # 调用讯飞星火API
+     ai_response = spark_handler.get_spark_response(user_message)
+ 
+-    # 判断内容格式
++    # 判断内容格式::暂时统一按照markdown格式处理
+     if '```' in ai_response:
+-        format_type = 'code'
++        format_type = 'markdown'
+     # elif '#' in ai_response or '*' in ai_response or '_' in ai_response:
+     #     format_type = 'markdown'
+     else:
+         format_type = 'markdown'
+ 
+-    # 保存对话历史
+-    conversation_history.append({"role": "user", "content": user_message})
+-    conversation_history.append({"role": "assistant", "content": ai_response, "format": format_type})
++    # 保存对话历史，把IP地址也存储起来
++    conversation_history.append({"role": "user", "content": user_message, "ip_address": ip_address})
++    conversation_history.append(
++        {"role": "assistant", "content": ai_response, "format": format_type, "ip_address": ip_address})
+ 
+     # 保持对话历史在合理范围内
+     while len(conversation_history) > 20:  # 保留最近的10轮对话
+         conversation_history.pop(0)
+ 
++    # 只加载 本机IP address的历史对话
++    filtered_history = [msg for msg in conversation_history if msg["ip_address"] == ip_address]
+     return jsonify({
+         "response": ai_response,
+-        "format": format_type
++        "format": format_type,
++        "conversation": filtered_history
+     })
+-#     user_message = request.json.get('message', '')
+-#
+-#     # 调用讯飞星火API
+-#     ai_response = spark_handler.get_spark_response(user_message)
+-#
+-#     # 保存对话历史
+-#     conversation_history.append({"role": "user", "content": user_message})
+-#     conversation_history.append({"role": "assistant", "content": ai_response})
+-#
+-#     # 保持对话历史在合理范围内
+-#     while len(conversation_history) > 20:  # 保留最近的10轮对话
+-#         conversation_history.pop(0)
+-#
+-#     return jsonify({
+-#         "response": ai_response
+-#     })
+-

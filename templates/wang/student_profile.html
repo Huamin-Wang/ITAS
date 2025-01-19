@@ -183,7 +183,7 @@
 <div class="container">
     <div class="welcome-section">
         <h2>欢迎, {{ session['user_name'] }}同学!</h2>
-        <p>以下是您的学习数据和相关功能</p>
+        <p>以下是您的学习数据和相关功能，如未显示课程，请联系教师上传名单或检查注册信息是否与学校教务系统一致</p>
     </div>
     {#将后端传递的所有课程展示#}
     <div class="course-grid">
@@ -191,9 +191,9 @@
             <div class="dashboard-card">
                 <h3>{{ course.name }}</h3>
                 <p>课程代码：{{ course.code }}</p>
-                <p>教师：{{ course.teacher }}</p>
+                <p>教师：{{ course.teacher.name }}</p>
 
-                <button onclick="location.href='/course_learn/{{ course.id }}'">进入课程</button>
+               <button onclick="location.href='/course_learn/{{ course.id }}'" style="background-color: #1890ff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease;">进入课程</button>
             </div>
         {% endfor %}
     </div>

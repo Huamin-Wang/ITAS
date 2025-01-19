@@ -64,12 +64,11 @@ def create_app():
                 if existing_user:
                     flash('学号已存在！', 'danger')
                     return redirect(url_for('register'))
-                
+
                 password_hash = generate_password_hash(password)
                 user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
                 db.session.add(user)
                 db.session.commit()
-                flash('注册成功，请登录！', 'success')
                 # 注册成功后cookie保存用户信息
                 session['user_id'] = user.id
                 session['user_name'] = user.name
@@ -163,7 +162,6 @@ def create_app():
     @app.route("/logout", methods=['GET'])
     def logout():
         session.clear()
-        flash('您已退出登录！', 'success')
         return render_template('wang/login.html')
 
     @app.route('/chatHandle', methods=['POST'])

@@ -19,7 +19,6 @@ class User(db.Model):
     # 教师关系
     assigned_homeworks = db.relationship('Assignment', backref='teacher', lazy=True)  # 教师发布的作业
     quizzes = db.relationship('Quiz', backref='teacher', lazy=True)  # 教师发布的抢答
-
     # 检查用户密码与数据库中的密码是否匹配
     def check_password(self, password):
         return check_password_hash(self.password, password)
