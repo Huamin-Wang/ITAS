@@ -142,12 +142,39 @@
                 margin-bottom: 15px;
             }
         }
+          /* 通用消息样式 */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        /* 成功消息样式 */
+        .alert-success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+        /* 错误消息样式 */
+        .alert-registerError {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
     </style>
 </head>
 <body>
 
 <header>
-
+{% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <a href="/teacher_profile" class="back-to-home">返回课程列表</a>
     <h1>{{ course.name }}</h1>
      <p>课程代码：{{ course.code }}</p>
