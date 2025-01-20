@@ -14,7 +14,7 @@ from wang.models.user import User
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # 配置数据库
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'  # 配置数据库
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
     # 初始化数据库
