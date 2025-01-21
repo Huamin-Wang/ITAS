@@ -8,6 +8,7 @@ from wang.models import init_db
 from wang.models.course import Course
 from wang.models.course_students import Course_Students
 from wang.models.user import User
+from datetime import timedelta
 
 
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
@@ -19,6 +20,16 @@ def create_app():
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
     # 初始化数据库
     db = init_db(app)
+    #超时自动清空session
+    @app.before_request
+    def before_request():
+        session.permanent = True
+        app.permanent_session_lifetime = timedelta(minutes=30) # 设置session的有效时间为30分钟
+    # 错误处理
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        print("500错误")
+        return render_template('wang/500.html'), 500    # 返回500页面
 
     @app.errorhandler(404)
     def page_not_found(e):
