@@ -1,0 +1,22 @@
+# 忽略instance数据库文件
+instance
+
+
+
+
+#写法参考
+# 忽略所有 .log 文件
+#*.log
+
+# 忽略特定文件
+#config.local.yml
+
+# 忽略某个目录
+#node_modules/
+
+# 忽略某个目录下的特定文件
+#build/*.tmp
+
+# 忽略所有 .txt 文件，但不包括 important.txt
+*.txt
+#!important.txt
