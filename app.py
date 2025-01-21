@@ -25,6 +25,12 @@ def create_app():
     def before_request():
         session.permanent = True
         app.permanent_session_lifetime = timedelta(minutes=30) # 设置session的有效时间为30分钟
+
+    @app.before_request
+    def block_malicious_requests():
+        # 屏蔽对 WordPress 相关路径的请求
+        if request.path.startswith('/wordpress') or request.path.startswith('/wp-admin'):
+            abort(403)  # 返回 403 Forbidden
     # 错误处理
     @app.errorhandler(500)
     def internal_server_error(e):
