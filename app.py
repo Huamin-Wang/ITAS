@@ -15,7 +15,7 @@ from datetime import timedelta
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'  # 配置数据库
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
     # 初始化数据库
@@ -25,17 +25,29 @@ def create_app():
     def before_request():
         # 设置 session 超时时间
         session.permanent = True
-        app.permanent_session_lifetime = timedelta(minutes=30)  # 设置 session 有效时间为 30 分钟
+        app.permanent_session_lifetime = timedelta(minutes=90)  # 设置 session 有效时间为 1 分钟
 
-        # 屏蔽恶意请求
-        if request.path.startswith('/wordpress') or request.path.startswith('/wp-admin'):
+        # 如果请求路径是恶意路径，则阻止访问
+        if request.path.startswith(('/wordpress', '/wp-admin')):
             abort(403)  # 返回 403 Forbidden
+
+        # 登录状态检查，排除登录和注册页面
+        if 'user_id' not in session and request.endpoint not in ["index",'loginHandle', 'register', 'login']:
+            # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
+
+            return redirect(url_for('index'))
+
     # 错误处理
     @app.errorhandler(500)
     def internal_server_error(e):
         print("500错误")
-        return render_template('wang/500.html'), 500    # 返回500页面
+        return render_template('wang/500.html'), 500
 
+        # 405错误处理
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        print("405")
+        return render_template('wang/500.html'), 500
     @app.errorhandler(404)
     def page_not_found(e):
         print("404")
@@ -51,6 +63,10 @@ def create_app():
             return render_template('index.html')
         else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
             return loginHandle()
+    @app.route('/index')
+    def index():
+        return hello_world()
+
 
     # 注册页面
     @app.route('/register', methods=['GET', 'POST'])
@@ -129,7 +145,7 @@ def create_app():
                 session['user_role'] = user.role
                 session['user_identifier'] = user.identifier
                 flash('登录成功！', 'success')
-                print("登录成功！")
+                print(f'{user.name}登录成功！')
             else:
                 print("用户名或密码错误！")
                 return render_template('wang/login.html', error='用户名或密码错误！')
@@ -193,8 +209,9 @@ def create_app():
     def teacher_profile():
         # 获取教师名下的课程
         user_id = session.get('user_id')
+        user_name = session.get('user_name')
         courses = Course.query.filter_by(teacher_id=user_id).all()
-        print(f"用户{user_id}正在查看自己的课程！")
+        print(f"用户{user_name}正在查看自己的课程列表！")
         print(courses)
         # 把课程传到前端
         return render_template('wang/teacher_profile.html', courses=courses)
