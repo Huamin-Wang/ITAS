@@ -216,7 +216,7 @@ def create_app():
         # 把课程传到前端
         return render_template('wang/teacher_profile.html', courses=courses)
 
-    # 创建新的课程
+    # 创建新的课程请求
     @app.route('/create_course')
     def create_course():
         # 获取用户数据
@@ -224,7 +224,7 @@ def create_app():
         print(f"{user_name}正在创建新的课程！")
         return render_template('wang/create_course.html')
 
-    # 处理创建课程的请求
+    # 创建新课程的处理
     @app.route('/create_course_handle', methods=['POST'])
     def create_course_handle():
         # 获取课程数据
@@ -298,7 +298,7 @@ def create_app():
             flash('学生名单导入失败！', 'danger')
             return redirect(url_for('create_course'))
 
-    # 课程管理
+    # 课程管理页面
     @app.route('/course_manage/<int:course_id>')
     def course_manage(course_id):
         course = Course.query.get(course_id)
@@ -312,13 +312,11 @@ def create_app():
         #     print(student.student_name)
         return render_template('wang/courseManager.html', course=course, course_students=course_students,
                                enrolled_students_count=enrolled_students_count)
-
-    # 显示该课程下的选课情况
+    # 课程管理页面：显示该课程下的选课情况：显示应选人数、已选人数、未选人数等信息
     @app.route('/course_students/<int:course_id>')
     def course_students(course_id):
         course = Course.query.get(course_id)
         course_students = course.course_students
-
         # 选课的学生名单
         enrolled_students = [student for student in course.course_students if student.course_status == 'enrolled']
         enrolled_students_count = len(
@@ -329,6 +327,12 @@ def create_app():
         return render_template('wang/course_students.html', course=course, course_students=course_students,
                                enrolled_students_count=enrolled_students_count, enrolled_students=enrolled_students,
                                not_enrolled_students=not_enrolled_students)
+   # 课程管理页面：随机选
+    @app.route('/course/random_select/<int:course_id>')
+    def random_select(course_id):
+        course = Course.query.get(course_id)
+        course_students = course.course_students
+        return render_template('wang/random_select.html', course=course, course_students=course_students)
 
     # 列出我们还需要实现的的功能
     @app.route('/fuctions')

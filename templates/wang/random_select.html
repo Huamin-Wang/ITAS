@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Select</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #4a4a4a);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #fff;
+            overflow: hidden;
+        }
+        .container {
+            width: 80%;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #00ff88;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+            margin-bottom: 30px;
+        }
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(0, 255, 136, 0.8),
+                             0 0 30px rgba(0, 255, 136, 0.6);
+            }
+        }
+
+        .name-scroll-container {
+            height: 60px;
+            position: relative;
+            overflow: hidden;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .highlight-zone {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 60px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(0, 255, 136, 0.2) 20%,
+                rgba(0, 255, 136, 0.2) 80%,
+                transparent 100%
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .name-scroll {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            transition: transform 0.3s cubic-bezier(0.21, 0.53, 0.29, 0.99);
+        }
+
+        .name-scroll div {
+            height: 60px;
+            line-height: 60px;
+            font-size: 24px;
+            font-weight: bold;
+            white-space: nowrap;
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .random-button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 15px;
+            background: linear-gradient(45deg, #00ff88, #00b8ff);
+            color: white;
+            text-align: center;
+            border-radius: 25px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            outline: none;
+        }
+
+        .random-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .random-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .winner-announcement {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff88;
+            margin-top: 20px;
+            min-height: 36px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .winner-announcement.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Random Select for {{ course.name }}</h1>
+
+        <div class="name-scroll-container">
+            <div class="highlight-zone"></div>
+            <div class="name-scroll" id="nameScroll">
+                {% for student in course_students %}
+                <div>{{ student.student_name }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <button class="random-button" onclick="startSelection()">开始随机挑选幸运儿</button>
+        <div class="winner-announcement" id="winner"></div>
+    </div>
+
+    <script>
+        const nameScroll = document.getElementById('nameScroll');
+        const button = document.querySelector('.random-button');
+        const winnerDisplay = document.getElementById('winner');
+        let isSelecting = false;
+
+        // 复制名单使其循环显示
+        nameScroll.innerHTML += nameScroll.innerHTML;
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function startSelection() {
+            if (isSelecting) return;
+            isSelecting = true;
+            button.disabled = true;
+            winnerDisplay.classList.remove('show');
+
+            const students = document.querySelectorAll('.name-scroll div');
+            const itemHeight = 60; // 每个名字的高度
+            const totalHeight = students.length * itemHeight / 2; // 总高度除以2（因为我们复制了一份）
+
+            // 快速滚动阶段
+            let duration = 20;
+            for (let i = 0; i < 30; i++) {
+                const randomOffset = getRandomInt(0, totalHeight);
+                nameScroll.style.transform = `translateY(-${randomOffset}px)`;
+                await sleep(duration);
+                duration += 1;
+            }
+
+            // 减速滚动阶段
+            duration = 50;
+            for (let i = 0; i < 20; i++) {
+                const randomOffset = getRandomInt(0, totalHeight);
+                nameScroll.style.transform = `translateY(-${randomOffset}px)`;
+                await sleep(duration);
+                duration += 30;
+            }
+
+            // 最终选择
+            const finalOffset = getRandomInt(0, totalHeight);
+            nameScroll.style.transform = `translateY(-${finalOffset}px)`;
+
+            // 计算选中的学生
+            const selectedIndex = Math.round(finalOffset / itemHeight);
+            const selectedStudent = students[selectedIndex].textContent;
+
+            await sleep(500);
+
+            // 显示结果
+            winnerDisplay.textContent = `🎉 幸运观众: ${selectedStudent} 🎉`;
+            winnerDisplay.classList.add('show');
+            winnerDisplay.style.animation = 'shake 0.5s ease-in-out';
+
+            createConfetti();
+
+            await sleep(1000);
+            button.disabled = false;
+            isSelecting = false;
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position: fixed;
+                    width: 10px;
+                    height: 10px;
+                    background: ${['#00ff88', '#00b8ff', '#ff0088'][Math.floor(Math.random() * 3)]};
+                    left: ${Math.random() * 100}vw;
+                    top: -10px;
+                    opacity: 1;
+                    pointer-events: none;
+                    transform: rotate(${Math.random() * 360}deg);
+                `;
+
+                document.body.appendChild(confetti);
+
+                const animation = confetti.animate([
+                    { transform: `translate(0, 0) rotate(0deg)`, opacity: 1 },
+                    { transform: `translate(${Math.random() * 100 - 50}px, ${window.innerHeight}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+                ], {
+                    duration: 1000 + Math.random() * 1000,
+                    easing: 'cubic-bezier(.37,0,.63,1)'
+                });
+
+                animation.onfinish = () => confetti.remove();
+            }
+        }
+    </script>
+</body>
+</html>

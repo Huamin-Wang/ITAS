@@ -142,19 +142,22 @@
                 margin-bottom: 15px;
             }
         }
-          /* 通用消息样式 */
+
+        /* 通用消息样式 */
         .alert {
             padding: 15px;
             margin-bottom: 20px;
             border: 1px solid transparent;
             border-radius: 4px;
         }
+
         /* 成功消息样式 */
         .alert-success {
             color: #3c763d;
             background-color: #dff0d8;
             border-color: #d6e9c6;
         }
+
         /* 错误消息样式 */
         .alert-registerError {
             color: #721c24;
@@ -166,20 +169,21 @@
 <body>
 
 <header>
-{% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
     {% endwith %}
     <a href="/teacher_profile" class="back-to-home">返回课程列表</a>
     <h1>{{ course.name }}</h1>
-     <p>课程代码：{{ course.code }}</p>
-    <p>应修学生人数：<strong><a href="/course_students/{{ course.id }}">{{ course.course_students|length }}</a></strong> 人</p>
-   <p>实际加入学生人数：<strong>{{ enrolled_students_count }}</strong> 人</p>
+    <p>课程代码：{{ course.code }}</p>
+    <p>应修学生人数：<strong><a href="/course_students/{{ course.id }}">{{ course.course_students|length }}</a></strong>
+        人</p>
+    <p>实际加入学生人数：<strong><a href="/course_students/{{ course.id }}">{{ enrolled_students_count }}</a></strong> 人</p>
 
     <div class="login-status">
         <span style="color: #2acb11;font-size: 30px">欢迎, {{ session["user_name"] }}老师！</span>
@@ -194,21 +198,31 @@
     </div>
 
     <div class="dashboard-grid">
-        <div  class="dashboard-card">
-             <h3>抢答</h3>
+        <div class="dashboard-card">
+            <h3>随机选</h3>
+            <p>随机选中一个学生回答问题</p>
+            <button onclick="location.href='/course/random_select/{{ course.id }}'">进入随机选管理</button>
+        </div>
+        <div class="dashboard-card">
+            <h3>发布抢答</h3>
             <p>课堂发布抢答</p>
-            <button onclick="location.href='/course/MATH101/quiz'">进入抢答管理</button>
-         </div>
+            <button onclick="location.href='/course/quiz'">进入抢答管理</button>
+        </div>
         <div class="dashboard-card">
             <h3>作业管理</h3>
             <p>发布、批改和管理作业。</p>
-            <button onclick="location.href='/course/MATH101/assignments'">进入作业管理</button>
+            <button onclick="location.href='/course/assignments'">进入作业管理</button>
         </div>
 
         <div class="dashboard-card">
+            <h3>作业管理</h3>
+            <p>发布、批改和管理作业。</p>
+            <button onclick="location.href='/course/assignments'">进入作业管理</button>
+        </div>
+        <div class="dashboard-card">
             <h3>成绩管理</h3>
             <p>录入和查看学生成绩。</p>
-            <button onclick="location.href='/course/MATH101/grades'">进入成绩管理</button>
+            <button onclick="location.href='/course/grades'">进入成绩管理</button>
         </div>
 
         <div class="dashboard-card">
@@ -222,11 +236,11 @@
             <p>上传和管理课程资源。</p>
             <button onclick="location.href='/course/MATH101/resources'">进入资源管理</button>
         </div>
-         <div  class="dashboard-card">
-             <h3>学生学习状况分析</h3>
+        <div class="dashboard-card">
+            <h3>学生学习状况分析</h3>
             <p>智能分析学生薄弱知识点,以便重点讲解</p>
             <button onclick="location.href='/course/MATH101/analysis'">进入分析</button>
-         </div>
+        </div>
 
     </div>
 
