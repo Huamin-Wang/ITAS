@@ -1,5 +1,7 @@
 # 忽略instance数据库文件
 instance
+.idea
+__pycache__
 
 
 
