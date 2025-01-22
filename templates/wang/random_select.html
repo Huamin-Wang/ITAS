@@ -207,16 +207,23 @@
             </div>
         </div>
 
-        <button class="random-button" onclick="startSelection()">开始随机挑选幸运儿</button>
+        <!-- 添加“停止滚动”按钮 -->
+        <div style="display: flex; justify-content: center; gap: 10px;">
+            <button class="random-button" onclick="startSelection()">开始随机挑选幸运儿</button>
+            <button class="random-button" id="stopButton" disabled>停止滚动</button>
+        </div>
         <div class="winner-announcement" id="winner"></div>
     </div>
 
     <script>
         const nameScroll = document.getElementById('nameScroll');
-        const button = document.querySelector('.random-button');
+        const startButton = document.querySelector('.random-button');
+        const stopButton = document.getElementById('stopButton');
         const winnerDisplay = document.getElementById('winner');
         const animationContainer = document.getElementById('animationContainer');
         let isSelecting = false;
+        let stopRequested = false;
+        let currentOffset = 0;
 
         // 复制名单使其循环显示
         nameScroll.innerHTML += nameScroll.innerHTML;
@@ -260,7 +267,9 @@
         async function startSelection() {
             if (isSelecting) return;
             isSelecting = true;
-            button.disabled = true;
+            stopRequested = false;
+            startButton.disabled = true;
+            stopButton.disabled = false;
             winnerDisplay.classList.remove('show');
 
             const students = document.querySelectorAll('.name-scroll div');
@@ -270,8 +279,9 @@
             // 快速滚动阶段
             let duration = 20;
             for (let i = 0; i < 30; i++) {
-                const randomOffset = getRandomInt(0, totalHeight);
-                nameScroll.style.transform = `translateY(-${randomOffset}px)`;
+                if (stopRequested) break;
+                currentOffset = getRandomInt(0, totalHeight);
+                nameScroll.style.transform = `translateY(-${currentOffset}px)`;
                 await sleep(duration);
                 duration += 1;
             }
@@ -279,15 +289,35 @@
             // 减速滚动阶段
             duration = 50;
             for (let i = 0; i < 20; i++) {
-                const randomOffset = getRandomInt(0, totalHeight);
-                nameScroll.style.transform = `translateY(-${randomOffset}px)`;
+                if (stopRequested) break;
+                currentOffset = getRandomInt(0, totalHeight);
+                nameScroll.style.transform = `translateY(-${currentOffset}px)`;
                 await sleep(duration);
                 duration += 30;
             }
 
-            // 最终选择
-            const finalOffset = getRandomInt(0, totalHeight);
-            const selectedIndex = Math.round(finalOffset / itemHeight);
+            // 如果手动停止，调用显示结果的逻辑
+            if (stopRequested) {
+                await showResult();
+            } else {
+                // 自动停止，调用显示结果的逻辑
+                await showResult();
+            }
+
+            await sleep(1000);
+            startButton.disabled = false;
+            stopButton.disabled = true;
+            isSelecting = false;
+        }
+
+        // 显示结果的逻辑
+        async function showResult() {
+            const students = document.querySelectorAll('.name-scroll div');
+            const itemHeight = 60; // 每个名字的高度
+            const totalHeight = students.length * itemHeight / 2; // 总高度除以2（因为我们复制了一份）
+
+            // 计算选中的名字
+            const selectedIndex = Math.round(currentOffset / itemHeight);
             const selectedStudent = students[selectedIndex];
             const studentId = selectedStudent.getAttribute('data-student-id'); // 获取学号
             const studentName = selectedStudent.textContent; // 获取姓名
@@ -301,15 +331,11 @@
             await sleep(500);
 
             // 显示结果（学号和姓名）
-            winnerDisplay.textContent = `🎉 幸运观众: ${studentId} - ${studentName} 🎉`;
+            winnerDisplay.textContent = `幸运观众: ${studentId} - ${studentName}`; // 修改为指定格式
             winnerDisplay.classList.add('show');
             winnerDisplay.style.animation = 'shake 0.5s ease-in-out';
 
             createConfetti();
-
-            await sleep(1000);
-            button.disabled = false;
-            isSelecting = false;
         }
 
         function createConfetti() {
@@ -340,6 +366,23 @@
                 animation.onfinish = () => confetti.remove();
             }
         }
+
+        // 按住停止按钮的逻辑
+        stopButton.addEventListener('mousedown', () => {
+            stopRequested = true;
+        });
+
+        stopButton.addEventListener('mouseup', () => {
+            stopRequested = true;
+        });
+
+        stopButton.addEventListener('touchstart', () => {
+            stopRequested = true;
+        });
+
+        stopButton.addEventListener('touchend', () => {
+            stopRequested = true;
+        });
     </script>
 </body>
 </html>
