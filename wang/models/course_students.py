@@ -7,7 +7,7 @@ class Course_Students(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
-    student_number = db.Column(db.String(20), nullable=False)
+    student_number = db.Column(db.String(20), nullable=False) #学号
     student_name = db.Column(db.String(20), nullable=False)
     student_pinyin_name = db.Column(db.String(20), nullable=True)
     student_grade = db.Column(db.String(20), nullable=True)

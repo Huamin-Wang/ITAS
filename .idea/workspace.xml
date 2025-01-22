@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4f2d7fa2-e8ea-454a-bd0b-e52f0dae3747" name="更改" comment="1.添加首页底部的备案信息">
-      <change afterPath="$PROJECT_DIR$/templates/wang/500.html" afterDir="false" />
+    <list default="true" id="4f2d7fa2-e8ea-454a-bd0b-e52f0dae3747" name="更改" comment="1.新增教师课程管理页面中的随机选中学生">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/wang/random_select.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/wang/random_select.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wang/models/course_students.py" beforeDir="false" afterPath="$PROJECT_DIR$/wang/models/course_students.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -177,7 +177,12 @@
       <workItem from="1737278296645" duration="2041000" />
       <workItem from="1737335182910" duration="699000" />
       <workItem from="1737336036976" duration="1542000" />
-      <workItem from="1737431117165" duration="541000" />
+      <workItem from="1737431117165" duration="621000" />
+      <workItem from="1737431831399" duration="219000" />
+      <workItem from="1737444327812" duration="6946000" />
+      <workItem from="1737467188277" duration="2646000" />
+      <workItem from="1737469881506" duration="2000" />
+      <workItem from="1737511065685" duration="2321000" />
     </task>
     <task id="LOCAL-00001" summary="增加注释">
       <option name="closed" value="true" />
@@ -347,7 +352,47 @@
       <option name="project" value="LOCAL" />
       <updated>1737335459093</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="1.添加超时自动清除用户信息&#10;2.添加500错误处理">
+      <option name="closed" value="true" />
+      <created>1737431701572</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1737431701572</updated>
+    </task>
+    <task id="LOCAL-00023" summary="1.添加屏蔽对 WordPress 相关路径的请求">
+      <option name="closed" value="true" />
+      <created>1737431920699</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1737431920699</updated>
+    </task>
+    <task id="LOCAL-00024" summary="1.合并之前两个版本的钩子函数">
+      <option name="closed" value="true" />
+      <created>1737432005607</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1737432005607</updated>
+    </task>
+    <task id="LOCAL-00025" summary="1.检查登录超时，设置为90分钟&#10;2.增加页面登录状态检查">
+      <option name="closed" value="true" />
+      <created>1737454711237</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1737454711237</updated>
+    </task>
+    <task id="LOCAL-00026" summary="1.新增教师课程管理页面中的随机选中学生">
+      <option name="closed" value="true" />
+      <created>1737469789697</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1737469789697</updated>
+    </task>
+    <option name="localTasksCounter" value="27" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -384,10 +429,15 @@
     <MESSAGE value="1.移除注册时检查学生名单&#10;2.美化界面" />
     <MESSAGE value="1.优化消息提醒" />
     <MESSAGE value="1.添加首页底部的备案信息" />
-    <option name="LAST_COMMIT_MESSAGE" value="1.添加首页底部的备案信息" />
+    <MESSAGE value="1.添加超时自动清除用户信息&#10;2.添加500错误处理" />
+    <MESSAGE value="1.添加屏蔽对 WordPress 相关路径的请求" />
+    <MESSAGE value="1.合并之前两个版本的钩子函数" />
+    <MESSAGE value="1.检查登录超时，设置为90分钟&#10;2.增加页面登录状态检查" />
+    <MESSAGE value="1.新增教师课程管理页面中的随机选中学生" />
+    <option name="LAST_COMMIT_MESSAGE" value="1.新增教师课程管理页面中的随机选中学生" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1737431535550" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1737514562295" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/$course_students.coverage" NAME="course_students 覆盖结果" MODIFIED="1737105390581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/models" />
     <SUITE FILE_PATH="coverage/$flaskProject1.coverage" NAME="flaskProject1 覆盖结果" MODIFIED="1737256970114" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/flaskProject1$flaskProject1.coverage" NAME="flaskProject1 覆盖结果" MODIFIED="1730965831022" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

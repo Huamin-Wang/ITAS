@@ -13,16 +13,20 @@
             min-height: 100vh;
             color: #fff;
             overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .container {
             width: 80%;
             max-width: 600px;
-            margin: 30px auto;
+            max-height: 90vh; /* 限制最大高度，避免超出屏幕 */
             padding: 20px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             backdrop-filter: blur(10px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            overflow-y: auto; /* 如果内容超出容器高度，允许滚动 */
         }
         h1 {
             color: #00ff88;
@@ -42,7 +46,7 @@
         }
 
         .name-scroll-container {
-            height: 60px;
+            height: 180px; /* 增加高度以显示更多名字 */
             position: relative;
             overflow: hidden;
             margin: 20px 0;
@@ -56,7 +60,7 @@
             right: 0;
             top: 50%;
             transform: translateY(-50%);
-            height: 60px;
+            height: 60px; /* 增加高度以突出显示更多名字 */
             background: linear-gradient(90deg,
                 transparent 0%,
                 rgba(0, 255, 136, 0.2) 20%,
@@ -75,9 +79,9 @@
         }
 
         .name-scroll div {
-            height: 60px;
-            line-height: 60px;
-            font-size: 24px;
+            height: 60px; /* 增加高度以显示更多名字 */
+            line-height: 60px; /* 增加行高以显示更多名字 */
+            font-size: 28px; /* 增加字体大小以显示更多名字 */
             font-weight: bold;
             white-space: nowrap;
             text-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
@@ -146,7 +150,8 @@
             <div class="highlight-zone"></div>
             <div class="name-scroll" id="nameScroll">
                 {% for student in course_students %}
-                <div>{{ student.student_name }}</div>
+
+                <div data-student-id="{{ student.student_number }}">{{ student.student_name }}</div>
                 {% endfor %}
             </div>
         </div>
@@ -202,16 +207,21 @@
 
             // 最终选择
             const finalOffset = getRandomInt(0, totalHeight);
-            nameScroll.style.transform = `translateY(-${finalOffset}px)`;
-
-            // 计算选中的学生
             const selectedIndex = Math.round(finalOffset / itemHeight);
-            const selectedStudent = students[selectedIndex].textContent;
+            const selectedStudent = students[selectedIndex];
+            const studentId = selectedStudent.getAttribute('data-student-id'); // 获取学号
+            const studentName = selectedStudent.textContent; // 获取姓名
+
+            // 将选中的名字对齐到 highlight-zone 的中间
+            const highlightZoneCenter = 90; // highlight-zone 的中间位置（180px / 2）
+            const selectedItemCenter = selectedIndex * itemHeight + itemHeight / 2;
+            const offsetToCenter = selectedItemCenter - highlightZoneCenter;
+            nameScroll.style.transform = `translateY(-${offsetToCenter}px)`;
 
             await sleep(500);
 
-            // 显示结果
-            winnerDisplay.textContent = `🎉 幸运观众: ${selectedStudent} 🎉`;
+            // 显示结果（学号和姓名）
+            winnerDisplay.textContent = `🎉 幸运观众: ${studentId} - ${studentName} 🎉`;
             winnerDisplay.classList.add('show');
             winnerDisplay.style.animation = 'shake 0.5s ease-in-out';
 
