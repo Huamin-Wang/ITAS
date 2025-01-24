@@ -69,17 +69,27 @@
         }
 
         .login-prompt {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            padding: 15px 30px;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 8px;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.15);
-            z-index: 2;
-        }
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    padding: 15px 30px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.15);
+    z-index: 2;
+}
+
+/* 适配手机屏幕 */
+@media (max-width: 768px) {
+    .login-prompt {
+        width: 90%; /* 让登录框占据屏幕宽度的90% */
+        max-width: 300px; /* 设置最大宽度，避免在大屏手机上过宽 */
+        padding: 10px 20px; /* 减少内边距 */
+        font-size: 14px; /* 调整字体大小 */
+    }
+}
 
         .login-prompt h2 {
             margin: 0;
