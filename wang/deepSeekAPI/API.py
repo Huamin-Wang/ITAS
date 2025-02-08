@@ -23,7 +23,9 @@ def get_answer(question: str):
     return response.choices[0].message.content
 
 # 测试
-if __name__ == "__main__":
+if __name__ == '__main__':
     question = "你是什麽大模型"
     answer = get_answer(question)
     print(answer)
+
+

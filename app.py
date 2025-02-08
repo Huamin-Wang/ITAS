@@ -1,6 +1,5 @@
 from zipfile import error
-
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session,abort
 from werkzeug.security import generate_password_hash
 
 import xie.chat as c
@@ -8,18 +7,49 @@ from wang.models import init_db
 from wang.models.course import Course
 from wang.models.course_students import Course_Students
 from wang.models.user import User
+from datetime import timedelta
 
+from flask_migrate import Migrate
 
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # 配置数据库
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
     # 初始化数据库
     db = init_db(app)
 
+
+    #超时自动清空session
+    @app.before_request
+    def before_request():
+        # 设置 session 超时时间
+        session.permanent = True
+        app.permanent_session_lifetime = timedelta(minutes=90)  # 设置 session 有效时间为 1 分钟
+
+        # 如果请求路径是恶意路径，则阻止访问
+        if request.path.startswith(('/wordpress', '/wp-admin')):
+            abort(403)  # 返回 403 Forbidden
+
+        # 登录状态检查，排除登录和注册页面
+        if 'user_id' not in session and request.endpoint not in ["index",'loginHandle', 'register', 'login']:
+            # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
+
+            return redirect(url_for('index'))
+
+    # 错误处理
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        print("500错误")
+        return render_template('wang/500.html'), 500
+
+        # 405错误处理
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        print("405")
+        return render_template('wang/500.html'), 500
     @app.errorhandler(404)
     def page_not_found(e):
         print("404")
@@ -35,6 +65,10 @@ def create_app():
             return render_template('index.html')
         else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
             return loginHandle()
+    @app.route('/index')
+    def index():
+        return hello_world()
+
 
     # 注册页面
     @app.route('/register', methods=['GET', 'POST'])
@@ -113,7 +147,7 @@ def create_app():
                 session['user_role'] = user.role
                 session['user_identifier'] = user.identifier
                 flash('登录成功！', 'success')
-                print("登录成功！")
+                print(f'{user.name}登录成功！')
             else:
                 print("用户名或密码错误！")
                 return render_template('wang/login.html', error='用户名或密码错误！')
@@ -177,13 +211,14 @@ def create_app():
     def teacher_profile():
         # 获取教师名下的课程
         user_id = session.get('user_id')
+        user_name = session.get('user_name')
         courses = Course.query.filter_by(teacher_id=user_id).all()
-        print(f"用户{user_id}正在查看自己的课程！")
+        print(f"用户{user_name}正在查看自己的课程列表！")
         print(courses)
         # 把课程传到前端
         return render_template('wang/teacher_profile.html', courses=courses)
 
-    # 创建新的课程
+    # 创建新的课程请求
     @app.route('/create_course')
     def create_course():
         # 获取用户数据
@@ -191,7 +226,7 @@ def create_app():
         print(f"{user_name}正在创建新的课程！")
         return render_template('wang/create_course.html')
 
-    # 处理创建课程的请求
+    # 创建新课程的处理
     @app.route('/create_course_handle', methods=['POST'])
     def create_course_handle():
         # 获取课程数据
@@ -265,7 +300,7 @@ def create_app():
             flash('学生名单导入失败！', 'danger')
             return redirect(url_for('create_course'))
 
-    # 课程管理
+    # 课程管理页面
     @app.route('/course_manage/<int:course_id>')
     def course_manage(course_id):
         course = Course.query.get(course_id)
@@ -279,13 +314,11 @@ def create_app():
         #     print(student.student_name)
         return render_template('wang/courseManager.html', course=course, course_students=course_students,
                                enrolled_students_count=enrolled_students_count)
-
-    # 显示该课程下的选课情况
+    # 课程管理页面：显示该课程下的选课情况：显示应选人数、已选人数、未选人数等信息
     @app.route('/course_students/<int:course_id>')
     def course_students(course_id):
         course = Course.query.get(course_id)
         course_students = course.course_students
-
         # 选课的学生名单
         enrolled_students = [student for student in course.course_students if student.course_status == 'enrolled']
         enrolled_students_count = len(
@@ -296,21 +329,31 @@ def create_app():
         return render_template('wang/course_students.html', course=course, course_students=course_students,
                                enrolled_students_count=enrolled_students_count, enrolled_students=enrolled_students,
                                not_enrolled_students=not_enrolled_students)
+   # 课程管理页面：随机选
+    @app.route('/course/random_select/<int:course_id>')
+    def random_select(course_id):
+        course = Course.query.get(course_id)
+        course_students = course.course_students
+        return render_template('wang/random_select.html', course=course, course_students=course_students)
 
     # 列出我们还需要实现的的功能
     @app.route('/fuctions')
     def fuctions():
         return render_template('wang/fuctions.html')
 
-    # 返回app
-    return app
+    # 返回app，db
+    return db,app
 
 
-if __name__ == '__main__':
-    app = create_app()  # 创建app
-    app.run(host='0.0.0.0', port=5000, debug=True)
-    # 0.0.0.0 表示监听所有可用的网络接口
-    # host='0.0.0.0' 允许外部访问
-    # port=5000 设置端口号
+
+
+
+db, app = create_app()  # 创建app
+migrate = Migrate(app, db)  # 创建迁移对象
+
+app.run(host='0.0.0.0', port=5000, debug=True)
+# 0.0.0.0 表示监听所有可用的网络接口
+# host='0.0.0.0' 允许外部访问
+# port=5000 设置端口号
 # 如果局域网无法访问用命令行打开：python -m flask run --host=0.0.0.0 --port=80  端口号可以自己设置
 # 但是这种方法无法使用debug模式 也就是说修改代码后不会自动重启

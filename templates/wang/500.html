@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>服务器错误</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #343a40;
+            padding: 10px 0;
+        }
+        header nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        header nav ul li {
+            margin: 0 15px;
+        }
+        header nav ul li a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+        }
+        main {
+            padding: 50px 20px;
+        }
+        .error-page {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .error-page h1 {
+            font-size: 100px;
+            margin: 0;
+        }
+        .error-page p {
+            font-size: 20px;
+            margin: 20px 0;
+        }
+        .error-page a {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        footer {
+            background-color: #343a40;
+            color: #fff;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li><a href="/register">注册</a></li>
+                <li><a href="/login">登录</a></li>
+                <li><a href="/chat">聊天</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section class="error-page">
+            <h1>500</h1>
+            <p>抱歉，服务器内部发生了错误<br>请稍后再试，或联系以下同学：<br>丘同学 QQ 2122651815<br>许同学 QQ 1754868015<br>谢同学 QQ 2091397225</p>
+            <a href="/">返回首页</a>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

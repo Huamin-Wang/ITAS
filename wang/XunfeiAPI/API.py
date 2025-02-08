@@ -1,4 +1,4 @@
-import wang.XunfeiAPI.SparkPythondemo as SparkPythondemo
+import SparkPythondemo
 
 
 # 控制台会自动把问题和回答打印出来，可连续问答    參數：问题 返回：答案
