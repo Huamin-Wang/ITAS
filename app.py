@@ -1,5 +1,4 @@
 from zipfile import error
-
 from flask import Flask, render_template, request, redirect, url_for, flash, session,abort
 from werkzeug.security import generate_password_hash
 
@@ -10,6 +9,7 @@ from wang.models.course_students import Course_Students
 from wang.models.user import User
 from datetime import timedelta
 
+from flask_migrate import Migrate
 
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
@@ -20,6 +20,8 @@ def create_app():
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
     # 初始化数据库
     db = init_db(app)
+
+
     #超时自动清空session
     @app.before_request
     def before_request():
@@ -339,15 +341,19 @@ def create_app():
     def fuctions():
         return render_template('wang/fuctions.html')
 
-    # 返回app
-    return app
+    # 返回app，db
+    return db,app
 
 
-if __name__ == '__main__':
-    app = create_app()  # 创建app
-    app.run(host='0.0.0.0', port=5000, debug=True)
-    # 0.0.0.0 表示监听所有可用的网络接口
-    # host='0.0.0.0' 允许外部访问
-    # port=5000 设置端口号
+
+
+
+db, app = create_app()  # 创建app
+migrate = Migrate(app, db)  # 创建迁移对象
+
+app.run(host='0.0.0.0', port=5000, debug=True)
+# 0.0.0.0 表示监听所有可用的网络接口
+# host='0.0.0.0' 允许外部访问
+# port=5000 设置端口号
 # 如果局域网无法访问用命令行打开：python -m flask run --host=0.0.0.0 --port=80  端口号可以自己设置
 # 但是这种方法无法使用debug模式 也就是说修改代码后不会自动重启
