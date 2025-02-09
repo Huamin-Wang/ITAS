@@ -341,17 +341,19 @@ def create_app():
         course_students = course.course_students
         # 前端已经把所有学生都加分了，这里只是把加分的数据在原基础上加上后存到数据库
         if request.method == 'POST':
+            session["scored_students"] = {}
             for student in course_students:
                 student_number = student.student_number#学号
                 score = request.form.get(f'score_{student_number}')
                 score = float(score)
-                print(f"学生{student.student_name}加的分数为：{score}")
-                print(f"学生{student.student_name}需要加的分数为：{score}")
+                # 记录下score非0的学生,存到session中
+                if score != 0:
+                  session["scored_students"][student.student_name] = score
                 if student.score is None:
                     student.score = 0
                 student.score = score+student.score
                 db.session.commit()
-            flash('分数添加成功！', 'success')
+            print(session.get("scored_students"))
             return redirect(url_for('add_score', course_id=course.id))
         print(f"学生{course.name}正在为学生加分！")
         return render_template('wang/add_score.html', course=course, course_students=course_students)
