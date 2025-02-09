@@ -21,6 +21,6 @@ class Course_Students(db.Model):
     course_status = db.Column(db.String(20), nullable=False, server_default='not_enrolled')
     # 添加分数表现字段
     
-    score = db.Column(db.Float, nullable=True)  # 假设分数为浮点数类型
+    score = db.Column(db.Float, nullable=True, server_default='0')  # 假设分数为浮点数类型
     # Relationship
     course = db.relationship('Course', back_populates='course_students')

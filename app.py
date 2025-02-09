@@ -189,19 +189,18 @@ def create_app():
 
             return render_template('wang/teacher_profile.html', courses=courses)
 
+    # 处理智能聊天请求
     @app.route('/chat')
     def chat():
         return render_template('xie/chat.html', conversation=c.conversation_history)
-
-    @app.route("/logout", methods=['GET'])
-    def logout():
-        session.clear()
-        return render_template('wang/login.html')
-
     @app.route('/chatHandle', methods=['POST'])
     def chatHandle():
         response = c.chat()
         return response
+    @app.route("/logout", methods=['GET'])
+    def logout():
+        session.clear()
+        return render_template('wang/login.html')
 
     @app.route('/student_profile')
     def student_profile():
@@ -335,7 +334,27 @@ def create_app():
         course = Course.query.get(course_id)
         course_students = course.course_students
         return render_template('wang/random_select.html', course=course, course_students=course_students)
-
+    # 学生加分处理
+    @app.route('/course/add_score/<int:course_id>', methods=['GET', 'POST'])
+    def add_score(course_id):
+        course = Course.query.get(course_id)
+        course_students = course.course_students
+        # 前端已经把所有学生都加分了，这里只是把加分的数据在原基础上加上后存到数据库
+        if request.method == 'POST':
+            for student in course_students:
+                student_number = student.student_number#学号
+                score = request.form.get(f'score_{student_number}')
+                score = float(score)
+                print(f"学生{student.student_name}加的分数为：{score}")
+                print(f"学生{student.student_name}需要加的分数为：{score}")
+                if student.score is None:
+                    student.score = 0
+                student.score = score+student.score
+                db.session.commit()
+            flash('分数添加成功！', 'success')
+            return redirect(url_for('add_score', course_id=course.id))
+        print(f"学生{course.name}正在为学生加分！")
+        return render_template('wang/add_score.html', course=course, course_students=course_students)
     # 列出我们还需要实现的的功能
     @app.route('/fuctions')
     def fuctions():
@@ -349,7 +368,7 @@ def create_app():
 
 
 db, app = create_app()  # 创建app
-migrate = Migrate(app, db)  # 创建迁移对象
+# migrate = Migrate(app, db)  # 添加数据库字段时，用来创建迁移对象
 
 app.run(host='0.0.0.0', port=5000, debug=True)
 # 0.0.0.0 表示监听所有可用的网络接口
