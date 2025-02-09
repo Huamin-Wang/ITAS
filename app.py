@@ -361,18 +361,24 @@ def create_app():
     @app.route('/fuctions')
     def fuctions():
         return render_template('wang/fuctions.html')
+    # 返回app
+    return app
+    #---迁移数据代码-----
+    # # 返回app，db
+    # return db,app
+    #---迁移数据代码-----
 
-    # 返回app，db
-    return db,app
 
 
-
-
-
-db, app = create_app()  # 创建app
+#---迁移数据代码-----
+# db, app = create_app()  # 创建app
 # migrate = Migrate(app, db)  # 添加数据库字段时，用来创建迁移对象
-
-app.run(host='0.0.0.0', port=5000, debug=True)
+# app.run(host='0.0.0.0', port=80, debug=True)
+# ！！！迁移时，请注释掉下述代码，否则会报错
+#---迁移数据代码-----
+if __name__ == '__main__':
+    app = create_app()  # 创建app
+    app.run(host='0.0.0.0', port=80, debug=True)
 # 0.0.0.0 表示监听所有可用的网络接口
 # host='0.0.0.0' 允许外部访问
 # port=5000 设置端口号
