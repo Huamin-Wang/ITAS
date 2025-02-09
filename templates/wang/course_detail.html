@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>课程详情</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: #1890ff;
+            margin-bottom: 20px;
+        }
+
+        .course-info {
+            margin-bottom: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .course-info p {
+            margin: 5px 0;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #1890ff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #eee;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f9f9f9;
+        }
+
+        .toggle-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #1890ff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .toggle-button:hover {
+            background-color: #0056b3;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>{{ course.name }}</h1>
+        <!-- 显示用户本课程的成绩。 -->
+        {% for student in course.course_students %}
+            {% if student.student_name == user_name %}
+                <p><strong>您目前的平时成绩：</strong>{{ student.score }}</p>
+            {% endif %}
+        {% endfor %}
+        {% for student in course.course_students|sort(attribute='score', reverse=True) %}
+            {% if student.student_name == user_name %}
+                <p><strong>您目前的平时成绩排名：</strong>{{ loop.index }}</p>
+            {% endif %}
+        {% endfor %}
+        <div class="course-info">
+            <p><strong>课程代码：</strong>{{ course.code }}</p>
+            <p><strong>教师：</strong>{{ course.teacher.name }}</p>
+            <p><strong>学期：</strong>{{ course.semester }}</p>
+            <p><strong>描述：</strong>{{ course.description }}</p>
+        </div>
+        <a href="/student_profile" class="back-button">返回</a>
+
+        <button class="toggle-button" onclick="toggleRankingTable()">查看所有学生平时成绩排名</button>
+        <table id="ranking-table" class="hidden">
+            <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>学生姓名</th>
+                    <th>平时成绩</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in course.course_students|sort(attribute='score', reverse=True) %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ student.student_name }}</td>
+                        <td>{{ student.score }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function toggleRankingTable() {
+            var table = document.getElementById('ranking-table');
+            table.classList.toggle('hidden');
+        }
+    </script>
+</body>
+
+</html>

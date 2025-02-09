@@ -205,7 +205,12 @@ def create_app():
     @app.route('/student_profile')
     def student_profile():
         return loginHandle()
-
+    # 学生课程详情页面
+    @app.route('/course_detail/<int:course_id>')
+    def course_detail(course_id):
+        course = Course.query.get(course_id)
+        user_name = session.get('user_name')
+        return render_template('wang/course_detail.html', course=course,user_name=user_name)
     @app.route('/teacher_profile')
     def teacher_profile():
         # 获取教师名下的课程

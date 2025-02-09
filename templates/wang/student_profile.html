@@ -193,7 +193,7 @@
                 <p>课程代码：{{ course.code }}</p>
                 <p>教师：{{ course.teacher.name }}</p>
 
-               <button onclick="location.href='/course_learn/{{ course.id }}'" style="background-color: #1890ff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease;">进入课程</button>
+               <button onclick="location.href='/course_detail/{{ course.id }}'" style="background-color: #1890ff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease;">进入课程</button>
             </div>
         {% endfor %}
     </div>
