@@ -213,6 +213,7 @@
             <button class="random-button" id="stopButton" disabled>停止滚动</button>
         </div>
         <div class="winner-announcement" id="winner"></div>
+        <button class="random-button" id="addScoreButton" style="display: none;" onclick="openAddScoreWindow()">给幸运观众加分</button>
     </div>
 
     <script>
@@ -220,6 +221,7 @@
         const startButton = document.querySelector('.random-button');
         const stopButton = document.getElementById('stopButton');
         const winnerDisplay = document.getElementById('winner');
+        const addScoreButton = document.getElementById('addScoreButton');
         const animationContainer = document.getElementById('animationContainer');
         let isSelecting = false;
         let stopRequested = false;
@@ -271,6 +273,7 @@
             startButton.disabled = true;
             stopButton.disabled = false;
             winnerDisplay.classList.remove('show');
+            addScoreButton.style.display = 'none'; // 隐藏加分按钮
 
             const students = document.querySelectorAll('.name-scroll div');
             const itemHeight = 60; // 每个名字的高度
@@ -335,6 +338,9 @@
             winnerDisplay.classList.add('show');
             winnerDisplay.style.animation = 'shake 0.5s ease-in-out';
 
+            // 显示加分按钮
+            addScoreButton.style.display = 'block';
+
             createConfetti();
         }
 
@@ -365,6 +371,15 @@
 
                 animation.onfinish = () => confetti.remove();
             }
+        }
+
+        // 打开加分页面的逻辑
+        function openAddScoreWindow() {
+            const width = 600;
+            const height = 400;
+            const left = (window.innerWidth - width) / 2;
+            const top = (window.innerHeight - height) / 2;
+            window.open(`/course/add_score/{{course.id}}`, 'AddScoreWindow', `width=${width},height=${height},left=${left},top=${top}`);
         }
 
         // 按住停止按钮的逻辑
