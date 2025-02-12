@@ -360,7 +360,7 @@ def create_app():
                 db.session.commit()
             print(session.get("scored_students"))
             return redirect(url_for('add_score', course_id=course.id))
-        print(f"学生{course.name}正在为学生加分！")
+        print(f"用户{course.name}正在为学生加分！")
         return render_template('wang/add_score.html', course=course, course_students=course_students)
     # 列出我们还需要实现的的功能
     @app.route('/fuctions')
@@ -371,19 +371,27 @@ def create_app():
     #---迁移数据代码-----
     # # 返回app，db
     # return db,app
-    #---迁移数据代码-----
 
-
-
-#---迁移数据代码-----
 # db, app = create_app()  # 创建app
 # migrate = Migrate(app, db)  # 添加数据库字段时，用来创建迁移对象
 # app.run(host='0.0.0.0', port=80, debug=True)
 # ！！！迁移时，请注释掉下述代码，否则会报错
 #---迁移数据代码-----
+
 if __name__ == '__main__':
     app = create_app()  # 创建app
     app.run(host='0.0.0.0', port=80, debug=True)
+    # ---服务器运行代码-----
+    # app.run(
+    #     host='0.0.0.0',
+    #     port=443,  # HTTPS 默认端口
+    #     ssl_context=(
+    #         'C:/Certbot/live/001ai.top/fullchain.pem',  # 证书路径
+    #         'C:/Certbot/live/001ai.top/privkey.pem'  # 私钥路径
+    #     )
+    # )
+
+
 # 0.0.0.0 表示监听所有可用的网络接口
 # host='0.0.0.0' 允许外部访问
 # port=5000 设置端口号
