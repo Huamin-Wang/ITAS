@@ -1,7 +1,7 @@
 from zipfile import error
 from flask import Flask, render_template, request, redirect, url_for, flash, session,abort
 from werkzeug.security import generate_password_hash
-
+from threading import Thread
 import xie.chat as c
 from wang.models import init_db
 from wang.models.course import Course
@@ -25,10 +25,10 @@ def create_app():
 
     @app.before_request
     def before_request():
-        # HTTP 请求转发到 HTTPS（服务器代码）
+        #HTTP 请求转发到 HTTPS（服务器代码）
         # if not request.is_secure:
         #     return redirect(request.url.replace("http://", "https://"), code=301)
-        # 超时自动清空session
+        #超时自动清空session
         # 设置 session 超时时间
         session.permanent = True
         app.permanent_session_lifetime = timedelta(minutes=90)  # 设置 session 有效时间为 90 分钟
@@ -382,41 +382,35 @@ def create_app():
 # ！！！迁移时，请注释掉下述代码，否则会报错
 #---迁移数据代码-----
 
+
+
+
 if __name__ == '__main__':
     app = create_app()  # 创建app
-    app.run(host='0.0.0.0', port=80, debug=True)
-    # ---服务器运行代码-----
-    # 在 80 端口监听 HTTP 请求
-    # http_server = make_server('0.0.0.0', 80, app)
-    #
-    # # 在 443 端口监听 HTTPS 请求
-    # https_server = make_server(
-    #     '0.0.0.0', 443, app,
-    #     ssl_context=('C:/Certbot/live/001ai.top/fullchain.pem', 'C:/Certbot/live/001ai.top/privkey.pem')
-    # )
-    #
-    # # 同时启动 HTTP 和 HTTPS 服务器
-    # from threading import Thread
-    #
-    #
-    # def run_http():
-    #     http_server.serve_forever()
-    #
-    #
-    # def run_https():
-    #     https_server.serve_forever()
-    #
-    #
-    # # 启动线程运行 HTTP 和 HTTPS
-    # http_thread = Thread(target=run_http)
-    # https_thread = Thread(target=run_https)
-    #
-    # http_thread.start()
-    # https_thread.start()
+    from werkzeug.serving import make_server
+    def run_http():
+        # 运行 HTTP 服务在 80 端口
+        http_server = make_server('0.0.0.0', 80, app)
+        http_server.serve_forever()
 
+    # def run_https():
+    #     # 运行 HTTPS 服务在 443 端口
+    #     https_server = make_server(
+    #         '0.0.0.0', 443, app,
+    #         ssl_context=('C:/Certbot/live/001ai.top/fullchain.pem', 'C:/Certbot/live/001ai.top/privkey.pem')  # SSL 证书路径
+    #     )
+    #     https_server.serve_forever()
+    # 启动线程运行 HTTP 和 HTTPS
+
+
+    http_thread = Thread(target=run_http)
+    # https_thread = Thread(target=run_https)
+
+    http_thread.start()
+    # https_thread.start()
+    print('HTTP 服务已启动！')
 
 # 0.0.0.0 表示监听所有可用的网络接口
 # host='0.0.0.0' 允许外部访问
 # port=5000 设置端口号
-# 如果局域网无法访问用命令行打开：python -m flask run --host=0.0.0.0 --port=80  端口号可以自己设置
 # 但是这种方法无法使用debug模式 也就是说修改代码后不会自动重启
