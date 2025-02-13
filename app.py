@@ -26,8 +26,8 @@ def create_app():
     @app.before_request
     def before_request():
         #----HTTP 请求转发到 HTTPS（服务器代码）------
-        # if not request.is_secure:
-        #     return redirect(request.url.replace("http://", "https://"), code=301)
+        if not request.is_secure:
+            return redirect(request.url.replace("http://", "https://"), code=301)
         #超时自动清空session
         # 设置 session 超时时间
         session.permanent = True
@@ -392,21 +392,21 @@ if __name__ == '__main__':
         http_server = make_server('0.0.0.0', 80, app)
         http_server.serve_forever()
     #---- 服务器代码------
-    # def run_https():
-    #     # 运行 HTTPS 服务在 443 端口
-    #     https_server = make_server(
-    #         '0.0.0.0', 443, app,
-    #         ssl_context=('C:/Certbot/live/001ai.top/fullchain.pem', 'C:/Certbot/live/001ai.top/privkey.pem')  # SSL 证书路径
-    #     )
-    #     https_server.serve_forever()
+    def run_https():
+        # 运行 HTTPS 服务在 443 端口
+        https_server = make_server(
+            '0.0.0.0', 443, app,
+            ssl_context=('C:/Certbot/live/001ai.top/fullchain.pem', 'C:/Certbot/live/001ai.top/privkey.pem')  # SSL 证书路径
+        )
+        https_server.serve_forever()
     # 启动线程运行 HTTP 和 HTTPS
 
 
     http_thread = Thread(target=run_http)
-    # https_thread = Thread(target=run_https)
+    https_thread = Thread(target=run_https)
 
     http_thread.start()
-    # https_thread.start()
+    https_thread.start()
     print('HTTP 服务已启动！')
 
 # 0.0.0.0 表示监听所有可用的网络接口
