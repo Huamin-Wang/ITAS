@@ -189,9 +189,13 @@ def chat():
     t=threading.Thread(target=thread_run)
     t.start()
     t.join()
+    #print(f"ai_response: {ai_response}")
         # 返回该IP地址的对话历史
     return jsonify({
         "response": ai_response,
         "format": format_type,
         "conversation": conversation_history[ip_address]
     })
+
+
+

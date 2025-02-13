@@ -25,7 +25,7 @@ def create_app():
 
     @app.before_request
     def before_request():
-        #HTTP 请求转发到 HTTPS（服务器代码）
+        #----HTTP 请求转发到 HTTPS（服务器代码）------
         # if not request.is_secure:
         #     return redirect(request.url.replace("http://", "https://"), code=301)
         #超时自动清空session
@@ -40,7 +40,6 @@ def create_app():
         # 登录状态检查，排除登录和注册页面
         if 'user_id' not in session and request.endpoint not in ["index",'loginHandle', 'register', 'login']:
             # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
-
             return redirect(url_for('index'))
 
     # 错误处理
@@ -392,7 +391,7 @@ if __name__ == '__main__':
         # 运行 HTTP 服务在 80 端口
         http_server = make_server('0.0.0.0', 80, app)
         http_server.serve_forever()
-
+    #---- 服务器代码------
     # def run_https():
     #     # 运行 HTTPS 服务在 443 端口
     #     https_server = make_server(
