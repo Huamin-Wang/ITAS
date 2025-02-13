@@ -1,6 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
 
-print("导入了wang/models模块！")
 
 db = SQLAlchemy()
 
