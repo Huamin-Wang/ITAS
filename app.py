@@ -8,8 +8,10 @@ from wang.models.course import Course
 from wang.models.course_students import Course_Students
 from wang.models.user import User
 from datetime import timedelta
-
+import os
 from flask_migrate import Migrate
+# 获取环境变量的值，如果没有设置则默认为 'development'
+environment = os.getenv('FLASK_ENV', 'development')
 
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
@@ -22,12 +24,13 @@ def create_app():
     db = init_db(app)
 
 
-
     @app.before_request
     def before_request():
         #----HTTP 请求转发到 HTTPS（服务器代码）------
-        if not request.is_secure:
-            return redirect(request.url.replace("http://", "https://"), code=301)
+        # production 环境下，如果请求不是 HTTPS 请求，则重定向到 HTTPS 请求
+        if environment == 'production' :
+            if not request.is_secure:
+                return redirect(request.url.replace("http://", "https://"), code=301)
         #超时自动清空session
         # 设置 session 超时时间
         session.permanent = True
@@ -387,27 +390,33 @@ def create_app():
 if __name__ == '__main__':
     app = create_app()  # 创建app
     from werkzeug.serving import make_server
+    #打印环境，如果是production环境则启动https服务
+    print(f'环境：{environment}')
     def run_http():
         # 运行 HTTP 服务在 80 端口
         http_server = make_server('0.0.0.0', 80, app)
         http_server.serve_forever()
     #---- 服务器代码------
-    def run_https():
-        # 运行 HTTPS 服务在 443 端口
-        https_server = make_server(
-            '0.0.0.0', 443, app,
-            ssl_context=('C:/Certbot/live/001ai.top/fullchain.pem', 'C:/Certbot/live/001ai.top/privkey.pem')  # SSL 证书路径
-        )
-        https_server.serve_forever()
+    if environment == 'production':
+        def run_https():
+            # 运行 HTTPS 服务在 443 端口
+            https_server = make_server(
+                '0.0.0.0', 443, app,
+                ssl_context=('C:/Certbot/live/001ai.top/fullchain.pem', 'C:/Certbot/live/001ai.top/privkey.pem')
+                # SSL 证书路径
+            )
+            https_server.serve_forever()
+
     # 启动线程运行 HTTP 和 HTTPS
-
-
     http_thread = Thread(target=run_http)
-    https_thread = Thread(target=run_https)
+    if environment == 'production':
+        https_thread = Thread(target=run_https)
 
     http_thread.start()
-    https_thread.start()
+    if environment == 'production':
+        https_thread.start()
     print('HTTP 服务已启动！')
+    print("http://127.0.0.1:80")
 
 # 0.0.0.0 表示监听所有可用的网络接口
 # host='0.0.0.0' 允许外部访问
