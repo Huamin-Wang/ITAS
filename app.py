@@ -10,9 +10,11 @@ from wang.models.user import User
 from datetime import timedelta
 import os
 from flask_migrate import Migrate
+
 # 获取环境变量的值，如果没有设置则默认为 'development'
 environment = os.getenv('FLASK_ENV', 'development')
-
+if "production" in environment:
+    environment= 'production'
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
@@ -28,8 +30,9 @@ def create_app():
     def before_request():
         #----HTTP 请求转发到 HTTPS（服务器代码）------
         # production 环境下，如果请求不是 HTTPS 请求，则重定向到 HTTPS 请求
-        if environment == 'production' :
+        if environment== 'production' :
             if not request.is_secure:
+                print("请求不是HTTPS请求，重定向到HTTPS")
                 return redirect(request.url.replace("http://", "https://"), code=301)
         #超时自动清空session
         # 设置 session 超时时间
@@ -381,44 +384,76 @@ def create_app():
 # db, app = create_app()  # 创建app
 # migrate = Migrate(app, db)  # 添加数据库字段时，用来创建迁移对象
 # app.run(host='0.0.0.0', port=80, debug=True)
-# ！！！迁移时，请注释掉下述代码，否则会报错
+# ！！！迁移时，请注释掉下述代码if __name__ == '__main__':，否则会报错
 #---迁移数据代码-----
 
 
 
 
+import socket
+import ssl
+
+from waitress import serve
 if __name__ == '__main__':
-    app = create_app()  # 创建app
-    from werkzeug.serving import make_server
-    #打印环境，如果是production环境则启动https服务
-    print(f'环境：{environment}')
-    def run_http():
-        # 运行 HTTP 服务在 80 端口
-        http_server = make_server('0.0.0.0', 80, app)
-        http_server.serve_forever()
-    #---- 服务器代码------
-    if environment == 'production':
-        def run_https():
-            # 运行 HTTPS 服务在 443 端口
-            https_server = make_server(
-                '0.0.0.0', 443, app,
-                ssl_context=('C:/Certbot/live/001ai.top/fullchain.pem', 'C:/Certbot/live/001ai.top/privkey.pem')
-                # SSL 证书路径
-            )
-            https_server.serve_forever()
+    app = create_app()  # 创建 app
 
-    # 启动线程运行 HTTP 和 HTTPS
-    http_thread = Thread(target=run_http)
     if environment == 'production':
-        https_thread = Thread(target=run_https)
+        print('Starting production server with Waitress...')
+        # 配置 SSL 证书路径
+        certfile = 'C:/Certbot/live/001ai.top/fullchain.pem'
+        keyfile = 'C:/Certbot/live/001ai.top/privkey.pem'
 
-    http_thread.start()
-    if environment == 'production':
-        https_thread.start()
-    print('HTTP 服务已启动！')
-    print("http://127.0.0.1:80")
+        try:
+            # 创建 HTTPS 套接字
+            https_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            https_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            https_sock.bind(('0.0.0.0', 443))
+            https_sock.listen(5)
 
-# 0.0.0.0 表示监听所有可用的网络接口
-# host='0.0.0.0' 允许外部访问
-# port=5000 设置端口号
-# 但是这种方法无法使用debug模式 也就是说修改代码后不会自动重启
+            # 创建 SSL 上下文
+            context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+            context.load_cert_chain(certfile=certfile, keyfile=keyfile)
+
+            # 将普通套接字包装成 SSL 套接字
+            ssl_sock = context.wrap_socket(https_sock, server_side=True)
+
+            # 启动 HTTPS 服务器
+            def run_https_server():
+                serve(app, sockets=[ssl_sock], url_scheme='https')
+
+            # 创建一个简单的 Flask 应用用于处理 HTTP 重定向
+            redirect_app = Flask(__name__)
+
+            @redirect_app.route('/', defaults={'path': ''})
+            @redirect_app.route('/<path:path>')
+            def redirect_to_https(path):
+                return redirect(f'https://{request.host}{request.path}', code=301)
+
+            # 创建 HTTP 套接字
+            http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            http_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            http_sock.bind(('0.0.0.0', 80))
+            http_sock.listen(5)
+
+            # 启动 HTTP 重定向服务器
+            def run_http_server():
+                serve(redirect_app, sockets=[http_sock])
+
+            # 分别在不同线程中启动 HTTP 和 HTTPS 服务器
+            from threading import Thread
+            https_thread = Thread(target=run_https_server)
+            http_thread = Thread(target=run_http_server)
+
+            https_thread.start()
+            http_thread.start()
+
+            print('Production server is running. You can access the application at:')
+            print('https://www.001ai.top')
+        except Exception as e:
+            print(f"An error occurred while starting the server: {e}")
+    else:
+        print('Starting development server with Waitress...')
+        print('Development server is running. You can access the application at:')
+        print('http://127.0.0.1')
+        print('or from other devices on the local network ')
+        serve(app, host='0.0.0.0', port=80)
