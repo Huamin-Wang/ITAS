@@ -120,7 +120,7 @@ def create_app():
             return redirect(url_for('register'))
 
         if User.query.filter_by(identifier=identifier).first():
-            flash('学号已存在！', 'danger')
+            flash('学号已存在！如您本人未注册,请联系教师检查是否有人误注册！', 'danger')
             return redirect(url_for('register'))
 
         # 创建新用户
@@ -414,28 +414,48 @@ import socket
 import ssl
 
 from waitress import serve
+logger = logging.getLogger(__name__)
+
+def start_server(target, *args, **kwargs):
+    """ 启动服务器，并在异常时重试 """
+    while True:
+        try:
+            logger.info("服务器启动中...")
+            target(*args, **kwargs)
+        except ConnectionResetError:
+            logger.error("连接被重置，正在重试...")
+        except socket.error as e:
+            logger.error(f"发生套接字错误: {e}")
+        except Exception as e:
+            logger.error(f"服务器发生未知错误: {e}")
+
+        logger.info("等待 5 秒后重新启动服务器...")
+        time.sleep(5)
+
 if __name__ == '__main__':
     app = create_app()
 
     if environment == 'production':
         logger.info('Starting production server with Waitress...')
         try:
-            # SSL配置
-            ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-            ssl_context.load_cert_chain(
+            # 创建并配置 SSL 上下文，强制使用 TLS 1.2+
+            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            context.minimum_version = ssl.TLSVersion.TLSv1_2  # 强制使用 TLS 1.2+
+            context.check_hostname = False                 # 可选：关闭主机名检查
+            context.verify_mode = ssl.CERT_NONE              # 测试环境下关闭客户端证书验证
+            context.load_cert_chain(
                 certfile='C:/Certbot/live/001ai.top/fullchain.pem',
                 keyfile='C:/Certbot/live/001ai.top/privkey.pem'
             )
-            ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
 
-            # 创建HTTPS服务器
+            # HTTPS 服务器：创建并监听 443 端口
             https_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             https_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             https_sock.bind(('0.0.0.0', 443))
             https_sock.listen(5)
-            ssl_sock = ssl_context.wrap_socket(https_sock, server_side=True)
+            ssl_sock = context.wrap_socket(https_sock, server_side=True)
 
-            # HTTP重定向服务器
+            # HTTP 重定向服务器：将 80 端口请求重定向至 HTTPS
             redirect_app = Flask(__name__)
             @redirect_app.route('/', defaults={'path': ''})
             @redirect_app.route('/<path:path>')
@@ -447,13 +467,15 @@ if __name__ == '__main__':
             http_sock.bind(('0.0.0.0', 80))
             http_sock.listen(5)
 
-            # 启动服务器
-            Thread(target=lambda: serve(app, sockets=[ssl_sock], url_scheme='https')).start()
-            Thread(target=lambda: serve(redirect_app, sockets=[http_sock])).start()
+            # 分别启动 HTTPS 服务器和 HTTP 重定向服务器
+            Thread(target=start_server, args=(serve, app), kwargs={'sockets': [ssl_sock], 'url_scheme': 'https'}).start()
+            Thread(target=start_server, args=(serve, redirect_app), kwargs={'sockets': [http_sock]}).start()
 
             logger.info('Production server is running at https://www.001ai.top')
         except Exception as e:
             logger.error(f"服务器启动失败: {str(e)}")
+
     else:
         logger.info('Starting development server with Waitress...')
-        serve(app, host='0.0.0.0', port=80)
+        start_server(serve, app, host='0.0.0.0', port=80)
+
