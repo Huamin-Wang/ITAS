@@ -413,7 +413,10 @@ if __name__ == '__main__':
             # 创建 SSL 上下文
             context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
             context.load_cert_chain(certfile=certfile, keyfile=keyfile)
-
+            # 禁用旧的、不安全的协议版本
+            context.minimum_version = ssl.TLSVersion.TLSv1_2
+            # 禁用 TLS 1.3，避免 "bad key share" 错误
+            context.options |= ssl.OP_NO_TLSv1_3
             # 将普通套接字包装成 SSL 套接字
             ssl_sock = context.wrap_socket(https_sock, server_side=True)
 
