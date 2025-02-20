@@ -415,8 +415,8 @@ if __name__ == '__main__':
             context.load_cert_chain(certfile=certfile, keyfile=keyfile)
             # 禁用旧的、不安全的协议版本
             context.minimum_version = ssl.TLSVersion.TLSv1_2
-            # 禁用 TLS 1.3，避免 "bad key share" 错误
-            context.options |= ssl.OP_NO_TLSv1_3
+            # 降低安全等级，让更多密码套件可用（包括 TLS 1.3 下的一些算法）
+            context.set_ciphers("DEFAULT:@SECLEVEL=1")
             # 将普通套接字包装成 SSL 套接字
             ssl_sock = context.wrap_socket(https_sock, server_side=True)
 
