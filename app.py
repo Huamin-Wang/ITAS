@@ -422,12 +422,16 @@ if __name__ == '__main__':
 
             # 启动 HTTPS 服务器
             def run_https_server():
+
                 try:
                     serve(app, sockets=[ssl_sock], url_scheme='https')
                 except ssl.SSLEOFError as e:
                     print(f"SSL EOF error occurred: {e}. Continuing to handle other requests...")
                 except Exception as e:
                     print(f"An unexpected error occurred in HTTPS server: {e}")
+
+                serve(app, sockets=[ssl_sock], url_scheme='https')
+
 
             # 创建一个简单的 Flask 应用用于处理 HTTP 重定向
             redirect_app = Flask(__name__)
@@ -445,10 +449,14 @@ if __name__ == '__main__':
 
             # 启动 HTTP 重定向服务器
             def run_http_server():
+
                 try:
                     serve(redirect_app, sockets=[http_sock])
                 except Exception as e:
                     print(f"An unexpected error occurred in HTTP server: {e}")
+
+                serve(redirect_app, sockets=[http_sock])
+
 
             # 分别在不同线程中启动 HTTP 和 HTTPS 服务器
             from threading import Thread
