@@ -1,5 +1,5 @@
 from zipfile import error
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, session,abort
 from werkzeug.security import generate_password_hash
 from threading import Thread
 import xie.chat as c
@@ -10,143 +10,123 @@ from wang.models.user import User
 from datetime import timedelta
 import os
 from flask_migrate import Migrate
-import logging
-from functools import wraps
-import csv
-import io
-import chardet
-import socket
-import ssl
-from waitress import serve
 
-# 配置日志
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# 环境配置
+# 获取环境变量的值，如果没有设置则默认为 'development'
 environment = os.getenv('FLASK_ENV', 'development')
 if "production" in environment:
-    environment = 'production'
-
-
-# 登录验证装饰器
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('index'))
-        return f(*args, **kwargs)
-
-    return decorated_function
-
-
+    environment= 'production'
+# ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
+# 所有的路由处理函数都放到create_app()函数中
 def create_app():
     app = Flask(__name__)
-    app.config.update(
-        SQLALCHEMY_DATABASE_URI='sqlite:///test1.db',
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SECRET_KEY='your_secret_key_here',
-        PERMANENT_SESSION_LIFETIME=timedelta(minutes=90)
-    )
-
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
     # 初始化数据库
     db = init_db(app)
 
+
     @app.before_request
     def before_request():
-        # HTTPS重定向
-        if environment == 'production' and not request.is_secure:
-            logger.info("重定向到HTTPS")
-            return redirect(request.url.replace("http://", "https://"), code=301)
-
-        # Session管理
+        #----HTTP 请求转发到 HTTPS（服务器代码）------
+        # production 环境下，如果请求不是 HTTPS 请求，则重定向到 HTTPS 请求
+        if environment== 'production' :
+            if not request.is_secure:
+                print("请求不是HTTPS请求，重定向到HTTPS")
+                return redirect(request.url.replace("http://", "https://"), code=301)
+        #超时自动清空session
+        # 设置 session 超时时间
         session.permanent = True
+        app.permanent_session_lifetime = timedelta(minutes=90)  # 设置 session 有效时间为 90 分钟
 
-        # 安全检查
+        # 如果请求路径是恶意路径，则阻止访问
         if request.path.startswith(('/wordpress', '/wp-admin')):
-            logger.warning(f"检测到可疑请求: {request.path}")
-            abort(403)
+            abort(403)  # 返回 403 Forbidden
 
-        # 登录检查
-        public_endpoints = ["index", 'loginHandle', 'register', 'login']
-        if 'user_id' not in session and request.endpoint not in public_endpoints:
+        # 登录状态检查，排除登录和注册页面
+        if 'user_id' not in session and request.endpoint not in ["index",'loginHandle', 'register', 'login']:
+            # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
             return redirect(url_for('index'))
 
-    # 统一错误处理
-    def handle_error(e, status_code):
-        logger.error(f"发生错误: {status_code} - {str(e)}")
-        template = 'wang/500.html' if status_code == 500 else 'wang/404.html'
-        return render_template(template), status_code
+    # 错误处理
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        print("500错误")
+        return render_template('wang/500.html'), 500
 
-    for error_code in [404, 405, 500]:
-        app.errorhandler(error_code)(lambda e, code=error_code: handle_error(e, code))
+        # 405错误处理
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        print("405")
+        return render_template('wang/500.html'), 500
+    @app.errorhandler(404)
+    def page_not_found(e):
+        print("404")
+        return render_template('wang/404.html'), 404
 
+    # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
+
+    # 首页
     @app.route('/')
     def hello_world():
-        return render_template('index.html') if not session.get("logged_in") else loginHandle()
-
+        # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，返回登录页面
+        if "logged_in" not in session or session["logged_in"] == False:
+            return render_template('index.html')
+        else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
+            return loginHandle()
     @app.route('/index')
     def index():
         return hello_world()
 
+
+    # 注册页面
     @app.route('/register', methods=['GET', 'POST'])
     def register():
-        if session.get("logged_in"):
-            flash('您已注册过了！如需重新注册，请先登出！', 'registerError')
+        # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，才能注册
+        if "logged_in" not in session or session["logged_in"] == False:
+            if request.method == 'POST':
+                identifier = request.form.get('identifier')  # 学号
+                # 将学号统一转成大写
+                identifier = identifier.upper()
+                role = request.form.get('role')
+                name = request.form.get('name')
+                email = request.form.get('email')
+                password = request.form.get('password')
+                confirm_password = request.form.get('confirm_password')
+                # 检查密码是否一致
+                if password != confirm_password:
+                    flash('密码不一致！', 'danger')
+                    return redirect(url_for('register'))
+                # 检查邮箱是否已存在
+                existing_user = User.query.filter_by(email=email).first()
+                if existing_user:
+                    flash('邮箱已存在！', 'danger')
+                    return redirect(url_for('register'))  # 重定向到注册页面
+                # 检查学号是否已存在
+                existing_user = User.query.filter_by(identifier=identifier).first()
+                if existing_user:
+                    flash('学号已存在！', 'danger')
+                    return redirect(url_for('register'))
+
+                password_hash = generate_password_hash(password)
+                user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
+                db.session.add(user)
+                db.session.commit()
+                # 注册成功后cookie保存用户信息
+                session['user_id'] = user.id
+                session['user_name'] = user.name
+                session['user_role'] = user.role
+                session['user_identifier'] = user.identifier
+                # 在session中保存登录状态，已供全局使用
+                session["logged_in"] = True
+                print("注册成功！")
+                flash('注册成功，您已登录！', 'success')
+                return render_template('index.html')
+            return render_template('wang/register.html')
+        else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
+            # 提示已经注册过了
+            flash('您已注册过了！如需重新注册，请先退出！', 'registerError')
             return loginHandle()
-
-        if request.method == 'POST':
-            try:
-                return handle_registration()
-            except Exception as e:
-                logger.error(f"注册失败: {str(e)}")
-                flash('注册失败，请稍后重试', 'danger')
-                return redirect(url_for('register'))
-
-        return render_template('wang/register.html')
-
-    def handle_registration():
-        form_data = request.form
-        identifier = form_data.get('identifier').upper()
-
-        # 验证表单数据
-        if form_data.get('password') != form_data.get('confirm_password'):
-            flash('密码不一致！', 'danger')
-            return redirect(url_for('register'))
-
-        # 检查用户是否存在
-        if User.query.filter(User.email == form_data.get('email')).first():
-            flash('邮箱已存在！', 'danger')
-            return redirect(url_for('register'))
-
-        if User.query.filter_by(identifier=identifier).first():
-            flash('学号已存在！', 'danger')
-            return redirect(url_for('register'))
-
-        # 创建新用户
-        user = User(
-            identifier=identifier,
-            role=form_data.get('role'),
-            name=form_data.get('name'),
-            email=form_data.get('email'),
-            password=generate_password_hash(form_data.get('password'))
-        )
-
-        db.session.add(user)
-        db.session.commit()
-
-        # 设置session
-        session.update({
-            'user_id': user.id,
-            'user_name': user.name,
-            'user_role': user.role,
-            'user_identifier': user.identifier,
-            'logged_in': True
-        })
-
-        logger.info(f"用户注册成功: {user.name}")
-        flash('注册成功，您已登录！', 'success')
-        return render_template('index.html')
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
@@ -415,45 +395,76 @@ import ssl
 
 from waitress import serve
 if __name__ == '__main__':
-    app = create_app()
+    app = create_app()  # 创建 app
 
     if environment == 'production':
-        logger.info('Starting production server with Waitress...')
-        try:
-            # SSL配置
-            ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-            ssl_context.load_cert_chain(
-                certfile='C:/Certbot/live/001ai.top/fullchain.pem',
-                keyfile='C:/Certbot/live/001ai.top/privkey.pem'
-            )
-            ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
+        print('Starting production server with Waitress...')
+        # 配置 SSL 证书路径
+        certfile = 'C:/Certbot/live/001ai.top/fullchain.pem'
+        keyfile = 'C:/Certbot/live/001ai.top/privkey.pem'
 
-            # 创建HTTPS服务器
+        try:
+            # 创建 HTTPS 套接字
             https_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             https_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             https_sock.bind(('0.0.0.0', 443))
             https_sock.listen(5)
-            ssl_sock = ssl_context.wrap_socket(https_sock, server_side=True)
 
-            # HTTP重定向服务器
+            # 创建 SSL 上下文
+            context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+            context.load_cert_chain(certfile=certfile, keyfile=keyfile)
+            # 禁用旧的、不安全的协议版本
+            context.minimum_version = ssl.TLSVersion.TLSv1_2
+            # 降低安全等级，让更多密码套件可用（包括 TLS 1.3 下的一些算法）
+            context.set_ciphers("DEFAULT:@SECLEVEL=1")
+            # 将普通套接字包装成 SSL 套接字
+            ssl_sock = context.wrap_socket(https_sock, server_side=True)
+
+            # 启动 HTTPS 服务器
+            def run_https_server():
+                try:
+                    serve(app, sockets=[ssl_sock], url_scheme='https')
+                except ssl.SSLEOFError as e:
+                    print(f"SSL EOF error occurred: {e}. Continuing to handle other requests...")
+                except Exception as e:
+                    print(f"An unexpected error occurred in HTTPS server: {e}")
+
+            # 创建一个简单的 Flask 应用用于处理 HTTP 重定向
             redirect_app = Flask(__name__)
+
             @redirect_app.route('/', defaults={'path': ''})
             @redirect_app.route('/<path:path>')
             def redirect_to_https(path):
                 return redirect(f'https://{request.host}{request.path}', code=301)
 
+            # 创建 HTTP 套接字
             http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             http_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             http_sock.bind(('0.0.0.0', 80))
             http_sock.listen(5)
 
-            # 启动服务器
-            Thread(target=lambda: serve(app, sockets=[ssl_sock], url_scheme='https')).start()
-            Thread(target=lambda: serve(redirect_app, sockets=[http_sock])).start()
+            # 启动 HTTP 重定向服务器
+            def run_http_server():
+                try:
+                    serve(redirect_app, sockets=[http_sock])
+                except Exception as e:
+                    print(f"An unexpected error occurred in HTTP server: {e}")
 
-            logger.info('Production server is running at https://www.001ai.top')
+            # 分别在不同线程中启动 HTTP 和 HTTPS 服务器
+            from threading import Thread
+            https_thread = Thread(target=run_https_server)
+            http_thread = Thread(target=run_http_server)
+
+            https_thread.start()
+            http_thread.start()
+
+            print('Production server is running. You can access the application at:')
+            print('https://www.001ai.top')
         except Exception as e:
-            logger.error(f"服务器启动失败: {str(e)}")
+            print(f"An error occurred while starting the server: {e}")
     else:
-        logger.info('Starting development server with Waitress...')
+        print('Starting development server with Waitress...')
+        print('Development server is running. You can access the application at:')
+        print('http://127.0.0.1')
+        print('or from other devices on the local network ')
         serve(app, host='0.0.0.0', port=80)
