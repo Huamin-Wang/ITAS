@@ -104,14 +104,38 @@
         .icon {
             margin-right: 8px;
         }
+         .back-home {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            padding: 0.4rem 1rem;
+            background-color: #4299e1;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 200;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.1);
+            z-index: 1000;
+        }
+
+        .back-home:hover {
+            background-color: #2acb11;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
+        }
+
     </style>
 </head>
 <body>
+<a href="/course_manage/{{course.id}}" class="back-home">返回课程</a>
     <div class="container">
         <!-- 课程信息 -->
         <h1><i class="fas fa-book-open icon"></i>课程: {{ course.name }}</h1>
         <p class="course-info"><i class="fas fa-info-circle icon"></i>课程代码: {{ course.code }}</p>
-
+        <!--/* 重新上传学生名单，以新名单为准 */-->
+       <button onclick="window.location.href='/update_course/{{ course.id }}';">更新教务系统学生名单</button>
         <!-- 已选课学生名单 -->
         <h2><i class="fas fa-users icon"></i>已注册账号学生名单</h2>
         <p class="count"><i class="fas fa-check-circle icon"></i>已注册学生数量: {{ enrolled_students_count }}</p>

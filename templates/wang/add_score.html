@@ -439,13 +439,13 @@
                 scoreChange.style.display = 'inline-block';
                 scoreChange.style.background = '#c6f6d5';
                 scoreChange.style.color = '#2f855a';
-                scoreChange.textContent = `变更后: ${currentScore + inputValue}`;
+                scoreChange.textContent = `加分后: ${currentScore + inputValue}`;
             } else {
                 li.classList.add('is-subtracted');
                 scoreChange.style.display = 'inline-block';
                 scoreChange.style.background = '#fed7d7';
                 scoreChange.style.color = '#c53030';
-                scoreChange.textContent = `变更后: ${Math.max(0, currentScore - inputValue)}`;
+                scoreChange.textContent = `减分后: ${Math.max(0, currentScore - inputValue)}`;
             }
         } else {
             scoreChange.style.display = 'none';

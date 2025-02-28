@@ -1,5 +1,5 @@
 from zipfile import error
-from flask import Flask, render_template, request, redirect, url_for, flash, session,abort
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
 from werkzeug.security import generate_password_hash
 from threading import Thread
 import xie.chat as c
@@ -9,12 +9,17 @@ from wang.models.course_students import Course_Students
 from wang.models.user import User
 from datetime import timedelta
 import os
-#from flask_migrate import Migrate
+import csv
+import io
+import chardet
+# from flask_migrate import Migrate
 
 # 获取环境变量的值，如果没有设置则默认为 'development'
 environment = os.getenv('FLASK_ENV', 'development')
 if "production" in environment:
-    environment= 'production'
+    environment = 'production'
+
+
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
@@ -25,16 +30,15 @@ def create_app():
     # 初始化数据库
     db = init_db(app)
 
-
     @app.before_request
     def before_request():
-        #----HTTP 请求转发到 HTTPS（服务器代码）------
+        # ----HTTP 请求转发到 HTTPS（服务器代码）------
         # production 环境下，如果请求不是 HTTPS 请求，则重定向到 HTTPS 请求
-        if environment== 'production' :
+        if environment == 'production':
             if not request.is_secure:
                 print("请求不是HTTPS请求，重定向到HTTPS")
                 return redirect(request.url.replace("http://", "https://"), code=301)
-        #超时自动清空session
+        # 超时自动清空session
         # 设置 session 超时时间
         session.permanent = True
         app.permanent_session_lifetime = timedelta(minutes=90)  # 设置 session 有效时间为 90 分钟
@@ -44,7 +48,7 @@ def create_app():
             abort(403)  # 返回 403 Forbidden
 
         # 登录状态检查，排除登录和注册页面
-        if 'user_id' not in session and request.endpoint not in ["index",'loginHandle', 'register', 'login']:
+        if 'user_id' not in session and request.endpoint not in ["index", 'loginHandle', 'register', 'login']:
             # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
             return redirect(url_for('index'))
 
@@ -55,10 +59,12 @@ def create_app():
         return render_template('wang/500.html'), 500
 
         # 405错误处理
+
     @app.errorhandler(405)
     def method_not_allowed(e):
         print("405")
         return render_template('wang/500.html'), 500
+
     @app.errorhandler(404)
     def page_not_found(e):
         print("404")
@@ -74,10 +80,10 @@ def create_app():
             return render_template('index.html')
         else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
             return loginHandle()
+
     @app.route('/index')
     def index():
         return hello_world()
-
 
     # 注册页面
     @app.route('/register', methods=['GET', 'POST'])
@@ -202,10 +208,12 @@ def create_app():
     @app.route('/chat')
     def chat():
         return render_template('xie/chat.html', conversation=c.conversation_history)
+
     @app.route('/chatHandle', methods=['POST'])
     def chatHandle():
         response = c.chat()
         return response
+
     @app.route("/logout", methods=['GET'])
     def logout():
         session.clear()
@@ -214,12 +222,14 @@ def create_app():
     @app.route('/student_profile')
     def student_profile():
         return loginHandle()
+
     # 学生课程详情页面
     @app.route('/course_detail/<int:course_id>')
     def course_detail(course_id):
         course = Course.query.get(course_id)
         user_name = session.get('user_name')
-        return render_template('wang/course_detail.html', course=course,user_name=user_name)
+        return render_template('wang/course_detail.html', course=course, user_name=user_name)
+
     @app.route('/teacher_profile')
     def teacher_profile():
         # 获取教师名下的课程
@@ -261,9 +271,6 @@ def create_app():
         print(f"文件为：{file}")
 
         # 读取csv文件内容存储到数据库，文件格式为：学号、姓名、拼音姓名、年级、专业、方向、行政班级、学籍状态、修课方式
-        import csv
-        import io
-        import chardet
         try:
             # 将文件内容读取为字符串
             raw_data = file.stream.read()
@@ -313,6 +320,86 @@ def create_app():
             flash('学生名单导入失败！', 'danger')
             return redirect(url_for('create_course'))
 
+    # 更新课程信息页面
+    @app.route('/update_course/<int:course_id>', methods=['GET', 'POST'])
+    def update_course(course_id):
+        course = Course.query.get(course_id)
+        print(f"{session.get('user_name')}用户正在更新课程信息:{course.name}")
+        if request.method == 'GET':
+            print("进入更新课程页面")
+            return render_template("/wang/update_course.html", course=course, course_id=course_id)
+        if request.method == 'POST':
+            print("提交更新课程信息！")
+            course_name = request.form.get('course_name')
+            semester = request.form.get('semester')
+            course_description = request.form.get('course_description')
+            code = request.form.get('course_code')
+            course.name = course_name
+            course.semester = semester
+            course.description = course_description
+            course.code = code
+            # 更新course_students
+            file = request.files['student_list']
+            # 读取csv文件内容存储到数据库，文件格式为：学号、姓名、拼音姓名、年级、专业、方向、行政班级、学籍状态、修课方式
+            try:
+                # 将文件内容读取为字符串
+                raw_data = file.stream.read()
+                # 检测文件编码
+                result = chardet.detect(raw_data)
+                encoding = result['encoding']
+                # 尝试用检测到的编码解码文件
+                try:
+                    file_str = io.StringIO(raw_data.decode(encoding), newline=None)
+                except UnicodeDecodeError:
+                    # 如果检测到的编码失败，尝试 utf-8 或 gbk
+                    try:
+                        file_str = io.StringIO(raw_data.decode('utf-8'), newline=None)
+                    except UnicodeDecodeError:
+                        file_str = io.StringIO(raw_data.decode('gbk'), newline=None)
+                # 解析CSV文件
+                csv_reader = csv.reader(file_str)
+                next(csv_reader)  # 跳过表头
+                students_to_add = []
+                for row in csv_reader:
+                    # 格式为：学号、姓名、拼音姓名、年级、专业、方向、行政班级、学籍状态、修课方式
+                    # 将每条数据存储到数据库
+                    student_number = row[0]
+                    student_name = row[1]
+                    student_pinyin_name = row[2]
+                    student_grade = row[3]
+                    student_major = row[4]
+                    student_direction = row[5]
+                    student_class = row[6]
+                    student_status = row[7]
+                    student_course_method = row[8]
+                    course_student = Course_Students(course_id=course.id, student_number=student_number,
+                                                     student_name=student_name, student_pinyin_name=student_pinyin_name,
+                                                     student_grade=student_grade, student_major=student_major,
+                                                     student_direction=student_direction, student_class=student_class,
+                                                     student_status=student_status,
+                                                     student_course_method=student_course_method)
+                    students_to_add.append(course_student)
+                # 取出当前课程中的学生名单
+                course_students = course.course_students
+                # 通过对比course_students与students_to_add中学生的学号（student_number），如果course_students中有的学生在students_to_add中没有，则删除，如果有，则不进行操作，对于students_to_add中有而course_students中没有的学生，则添加
+                #删除新表中没有的学生
+                for student1 in course_students:
+                    for student2 in students_to_add:
+                        if student1.student_number != student2.student_number:
+                            db.session.delete(student1)
+                #增加旧表中缺的学生
+                for student2 in students_to_add:
+                    for student1 in course_students:
+                        if student1.student_number != student2.student_number:
+                            db.session.add(student2)
+                db.session.commit()
+                return redirect(url_for('course_manage', course_id=course.id))
+            except:
+                flash('学生名单导入失败！', 'danger')
+                return redirect(url_for('update_course', course_id=course.id))
+            flash('课程信息更新成功！', 'success')
+            return redirect(url_for('course_manage', course_id=course.id))
+
     # 课程管理页面
     @app.route('/course_manage/<int:course_id>')
     def course_manage(course_id):
@@ -327,6 +414,7 @@ def create_app():
         #     print(student.student_name)
         return render_template('wang/courseManager.html', course=course, course_students=course_students,
                                enrolled_students_count=enrolled_students_count)
+
     # 课程管理页面：显示该课程下的选课情况：显示应选人数、已选人数、未选人数等信息
     @app.route('/course_students/<int:course_id>')
     def course_students(course_id):
@@ -342,12 +430,14 @@ def create_app():
         return render_template('wang/course_students.html', course=course, course_students=course_students,
                                enrolled_students_count=enrolled_students_count, enrolled_students=enrolled_students,
                                not_enrolled_students=not_enrolled_students)
-   # 课程管理页面：随机选
+
+    # 课程管理页面：随机选
     @app.route('/course/random_select/<int:course_id>')
     def random_select(course_id):
         course = Course.query.get(course_id)
         course_students = course.course_students
         return render_template('wang/random_select.html', course=course, course_students=course_students)
+
     # 学生加分处理
     @app.route('/course/add_score/<int:course_id>', methods=['GET', 'POST'])
     def add_score(course_id):
@@ -357,43 +447,45 @@ def create_app():
         if request.method == 'POST':
             session["scored_students"] = {}
             for student in course_students:
-                student_number = student.student_number#学号
+                student_number = student.student_number  # 学号
                 score = request.form.get(f'score_{student_number}')
                 score = float(score)
                 # 记录下score非0的学生,存到session中
                 if score != 0:
-                  session["scored_students"][student.student_name] = score
+                    session["scored_students"][student.student_name] = score
                 if student.score is None:
                     student.score = 0
-                student.score = score+student.score
+                student.score = score + student.score
                 db.session.commit()
             print(session.get("scored_students"))
             return redirect(url_for('add_score', course_id=course.id))
         print(f"用户{course.name}正在为学生加分！")
         return render_template('wang/add_score.html', course=course, course_students=course_students)
+
     # 列出我们还需要实现的的功能
     @app.route('/fuctions')
     def fuctions():
         return render_template('wang/fuctions.html')
+
     # 返回app
     return app
-    #---迁移数据代码-----
+    # ---迁移数据代码-----
     # # 返回app，db
     # return db,app
+
 
 # db, app = create_app()  # 创建app
 # migrate = Migrate(app, db)  # 添加数据库字段时，用来创建迁移对象
 # app.run(host='0.0.0.0', port=80, debug=True)
 # ！！！迁移时，请注释掉下述代码if __name__ == '__main__':，否则会报错
-#---迁移数据代码-----
-
-
+# ---迁移数据代码-----
 
 
 import socket
 import ssl
 
 from waitress import serve
+
 if __name__ == '__main__':
     app = create_app()  # 创建 app
 
@@ -420,6 +512,7 @@ if __name__ == '__main__':
             # 将普通套接字包装成 SSL 套接字
             ssl_sock = context.wrap_socket(https_sock, server_side=True)
 
+
             # 启动 HTTPS 服务器
             def run_https_server():
 
@@ -436,16 +529,19 @@ if __name__ == '__main__':
             # 创建一个简单的 Flask 应用用于处理 HTTP 重定向
             redirect_app = Flask(__name__)
 
+
             @redirect_app.route('/', defaults={'path': ''})
             @redirect_app.route('/<path:path>')
             def redirect_to_https(path):
                 return redirect(f'https://{request.host}{request.path}', code=301)
+
 
             # 创建 HTTP 套接字
             http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             http_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             http_sock.bind(('0.0.0.0', 80))
             http_sock.listen(5)
+
 
             # 启动 HTTP 重定向服务器
             def run_http_server():
@@ -460,6 +556,7 @@ if __name__ == '__main__':
 
             # 分别在不同线程中启动 HTTP 和 HTTPS 服务器
             from threading import Thread
+
             https_thread = Thread(target=run_https_server)
             http_thread = Thread(target=run_http_server)
 

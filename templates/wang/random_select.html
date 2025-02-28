@@ -191,9 +191,32 @@
                 transform: translate(200px, 200px) rotate(-45deg);
             }
         }
+         .back-home {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            padding: 0.4rem 1rem;
+            background-color: #4299e1;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 200;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.1);
+            z-index: 1000;
+        }
+
+        .back-home:hover {
+            background-color: #2acb11;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
+        }
+
     </style>
 </head>
 <body>
+<a href="/course_manage/{{course.id}}" class="back-home">返回课程</a>
     <div class="animation-container" id="animationContainer"></div>
     <div class="container">
         <h1>Random Select for {{ course.name }}</h1>
