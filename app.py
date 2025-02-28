@@ -9,7 +9,7 @@ from wang.models.course_students import Course_Students
 from wang.models.user import User
 from datetime import timedelta
 import os
-from flask_migrate import Migrate
+#from flask_migrate import Migrate
 
 # 获取环境变量的值，如果没有设置则默认为 'development'
 environment = os.getenv('FLASK_ENV', 'development')

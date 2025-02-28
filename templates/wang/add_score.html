@@ -24,7 +24,7 @@
         .container {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             padding: 2rem;
             margin: 1rem 0;
             position: relative;
@@ -62,6 +62,9 @@
             padding: 1rem 0;
             text-align: center;
             border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
         }
 
         label {
@@ -125,6 +128,15 @@
             color: #2b6cb0;
         }
 
+        .score-change {
+            background: #fed7d7;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            color: #c53030;
+            display: none;
+        }
+
         .scored-indicator {
             display: none;
             position: absolute;
@@ -137,6 +149,21 @@
         }
 
         .is-scored .scored-indicator {
+            display: block;
+        }
+
+        .subtract-indicator {
+            display: none;
+            position: absolute;
+            right: 150px;
+            background: #e53e3e;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+        }
+
+        .is-subtracted .subtract-indicator {
             display: block;
         }
 
@@ -155,12 +182,10 @@
             box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
         }
 
-        button[type="submit"] {
+        button {
             display: inline-block;
             width: 200px;
             padding: 0.75rem 1.5rem;
-            background-color: #4299e1;
-            color: white;
             border: none;
             border-radius: 8px;
             font-size: 1rem;
@@ -169,10 +194,43 @@
             font-weight: 500;
         }
 
-        button[type="submit"]:hover {
-            background-color: #3182ce;
+        .btn-add {
+            background-color: #4299e1;
+            color: white;
+        }
+
+        .btn-subtract {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #e2e8f0;
+            color: #2d3748;
+            width: 120px;
+            height: 40px;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .btn-subtract:hover {
+            opacity: 1;
+            background-color: #c53030;
+            color: white;
+        }
+
+
+        button:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-add:hover {
+            background-color: #3182ce;
+        }
+
+        .btn-subtract:hover {
+            background-color: #c53030;
         }
 
         .scored-students-container {
@@ -187,12 +245,6 @@
             z-index: 100;
             max-height: 80vh;
             overflow-y: auto;
-        }
-
-        .scored-students-container h2 {
-            margin-top: 0;
-            font-size: 1.25rem;
-            color: #2d3748;
         }
 
         .scored-students-list {
@@ -210,6 +262,28 @@
 
         .scored-students-list li:last-child {
             border-bottom: none;
+        }
+
+        .back-home {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            padding: 0.4rem 1rem;
+            background-color: #4299e1;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 200;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.1);
+            z-index: 1000;
+        }
+
+        .back-home:hover {
+            background-color: #2acb11;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
         }
 
         @media (max-width: 768px) {
@@ -232,7 +306,8 @@
                 width: 100%;
             }
 
-            .scored-indicator {
+            .scored-indicator,
+            .subtract-indicator {
                 position: static;
                 margin-top: 0.5rem;
             }
@@ -243,100 +318,144 @@
                 margin-top: 2rem;
                 max-height: none;
             }
+
+            .submit-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            button {
+                width: 100%;
+            }
         }
-.back-home {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    padding: 0.4rem 1rem;
-    background-color: #4299e1;
-    color: white;
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 200;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(66, 153, 225, 0.1);
-    z-index: 1000;
-}
-
-.back-home:hover {
-    background-color: #2acb11;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
-}
-
-
     </style>
 </head>
 <body>
 <a href="/course_manage/{{course.id}}" class="back-home">返回课程</a>
 
-    <div class="container">
-        <h1>课程：{{ course.name }} 添加成绩</h1>
-        <form method="post" action="{{ url_for('add_score', course_id=course.id) }}">
-            <div class="search-container">
-                <label for="search" style="display: block; text-align: center;">按学号或姓名搜索学生：</label>
-                <input type="text" id="search" name="search" placeholder="请输入学号或姓名" oninput="filterStudents()">
-            </div>
+<div class="container">
+    <h1>课程：{{ course.name }} 添加成绩</h1>
+    <form method="post" action="{{ url_for('add_score', course_id=course.id) }}" id="scoreForm">
+        <div class="search-container">
+            <label for="search" style="display: block; text-align: center;">按学号或姓名搜索学生：</label>
+            <input type="text" id="search" name="search" placeholder="请输入学号或姓名" oninput="filterStudents()">
+        </div>
 
-            <div class="submit-container">
-                <button type="submit">提交增加的分数</button>
-            </div>
+        <div class="submit-container">
+            <button type="submit" class="btn-add" onclick="submitForm('add'); return false;">提交增加的分数</button>
+            <button type="button" class="btn-subtract" onclick="confirmSubmit()">扣除分数</button>
+        </div>
 
-            <ul id="student-list">
-                {% for student in course_students %}
-                    <li data-student="{{ student.student_number }} {{ student.student_name }}">
-                        <div class="student-info">
-                            <span class="student-number">{{ student.student_number }}</span>
-                            <span class="student-name">{{ student.student_name }}</span>
-                            <span class="current-score">当前分值: {{ student.score or 0 }}</span>
-                        </div>
-                        <span class="scored-indicator">即将加分</span>
-                        <input type="number" name="score_{{ student.student_number }}" placeholder="输入分数" value="0" min="0" oninput="checkScored(this)">
-                    </li>
-                {% endfor %}
-            </ul>
-        </form>
-    </div>
-
-    <div class="scored-students-container">
-        <h2>最近加分学生名单</h2>
-        <ul class="scored-students-list">
-            {% for student_name, score in session.get("scored_students", {}).items() %}
-                <li>
-                    <span>{{ student_name }}</span>
-                    <span>{{ score }} 分</span>
-                </li>
+        <ul id="student-list">
+            {% for student in course_students %}
+            <li data-student="{{ student.student_number }} {{ student.student_name }}">
+                <div class="student-info">
+                    <span class="student-number">{{ student.student_number }}</span>
+                    <span class="student-name">{{ student.student_name }}</span>
+                    <span class="current-score">当前分值: {{ student.score or 0 }}</span>
+                    <span class="score-change"></span>
+                </div>
+                <span class="scored-indicator">即将加分</span>
+                <span class="subtract-indicator">即将扣分</span>
+                <input type="number"
+                       name="score_{{ student.student_number }}"
+                       data-student-number="{{ student.student_number }}"
+                       placeholder="输入分数"
+                       value="0"
+                       min="0"
+                       oninput="checkScored(this)">
+            </li>
             {% endfor %}
         </ul>
-    </div>
+    </form>
+</div>
 
-    <script>
-        function filterStudents() {
-            const input = document.getElementById('search');
-            const filter = input.value.toUpperCase();
-            const ul = document.getElementById("student-list");
-            const li = ul.getElementsByTagName('li');
+<div class="scored-students-container">
+    <h2>最近操作分数的学生名单</h2>
+    <ul class="scored-students-list">
+        {% for student_name, score in session.get("scored_students", {}).items() %}
+        <li>
+            <span>{{ student_name }}</span>
+            <span>{{ score }} 分</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
 
-            for (let i = 0; i < li.length; i++) {
-                const txtValue = li[i].getAttribute('data-student');
-                if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                    li[i].style.display = "";
-                } else {
-                    li[i].style.display = "none";
+<script>
+    let currentMode = 'add';
+
+    function confirmSubmit() {
+        if (confirm("确定要扣除分数吗？此操作不可撤销！")) {
+            submitForm('subtract');
+        }
+    }
+
+    function submitForm(mode) {
+        currentMode = mode;
+        const form = document.getElementById('scoreForm');
+        const inputs = form.querySelectorAll('input[type="number"]');
+
+        // 如果是减分模式，将所有大于0的输入值转换为负数
+        if (mode === 'subtract') {
+            inputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                if (value > 0) {
+                    input.value = -value;
                 }
-            }
+            });
         }
 
-        function checkScored(input) {
-            const li = input.closest('li');
-            if (parseFloat(input.value) > 0) {
-                li.classList.add('is-scored');
+        form.submit();
+    }
+
+    function filterStudents() {
+        const input = document.getElementById('search');
+        const filter = input.value.toUpperCase();
+        const ul = document.getElementById("student-list");
+        const li = ul.getElementsByTagName('li');
+
+        for (let i = 0; i < li.length; i++) {
+            const txtValue = li[i].getAttribute('data-student');
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                li[i].style.display = "";
             } else {
-                li.classList.remove('is-scored');
+                li[i].style.display = "none";
             }
         }
-    </script>
+    }
+
+    function checkScored(input) {
+        const li = input.closest('li');
+        const currentScore = parseFloat(li.querySelector('.current-score').textContent.split(': ')[1]);
+        const inputValue = parseFloat(input.value) || 0;
+        const scoreChange = li.querySelector('.score-change');
+
+        li.classList.remove('is-scored', 'is-subtracted');
+
+        if (inputValue > 0) {
+            if (currentMode === 'add') {
+                li.classList.add('is-scored');
+                scoreChange.style.display = 'inline-block';
+                scoreChange.style.background = '#c6f6d5';
+                scoreChange.style.color = '#2f855a';
+                scoreChange.textContent = `变更后: ${currentScore + inputValue}`;
+            } else {
+                li.classList.add('is-subtracted');
+                scoreChange.style.display = 'inline-block';
+                scoreChange.style.background = '#fed7d7';
+                scoreChange.style.color = '#c53030';
+                scoreChange.textContent = `变更后: ${Math.max(0, currentScore - inputValue)}`;
+            }
+        } else {
+            scoreChange.style.display = 'none';
+        }
+    }
+
+    // 初始化时为所有分数输入框添加事件监听
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', () => checkScored(input));
+    });
+</script>
 </body>
 </html>
