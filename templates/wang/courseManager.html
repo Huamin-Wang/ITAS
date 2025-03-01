@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>课程管理 - 数学分析</title>
+    <title>课程管理 - {{ course.name }}</title>
     <style>
         body {
             font-family: 'Microsoft YaHei', sans-serif;
@@ -181,6 +181,7 @@
     <a href="/teacher_profile" class="back-to-home">返回课程列表</a>
  <h1><a href='/update_course/{{ course.id }}' style="color: white; text-decoration: none;">{{ course.name }}</a></h1>
     <p>课程代码：{{ course.code }}</p>
+    <p>课程简介：{% if course.description %}{{ course.description }}{% else %}暂无课程简介{% endif %}</p>
     <p>应修学生人数：<strong><a href="/course_students/{{ course.id }}">{{ course.course_students|length }}</a></strong>
         人</p>
     <p>实际加入学生人数：<strong><a href="/course_students/{{ course.id }}">{{ enrolled_students_count }}</a></strong> 人</p>
