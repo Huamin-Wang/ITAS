@@ -382,16 +382,21 @@ def create_app():
                 # 取出当前课程中的学生名单
                 course_students = course.course_students
                 # 通过对比course_students与students_to_add中学生的学号（student_number），如果course_students中有的学生在students_to_add中没有，则删除，如果有，则不进行操作，对于students_to_add中有而course_students中没有的学生，则添加
-                #删除新表中没有的学生
+                # 提取所有学生编号到集合中，提升查找效率
+                existing_student_numbers = {student1.student_number for student1 in course_students}
+                new_student_numbers = {student2.student_number for student2 in students_to_add}
+
+                # 删除新表中没有的学生
                 for student1 in course_students:
-                    for student2 in students_to_add:
-                        if student1.student_number != student2.student_number:
-                            db.session.delete(student1)
-                #增加旧表中缺的学生
+                    if student1.student_number not in new_student_numbers:
+                        db.session.delete(student1)
+
+                # 增加旧表中缺的学生
                 for student2 in students_to_add:
-                    for student1 in course_students:
-                        if student1.student_number != student2.student_number:
-                            db.session.add(student2)
+                    if student2.student_number not in existing_student_numbers:
+                        db.session.add(student2)
+
+                # 提交更改
                 db.session.commit()
                 return redirect(url_for('course_manage', course_id=course.id))
             except:
