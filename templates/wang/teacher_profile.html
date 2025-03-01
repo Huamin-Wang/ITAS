@@ -50,6 +50,16 @@
             display: inline-block;
         }
 
+        .login-status a {
+            color: #fff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .login-status a:hover {
+            color: #ffcc00;
+        }
+
         .back-to-home {
             position: absolute;
             top: 20px;
@@ -87,11 +97,23 @@
             font-size: 1.1em;
         }
 
+        .semester-section {
+            margin-bottom: 40px;
+        }
+
+        .semester-heading {
+            color: #333;
+            border-bottom: 2px solid #1890ff;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
         .course-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
-            margin-top: 30px;
+            margin-top: 20px;
         }
 
         .course-card {
@@ -102,6 +124,10 @@
             transition: all 0.3s ease;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 180px;
         }
 
         .course-card:hover {
@@ -109,14 +135,29 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
 
-        .course-card h3 {
-            color: #1890ff;
-            margin-bottom: 10px;
+        .course-header {
+            margin-bottom: 15px;
         }
 
-        .course-card p {
+        .course-header h3 {
+            color: #1890ff;
+            margin-bottom: 5px;
+            font-size: 1.3em;
+        }
+
+        .course-code {
+            display: inline-block;
+            background-color: #f0f2f5;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .course-info {
             color: #666;
             line-height: 1.6;
+            margin-bottom: 15px;
         }
 
         .course-card button {
@@ -127,6 +168,7 @@
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-weight: 500;
         }
 
         .course-card button:hover {
@@ -135,21 +177,24 @@
 
         .create-course {
             text-align: center;
-            margin-top: 30px;
+            margin: 30px 0;
         }
 
         .create-course button {
             background: #52c41a;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 25px;
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-size: 1.05em;
+            font-weight: 500;
         }
 
         .create-course button:hover {
             background: #389e0d;
+            transform: scale(1.05);
         }
 
         footer {
@@ -157,6 +202,38 @@
             color: rgba(255, 255, 255, 0.8);
             text-align: center;
             padding: 20px 0;
+            margin-top: 30px;
+        }
+
+        /* 通用消息样式 */
+        .alert {
+            padding: 15px;
+            margin: 15px auto;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            max-width: 80%;
+            text-align: center;
+            animation: fadeOut 10s forwards;
+        }
+
+        /* 成功消息样式 */
+        .alert-success {
+            color: #3c763d;
+            background-color: #dff0d8;
+            border-color: #d6e9c6;
+        }
+
+        /* 错误消息样式 */
+        .alert-registerError {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
         }
 
         @media (max-width: 768px) {
@@ -170,35 +247,22 @@
                 padding: 15px;
             }
 
+            .course-grid {
+                grid-template-columns: 1fr;
+            }
+
             .course-card {
                 margin-bottom: 15px;
+                height: auto;
+                min-height: 160px;
             }
-        }
-         /* 通用消息样式 */
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid transparent;
-            border-radius: 4px;
-        }
-        /* 成功消息样式 */
-        .alert-success {
-            color: #3c763d;
-            background-color: #dff0d8;
-            border-color: #d6e9c6;
-        }
-        /* 错误消息样式 */
-        .alert-registerError {
-            color: #721c24;
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
         }
     </style>
 </head>
 <body>
 
 <header>
- {% with messages = get_flashed_messages(with_categories=true) %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
                 <div class="alert alert-{{ category }}">
@@ -211,7 +275,7 @@
     <p>教师中心 - 提升教学效率，优化教学管理</p>
     <div class="login-status">
         <span>欢迎, {{ session['user_name'] }}老师!</span>
-        <span> <a href="/logout" onclick="return confirm('确定要退出吗？')" style="font-size: 0.5em;">退出</a></span>
+        <span><a href="/logout" onclick="return confirm('确定要退出吗？')">退出</a></span>
     </div>
 </header>
 
@@ -220,23 +284,54 @@
         <h2>欢迎, {{ session['user_name'] }}老师!</h2>
         <p>以下是您教授的课程列表，点击课程进入管理页面。</p>
     </div>
+
     <div class="create-course">
         <button onclick="location.href='/create_course'">创建新课程</button>
     </div>
-{#    在这里展示后端传过来的课程信息#}
-<div class="course-grid">
-    {% for course in courses %}
-    <div class="course-card">
-        <h3>{{ course.name }}</h3>
-        <p>课程代码：{{ course.code }}</p>
-        <button onclick="location.href='/course_manage/{{ course.id }}'">进入课程</button>
-    </div>
-    {% endfor %}
+
+    {% for semester_raw, courses_in_semester in courses|groupby('semester')|sort(reverse=True) %}
+        {% set semester_parts = semester_raw.split('-') if '-' in semester_raw else semester_raw.split() %}
+        {% set semester_year = semester_parts[0] if semester_parts|length > 0 else '' %}
+        {% set semester_term = semester_parts[1].capitalize() if semester_parts|length > 1 else semester_raw %}
+
+        {% set semester_display = {
+            'Spring': '春季学期',
+            'Summer': '夏季学期',
+            'Fall': '秋季学期',
+            'Winter': '冬季学期'
+        }.get(semester_term, '') %}
+
+        {% set term_order = {
+         'Spring': 4,
+         'Summer': 3,
+         'Fall': 2,
+         'Winter': 1
+        }.get(semester_term, 0) %}
+
+        {% if semester_display %}
+            {% set semester_name = semester_year + ' ' + semester_display %}
+        {% else %}
+            {% set semester_name = semester_raw %}
+        {% endif %}
+
+        <div class="semester-section">
+            <h2 class="semester-heading">{{ semester_name }}</h2>
+            <div class="course-grid">
+                {% for course in courses_in_semester %}
+                <div class="course-card">
+                    <div class="course-header">
+                        <h3>{{ course.name }}</h3>
+                        <span class="course-code">{{ course.code }}</span>
+                    </div>
+                    <div class="course-info">
+                        <p>学生人数：{{ course.course_students|length }}</p>
+                    </div>
+                    <button onclick="location.href='/course_manage/{{ course.id }}'">进入课程管理</button>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-
-
-
-
+    {% endfor %}
 </div>
 
 <footer>

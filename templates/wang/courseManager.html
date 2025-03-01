@@ -179,7 +179,7 @@
     {% endif %}
     {% endwith %}
     <a href="/teacher_profile" class="back-to-home">返回课程列表</a>
-    <h1>{{ course.name }}</h1>
+ <h1><a href='/update_course/{{ course.id }}' style="color: white; text-decoration: none;">{{ course.name }}</a></h1>
     <p>课程代码：{{ course.code }}</p>
     <p>应修学生人数：<strong><a href="/course_students/{{ course.id }}">{{ course.course_students|length }}</a></strong>
         人</p>
@@ -228,7 +228,7 @@
         <div class="dashboard-card">
             <h3>学生管理</h3>
             <p>查看和管理学生名单。</p>
-            <button onclick="location.href='/course/MATH101/students'">进入学生管理</button>
+            <button onclick="location.href='/course_students/{{ course.id }}'">进入学生管理</button>
         </div>
 
         <div class="dashboard-card">

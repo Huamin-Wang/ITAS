@@ -217,9 +217,9 @@
 
             <!-- 开课学生名单 -->
             <div class="form-group">
-                <label for="student_list">开课学生名单:</label>
+                <label for="student_list">开课学生名单（可为空）:</label>
                 <div class="file-upload">
-                    <input type="file" id="student_list" name="student_list" accept=".csv,.xlsx" required>
+                    <input type="file" id="student_list" name="student_list" accept=".csv,.xlsx" >
                     <span>点击上传</span>
                 </div>
                 <div class="hint">请从教务系统下载学生名单并上传（支持 .csv格式）</div>
@@ -262,6 +262,8 @@
     const semesterSelect = document.getElementById('semester');
     const currentYear = new Date().getFullYear();
     const semesters = [
+        { value: `${currentYear-1}-spring`, text: `${currentYear-1} 春季学期` },
+        { value: `${currentYear-1}-fall`, text: `${currentYear-1} 秋季学期` },
         { value: `${currentYear}-spring`, text: `${currentYear} 春季学期` },
         { value: `${currentYear}-fall`, text: `${currentYear} 秋季学期` },
         { value: `${currentYear + 1}-spring`, text: `${currentYear + 1} 春季学期` },

@@ -340,68 +340,72 @@ def create_app():
             course.code = code
             # 更新course_students
             file = request.files['student_list']
+            # 文件不为空进行处理
+            if file and file.filename:
             # 读取csv文件内容存储到数据库，文件格式为：学号、姓名、拼音姓名、年级、专业、方向、行政班级、学籍状态、修课方式
-            try:
-                # 将文件内容读取为字符串
-                raw_data = file.stream.read()
-                # 检测文件编码
-                result = chardet.detect(raw_data)
-                encoding = result['encoding']
-                # 尝试用检测到的编码解码文件
                 try:
-                    file_str = io.StringIO(raw_data.decode(encoding), newline=None)
-                except UnicodeDecodeError:
-                    # 如果检测到的编码失败，尝试 utf-8 或 gbk
+                    # 将文件内容读取为字符串
+                    raw_data = file.stream.read()
+                    # 检测文件编码
+                    result = chardet.detect(raw_data)
+                    encoding = result['encoding']
+                    # 尝试用检测到的编码解码文件
                     try:
-                        file_str = io.StringIO(raw_data.decode('utf-8'), newline=None)
+                        file_str = io.StringIO(raw_data.decode(encoding), newline=None)
                     except UnicodeDecodeError:
-                        file_str = io.StringIO(raw_data.decode('gbk'), newline=None)
-                # 解析CSV文件
-                csv_reader = csv.reader(file_str)
-                next(csv_reader)  # 跳过表头
-                students_to_add = []
-                for row in csv_reader:
-                    # 格式为：学号、姓名、拼音姓名、年级、专业、方向、行政班级、学籍状态、修课方式
-                    # 将每条数据存储到数据库
-                    student_number = row[0]
-                    student_name = row[1]
-                    student_pinyin_name = row[2]
-                    student_grade = row[3]
-                    student_major = row[4]
-                    student_direction = row[5]
-                    student_class = row[6]
-                    student_status = row[7]
-                    student_course_method = row[8]
-                    course_student = Course_Students(course_id=course.id, student_number=student_number,
-                                                     student_name=student_name, student_pinyin_name=student_pinyin_name,
-                                                     student_grade=student_grade, student_major=student_major,
-                                                     student_direction=student_direction, student_class=student_class,
-                                                     student_status=student_status,
-                                                     student_course_method=student_course_method)
-                    students_to_add.append(course_student)
-                # 取出当前课程中的学生名单
-                course_students = course.course_students
-                # 通过对比course_students与students_to_add中学生的学号（student_number），如果course_students中有的学生在students_to_add中没有，则删除，如果有，则不进行操作，对于students_to_add中有而course_students中没有的学生，则添加
-                # 提取所有学生编号到集合中，提升查找效率
-                existing_student_numbers = {student1.student_number for student1 in course_students}
-                new_student_numbers = {student2.student_number for student2 in students_to_add}
+                        # 如果检测到的编码失败，尝试 utf-8 或 gbk
+                        try:
+                            file_str = io.StringIO(raw_data.decode('utf-8'), newline=None)
+                        except UnicodeDecodeError:
+                            file_str = io.StringIO(raw_data.decode('gbk'), newline=None)
+                    # 解析CSV文件
+                    csv_reader = csv.reader(file_str)
+                    next(csv_reader)  # 跳过表头
+                    students_to_add = []
+                    for row in csv_reader:
+                        # 格式为：学号、姓名、拼音姓名、年级、专业、方向、行政班级、学籍状态、修课方式
+                        # 将每条数据存储到数据库
+                        student_number = row[0]
+                        student_name = row[1]
+                        student_pinyin_name = row[2]
+                        student_grade = row[3]
+                        student_major = row[4]
+                        student_direction = row[5]
+                        student_class = row[6]
+                        student_status = row[7]
+                        student_course_method = row[8]
+                        course_student = Course_Students(course_id=course.id, student_number=student_number,
+                                                         student_name=student_name, student_pinyin_name=student_pinyin_name,
+                                                         student_grade=student_grade, student_major=student_major,
+                                                         student_direction=student_direction, student_class=student_class,
+                                                         student_status=student_status,
+                                                         student_course_method=student_course_method)
+                        students_to_add.append(course_student)
+                    # 取出当前课程中的学生名单
+                    course_students = course.course_students
+                    # 通过对比course_students与students_to_add中学生的学号（student_number），如果course_students中有的学生在students_to_add中没有，则删除，如果有，则不进行操作，对于students_to_add中有而course_students中没有的学生，则添加
+                    # 提取所有学生编号到集合中，提升查找效率
+                    existing_student_numbers = {student1.student_number for student1 in course_students}
+                    new_student_numbers = {student2.student_number for student2 in students_to_add}
 
-                # 删除新表中没有的学生
-                for student1 in course_students:
-                    if student1.student_number not in new_student_numbers:
-                        db.session.delete(student1)
+                    # 删除新表中没有的学生
+                    for student1 in course_students:
+                        if student1.student_number not in new_student_numbers:
+                            db.session.delete(student1)
 
-                # 增加旧表中缺的学生
-                for student2 in students_to_add:
-                    if student2.student_number not in existing_student_numbers:
-                        db.session.add(student2)
+                    # 增加旧表中缺的学生
+                    for student2 in students_to_add:
+                        if student2.student_number not in existing_student_numbers:
+                            db.session.add(student2)
 
-                # 提交更改
-                db.session.commit()
-                return redirect(url_for('course_manage', course_id=course.id))
-            except:
-                flash('学生名单导入失败！', 'danger')
-                return redirect(url_for('update_course', course_id=course.id))
+                    # 提交更改
+                    db.session.commit()
+                    flash('课程信息更新成功！', 'success')
+                    return redirect(url_for('course_manage', course_id=course.id))
+                except:
+                    flash('学生名单导入失败！', 'danger')
+                    return redirect(url_for('update_course', course_id=course.id))
+            db.session.commit()
             flash('课程信息更新成功！', 'success')
             return redirect(url_for('course_manage', course_id=course.id))
 
@@ -568,13 +572,13 @@ if __name__ == '__main__':
             https_thread.start()
             http_thread.start()
 
-            print('Production server is running. You can access the application at:')
+            print('生产服务器正在运行。您可以通过以下网址访问应用程序：')
             print('https://www.001ai.top')
         except Exception as e:
             print(f"An error occurred while starting the server: {e}")
     else:
-        print('Starting development server with Waitress...')
-        print('Development server is running. You can access the application at:')
+        print('使用 Waitress 启动开发服务器...')
+        print('开发服务器正在运行，您可以通过以下网址访问应用程序：')
         print('http://127.0.0.1')
-        print('or from other devices on the local network ')
+        print('或从本地网络上的其他设备访问')
         serve(app, host='0.0.0.0', port=80)
