@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建新课程</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1890ff, #096dd9);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .back-to-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+        }
+
+        .container {
+            flex: 1;
+            width: 90%;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #e8e8e8;
+            border-radius: 5px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #1890ff;
+            outline: none;
+        }
+
+        .form-group .file-upload {
+            border: 2px dashed #e8e8e8;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            background-color: #fafafa;
+            cursor: pointer;
+        }
+
+        .form-group .file-upload:hover {
+            border-color: #1890ff;
+        }
+
+        .form-group .file-upload input[type="file"] {
+            display: none;
+        }
+
+        .form-group .file-upload span {
+            color: #666;
+        }
+
+        .form-group .file-upload span.highlight {
+            color: #1890ff;
+            font-weight: bold;
+        }
+
+        .form-group .hint {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .form-group .example-file {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #1890ff;
+            text-decoration: none;
+        }
+
+        .form-group .example-file:hover {
+            text-decoration: underline;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .form-actions button {
+            padding: 12px 24px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .form-actions button.cancel {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .form-actions button.cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .form-actions button.submit {
+            background: #1890ff;
+            color: white;
+        }
+
+        .form-actions button.submit:hover {
+            background: #096dd9;
+        }
+
+        footer {
+            background-color: #001529;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.6em;
+            }
+
+            .container {
+                width: 95%;
+                margin: 15px auto;
+                padding: 15px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="back-to-home">返回首页</a>
+        <h1>更新课程</h1>
+    </header>
+
+    <div class="container">
+        <form action="/update_course/{{ course.id }}" method="post" enctype="multipart/form-data">
+
+            <!-- 课程名称 -->
+            <div class="form-group">
+                <label for="course_name">课程名称:</label>
+                <input type="text" id="course_name" name="course_name" value="{{ course.name }}" required>
+            </div>
+
+            <!-- 课程代码 -->
+            <div class="form-group">
+                <label for="course_code">课程代码:</label>
+                <input type="text" id="course_code" name="course_code" value="{{course.code}}" required>
+            </div>
+
+            <!-- 开课学期 -->
+            <div class="form-group">
+                <label for="semester">开课学期:</label>
+                <select id="semester" name="semester" value="course.semester" required>
+                    <option value="">请选择学期</option>
+{#                    已经通过js自动生成当前年份上下几个学期的#}
+                </select>
+            </div>
+
+            <!-- 开课学生名单 -->
+            <div class="form-group">
+                <label for="student_list">开课学生名单:</label>
+                <div class="file-upload">
+                    <input type="file" id="student_list" name="student_list" accept=".csv,.xlsx" required>
+                    <span>点击上传</span>
+                </div>
+                <div class="hint">请从教务系统下载学生名单并上传（支持 .csv格式）</div>
+                <a href="/static/example_student_list.csv" class="example-file">下载示例文件</a>
+            </div>
+
+            <!-- 课程介绍 -->
+            <div class="form-group">
+                <label for="course_description">课程介绍:</label>
+                <textarea id="course_description" name="course_description" rows="4" ></textarea>
+                <div class="hint">（可选）填写课程简介，帮助学生了解课程内容。</div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="form-actions">
+                <button type="button" class="cancel"><a href="teacher_profile">取消</a></button>
+                <button type="submit" class="submit">更新课程</button>
+            </div>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+    // 文件上传交互
+    const fileUpload = document.querySelector('.file-upload');
+    const fileInput = document.querySelector('.file-upload input[type="file"]');
+    const fileUploadText = document.querySelector('.file-upload span');
+
+    fileUpload.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            fileUploadText.innerHTML = `<span class="highlight">${fileInput.files[0].name}</span>`;
+        }
+    });
+
+    // 动态生成学期选项
+    const semesterSelect = document.getElementById('semester');
+    const currentYear = new Date().getFullYear();
+    const semesters = [
+        { value: `${currentYear}-spring`, text: `${currentYear} 春季学期` },
+        { value: `${currentYear}-fall`, text: `${currentYear} 秋季学期` },
+        { value: `${currentYear + 1}-spring`, text: `${currentYear + 1} 春季学期` },
+        { value: `${currentYear + 1}-fall`, text: `${currentYear + 1} 秋季学期` }
+    ];
+
+    semesters.forEach(semester => {
+        const option = document.createElement('option');
+        option.value = semester.value;
+        option.textContent = semester.text;
+        semesterSelect.appendChild(option);
+    });
+</script>
+</body>
+</html>

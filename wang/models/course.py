@@ -8,7 +8,7 @@ class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
     teacher_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    semester = db.Column(db.String, nullable=False)
+    semester = db.Column(db.String, nullable=False)  # 开课学期
     # 课程简介
     description = db.Column(db.Text)
     # 课程代码
