@@ -1,5 +1,7 @@
+from urllib.request import localhost
 from zipfile import error
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
+from flask_cors import CORS
 from werkzeug.security import generate_password_hash
 from threading import Thread
 import xie.chat as c
@@ -12,24 +14,71 @@ import os
 import csv
 import io
 import chardet
-# from flask_migrate import Migrate
+import requests
+#from flask_migrate import Migrate
 
 # 获取环境变量的值，如果没有设置则默认为 'development'
 environment = os.getenv('FLASK_ENV', 'development')
 if "production" in environment:
     environment = 'production'
 
-
+# ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
     app = Flask(__name__)
+    CORS(app)  # 启用CORS支持
+    # 配置数据库
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
     # 初始化数据库
     db = init_db(app)
+    #-----微信小程序的appid和secret---------
+    APP_ID = 'wx3dd32842e9e24690'
+    APP_SECRET='09732f45784f51d2b9e5bad0902ec17a'
+    @app.route('/getOpenId', methods=['GET', 'POST'])
+    def get_openid():
+        data = request.json
+        code = data.get('code')
 
+        if not code:
+            return jsonify({'success': False, 'message': '缺少 code'})
+
+        # 向微信服务器请求 openid
+        wx_url = f"https://api.weixin.qq.com/sns/jscode2session?appid={APP_ID}&secret={APP_SECRET}&js_code={code}&grant_type=authorization_code"
+        response = requests.get(wx_url).json()
+
+        if 'openid' in response:
+            return jsonify({'success': True, 'openid': response['openid']})
+        else:
+            return jsonify({'success': False, 'message': '获取 openid 失败'})
+  #-----微信小程序主页面---------
+    @app.route('/main')
+    def main():
+        print("进入微信小程序主页面")
+        openid = request.args.get('openid', 'unknown_user')
+        #根据openid查询数据库，如果有则直接登录，没有则注册
+        user = User.query.filter_by(openid=openid).first()
+        if user:
+            # 在session中保存登录状态，已供全局使用
+            session["logged_in"] = True
+            session['user_id'] = user.id
+            session['user_name'] = user.name
+            session['user_role'] = user.role
+            session['user_identifier'] = user.identifier
+            flash('登录成功！', 'success')
+            print(f'{user.name}登录成功！')
+            return loginHandle(openid=openid)
+        else:
+            # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，返回注册页面
+            if "logged_in" not in session or session["logged_in"] == False:
+                register(openid=openid)
+            else:
+                login(openid=openid)
+
+        return loginHandle(openid=openid)
+    #！！！ ----------以下为电脑端项目中的路由处理函数
     @app.before_request
     def before_request():
         # ----HTTP 请求转发到 HTTPS（服务器代码）------
@@ -47,8 +96,8 @@ def create_app():
         if request.path.startswith(('/wordpress', '/wp-admin')):
             abort(403)  # 返回 403 Forbidden
 
-        # 登录状态检查，排除登录和注册页面
-        if 'user_id' not in session and request.endpoint not in ["index", 'loginHandle', 'register', 'login']:
+        #登录状态检查，排除登录和注册页面
+        if 'user_id' not in session and request.endpoint not in ["index", 'loginHandle', 'register', 'login', 'get_openid', 'main']:  #禁止重定向加的是方法名，不是路由名
             # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
             return redirect(url_for('index'))
 
@@ -70,8 +119,6 @@ def create_app():
         print("404")
         return render_template('wang/404.html'), 404
 
-    # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
-
     # 首页
     @app.route('/')
     def hello_world():
@@ -87,7 +134,7 @@ def create_app():
 
     # 注册页面
     @app.route('/register', methods=['GET', 'POST'])
-    def register():
+    def register(openid="0"):
         # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，才能注册
         if "logged_in" not in session or session["logged_in"] == False:
             if request.method == 'POST':
@@ -115,7 +162,11 @@ def create_app():
                     return redirect(url_for('register'))
 
                 password_hash = generate_password_hash(password)
-                user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
+                #如果是微信小程序注册，openid不为空
+                if openid is not None:
+                    user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash,openid=openid)
+                else:
+                    user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
                 db.session.add(user)
                 db.session.commit()
                 # 注册成功后cookie保存用户信息
@@ -135,16 +186,19 @@ def create_app():
             return loginHandle()
 
     @app.route('/login', methods=['GET', 'POST'])
-    def login():
-        if "logged_in" not in session or session["logged_in"] == False:
-            return render_template('wang/login.html')
-        else:
-            flash('您已登录！', 'success')
-            return loginHandle()
+    def login(openid="0"):
+        # 如果openid为0，说明是电脑端登录，否则是微信小程序登录
+        if openid == "0":
+            if "logged_in" not in session or session["logged_in"] == False:
+                return render_template('wang/login.html')
+            else:
+                flash('您已登录！', 'success')
+                return loginHandle()
+        return loginHandle(openid=openid)
 
     # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
     @app.route('/loginHandle', methods=['POST'])
-    def loginHandle():
+    def loginHandle(openid="0"):
         # 如果session中登录状态为false，说明是第一次登录，从表单中获取学号和密码
         if "logged_in" not in session or session["logged_in"] == False:
             xuehao = request.form.get('xuehao')
@@ -169,6 +223,7 @@ def create_app():
         # 登录成功后才会执行到这里
         # 从数据库中查找用户，与用户输入的密码进行比对
         user = User.query.filter_by(identifier=session['user_identifier']).first()
+        user.openid = openid
         if user.role == "student":
             # 输出用戶信息
             print(f"用户{user.name}的学号为：{user.identifier}")
@@ -480,12 +535,21 @@ def create_app():
     return app
     # ---迁移数据代码-----
     # # 返回app，db
-    # return db,app
-
-
+#     return db,app
+#
+# from sqlalchemy import text
 # db, app = create_app()  # 创建app
+# with app.app_context():
+#     try:
+#         # 使用 text 函数将 SQL 语句包装起来
+#         db.session.execute(text('DROP TABLE alembic_version'))
+#         db.session.commit()
+#         print("alembic_version 表已删除")
+#     except Exception as e:
+#         print(f"删除 alembic_version 表时出错: {e}")
 # migrate = Migrate(app, db)  # 添加数据库字段时，用来创建迁移对象
-# app.run(host='0.0.0.0', port=80, debug=True)
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=80, debug=True)
 # ！！！迁移时，请注释掉下述代码if __name__ == '__main__':，否则会报错
 # ---迁移数据代码-----
 
@@ -511,29 +575,36 @@ if __name__ == '__main__':
             https_sock.bind(('0.0.0.0', 443))
             https_sock.listen(5)
 
-            # 创建 SSL 上下文
+            # 创建 SSL 上下文 - 更宽松的配置
             context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
             context.load_cert_chain(certfile=certfile, keyfile=keyfile)
-            # 禁用旧的、不安全的协议版本
-            context.minimum_version = ssl.TLSVersion.TLSv1_2
-            # 降低安全等级，让更多密码套件可用（包括 TLS 1.3 下的一些算法）
-            context.set_ciphers("DEFAULT:@SECLEVEL=1")
+
+            # 允许更广泛的客户端兼容性
+            try:
+                context.minimum_version = ssl.TLSVersion.TLSv1
+                # 更宽松的加密套件设置
+                context.set_ciphers('ALL:@SECLEVEL=0')
+            except (AttributeError, ValueError):
+                # 如果 Python 版本不支持这些设置选项
+                pass
+
             # 将普通套接字包装成 SSL 套接字
             ssl_sock = context.wrap_socket(https_sock, server_side=True)
 
-
             # 启动 HTTPS 服务器
             def run_https_server():
-
-                try:
-                    serve(app, sockets=[ssl_sock], url_scheme='https')
-                except ssl.SSLEOFError as e:
-                    print(f"SSL EOF error occurred: {e}. Continuing to handle other requests...")
-                except Exception as e:
-                    print(f"An unexpected error occurred in HTTPS server: {e}")
-
-                serve(app, sockets=[ssl_sock], url_scheme='https')
-
+                while True:
+                    try:
+                        serve(app, sockets=[ssl_sock], url_scheme='https')
+                    except ssl.SSLError as e:
+                        print(f"SSL error: {e}. Continuing...")
+                    except ConnectionError as e:
+                        print(f"Connection error: {e}. Continuing...")
+                    except Exception as e:
+                        print(f"Unexpected error in HTTPS server: {e}")
+                        # 在重大错误后短暂暂停以避免资源耗尽
+                        import time
+                        time.sleep(1)
 
             # 创建一个简单的 Flask 应用用于处理 HTTP 重定向
             redirect_app = Flask(__name__)
@@ -580,5 +651,6 @@ if __name__ == '__main__':
         print('使用 Waitress 启动开发服务器...')
         print('开发服务器正在运行，您可以通过以下网址访问应用程序：')
         print('http://127.0.0.1')
+        print(f'http://{socket.gethostbyname(socket.gethostname())}')
         print('或从本地网络上的其他设备访问')
         serve(app, host='0.0.0.0', port=80)
