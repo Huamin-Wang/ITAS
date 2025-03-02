@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Random Name Selector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        .messages {
+            margin-top: 20px;
+            color: red;
+        }
+        .selected-name {
+            margin-top: 20px;
+            font-size: 1.5em;
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Random Name Selector</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
+    </form>
+    <form action="/random_name" method="get">
+        <input type="submit" value="Get Random Name">
+    </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% endif %}
+    {% endwith %}
+    {% if selected_name %}
+    {% endif %}
+        <div class="selected-name">
+            Selected Name: {{ selected_name }}
+        </div>
+        <div class="messages">
+            <ul>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+</body>
+</html>
