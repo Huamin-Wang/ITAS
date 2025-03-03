@@ -21,13 +21,13 @@ import requests
 environment = os.getenv('FLASK_ENV', 'development')
 if "production" in environment:
     environment = 'production'
-
+openid="0"  # 微信小程序的openid
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
     app = Flask(__name__)
-    CORS(app)  # 启用CORS支持
+    CORS(app,supports_credentials=True)  # 启用CORS支持
     # 配置数据库
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -39,45 +39,56 @@ def create_app():
     APP_SECRET='09732f45784f51d2b9e5bad0902ec17a'
     @app.route('/getOpenId', methods=['GET', 'POST'])
     def get_openid():
+        global openid
+        print("登录小程序")
         data = request.json
         code = data.get('code')
-
+        userInfo = data.get('userInfo')
+        print(f"code:{code}")
+        print(f"userInfo:{userInfo}")
         if not code:
             return jsonify({'success': False, 'message': '缺少 code'})
-
         # 向微信服务器请求 openid
         wx_url = f"https://api.weixin.qq.com/sns/jscode2session?appid={APP_ID}&secret={APP_SECRET}&js_code={code}&grant_type=authorization_code"
         response = requests.get(wx_url).json()
-
-        if 'openid' in response:
-            return jsonify({'success': True, 'openid': response['openid']})
-        else:
-            return jsonify({'success': False, 'message': '获取 openid 失败'})
-  #-----微信小程序主页面---------
-    @app.route('/main')
-    def main():
-        print("进入微信小程序主页面")
-        openid = request.args.get('openid', 'unknown_user')
-        #根据openid查询数据库，如果有则直接登录，没有则注册
-        user = User.query.filter_by(openid=openid).first()
+        openid = response['openid']
+        session['openid'] = openid
+        print(f"openid:{openid}")
+        # 如果成功获取 openid，则根据openid返回用户信息
+        user=User.query.filter_by(openid=response['openid']).first()
         if user:
+            return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role})
+        else:
+            #   返回信息提示注册登录
+            return jsonify({'success': True, 'user_id': -1, 'user_name': "未登录过小程序", 'user_role': 1})
+  #-----微信小程序登录页面---------
+    @app.route('/minilogin', methods=['GET', 'POST'])
+    def minilogin():
+        global openid
+        print("验证小程序登录")
+        print(f"openid:{openid}")
+        data = request.json
+        ident= data.get('identifier')   # 学号
+        ident=ident.upper()
+        print(f"ident:{ident}")
+        password = data.get('password')
+        # 从数据库中查找用户，与用户输入的密码进行比对
+        user = User.query.filter_by(identifier=ident).first()
+        if user and user.check_password(password):
+            print("用户存在库中")
             # 在session中保存登录状态，已供全局使用
             session["logged_in"] = True
             session['user_id'] = user.id
             session['user_name'] = user.name
             session['user_role'] = user.role
             session['user_identifier'] = user.identifier
-            flash('登录成功！', 'success')
+            user.openid = openid  # 保存用户的openid，以便下次微信登录时直接登录openid = session.get('openid')
+            print("保存openid成功！")
+            db.session.commit()
             print(f'{user.name}登录成功！')
-            return loginHandle(openid=openid)
-        else:
-            # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，返回注册页面
-            if "logged_in" not in session or session["logged_in"] == False:
-                register(openid=openid)
-            else:
-                login(openid=openid)
+            return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role})
+        return jsonify({'success': False, 'message': '用户名或密码错误！'})
 
-        return loginHandle(openid=openid)
     #！！！ ----------以下为电脑端项目中的路由处理函数
     @app.before_request
     def before_request():
@@ -97,7 +108,7 @@ def create_app():
             abort(403)  # 返回 403 Forbidden
 
         #登录状态检查，排除登录和注册页面
-        if 'user_id' not in session and request.endpoint not in ["index", 'loginHandle', 'register', 'login', 'get_openid', 'main']:  #禁止重定向加的是方法名，不是路由名
+        if 'user_id' not in session and request.endpoint not in ["minilogin","index", 'loginHandle', 'register', 'login', 'get_openid', 'main']:  #禁止重定向加的是方法名，不是路由名
             # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
             return redirect(url_for('index'))
 
