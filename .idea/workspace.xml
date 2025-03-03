@@ -5,13 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4f2d7fa2-e8ea-454a-bd0b-e52f0dae3747" name="更改" comment="1.美化教师管理界面">
-      <change afterPath="$PROJECT_DIR$/qiu/QAQ.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/qiu/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/flaskProject1.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/flaskProject1.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/wang/404.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/wang/404.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/wang/500.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/wang/500.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance/test1.db" beforeDir="false" afterPath="$PROJECT_DIR$/instance/test1.db" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,7 +85,7 @@
       <recent name="D:\嘉庚学院资料\2024-2025（1）\大创\代码\flaskProject1\templates" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.QAQ">
+  <component name="RunManager" selected="Python.app">
     <configuration name="500.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/ITAS/templates/wang/500.html" useBuiltInWebServerPort="true">
       <method v="2" />
     </configuration>
@@ -165,8 +163,8 @@
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.QAQ" />
         <item itemvalue="Python.app" />
+        <item itemvalue="Python.QAQ" />
         <item itemvalue="JavaScript 调试.500.html" />
         <item itemvalue="Flask 服务器.Flask (app.py)" />
       </list>
@@ -522,17 +520,17 @@
     <option name="LAST_COMMIT_MESSAGE" value="1.优化问题" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/$intelligenceAPI.coverage" NAME="intelligenceAPI 覆盖结果" MODIFIED="1735637915212" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/XunfeiAPI" />
-    <SUITE FILE_PATH="coverage/$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1740836816332" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ITAS$app.coverage" NAME="app 覆盖结果" MODIFIED="1740913469575" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/$API.coverage" NAME="API 覆盖结果" MODIFIED="1739006022839" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/XunfeiAPI" />
+    <SUITE FILE_PATH="coverage/$test.coverage" NAME="test 覆盖结果" MODIFIED="1737104844800" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/测试目录" />
+    <SUITE FILE_PATH="coverage/ITAS$QAQ.coverage" NAME="QAQ 覆盖结果" MODIFIED="1740914689233" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/qiu" />
+    <SUITE FILE_PATH="coverage/$app.coverage" NAME="app 覆盖结果" MODIFIED="1740992347581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1740921673804" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/$course_students.coverage" NAME="course_students 覆盖结果" MODIFIED="1737105390581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/models" />
+    <SUITE FILE_PATH="coverage/$flaskProject1.coverage" NAME="flaskProject1 覆盖结果" MODIFIED="1737256970114" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/flaskProject1$flaskProject1.coverage" NAME="flaskProject1 覆盖结果" MODIFIED="1730965831022" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/app_py$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1737198417827" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/$API.coverage" NAME="API 覆盖结果" MODIFIED="1739006022839" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/XunfeiAPI" />
-    <SUITE FILE_PATH="coverage/$app.coverage" NAME="app 覆盖结果" MODIFIED="1740810919667" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/$test.coverage" NAME="test 覆盖结果" MODIFIED="1737104844800" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/测试目录" />
     <SUITE FILE_PATH="coverage/$Flask__xxy_chat_py_.coverage" NAME="Flask (xxy/chat.py) 覆盖结果" MODIFIED="1735643597278" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/$course_students.coverage" NAME="course_students 覆盖结果" MODIFIED="1737105390581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/models" />
-    <SUITE FILE_PATH="coverage/ITAS$QAQ.coverage" NAME="QAQ 覆盖结果" MODIFIED="1740914689233" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/qiu" />
-    <SUITE FILE_PATH="coverage/ITAS$app.coverage" NAME="app 覆盖结果" MODIFIED="1740913469575" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/$flaskProject1.coverage" NAME="flaskProject1 覆盖结果" MODIFIED="1737256970114" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/$intelligenceAPI.coverage" NAME="intelligenceAPI 覆盖结果" MODIFIED="1735637915212" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/XunfeiAPI" />
   </component>
 </project>

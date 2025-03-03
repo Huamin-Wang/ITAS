@@ -108,7 +108,7 @@ def create_app():
             abort(403)  # 返回 403 Forbidden
 
         #登录状态检查，排除登录和注册页面
-        if 'user_id' not in session and request.endpoint not in ["minilogin","index", 'loginHandle', 'register', 'login', 'get_openid', 'main']:  #禁止重定向加的是方法名，不是路由名
+        if  openid=="0" and 'user_id' not in session and request.endpoint not in ["getCourseById","getStudentCourses","minilogin","index", 'loginHandle', 'register', 'login', 'get_openid', 'main'] and not request.path.startswith('/getCourseById/'):   #禁止重定向加的是方法名，不是路由名
             # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
             return redirect(url_for('index'))
 
@@ -269,7 +269,31 @@ def create_app():
                     db.session.commit()
 
             return render_template('wang/teacher_profile.html', courses=courses)
-
+    # 微信小程序：返回学生的课程列表
+    @app.route('/getStudentCourses', methods=['GET', 'POST'])
+    def getStudentCourses():
+        print("微信小程序获取课程列表中！")
+        # 从数据库中查找用户，与用户输入的密码进行比对
+        user = User.query.filter_by(openid=openid).first()
+        if user:
+            # 返回学生的课程列表
+            course_students = Course_Students.query.filter_by(student_number=user.identifier,
+                                                              student_name=user.name).all()
+            courses = []
+            for course_student in course_students:
+                course = Course.query.get(course_student.course_id)
+                # 课程序列化
+                courses.append({
+                    'course_id': course.id,
+                    'course_name': course.name,
+                    'semester': course.semester,
+                    'description': course.description,
+                    "teacher": course.teacher.name
+                })
+            print("课程列表获取成功！")
+            return jsonify({'success': True, 'courses': courses})
+        print("用户不存在！")
+        return jsonify({'success': False, 'message': '用户不存在！'})
     # 处理智能聊天请求
     @app.route('/chat')
     def chat():
@@ -295,6 +319,38 @@ def create_app():
         course = Course.query.get(course_id)
         user_name = session.get('user_name')
         return render_template('wang/course_detail.html', course=course, user_name=user_name)
+    # 微信小程序：返回单个课程详情
+    @app.route('/getCourseById/<int:course_id>', methods=['GET', 'POST'])
+    def getCourseById(course_id):
+        print("小程序：获取单个课程详情！")
+        course = Course.query.get(course_id)
+        print(f"详情中的用户openid:{openid}")
+        # 获取用户数据
+        user = User.query.filter_by(openid=openid).first()
+        print(f"用户{user.name}正在查看课程{course.name}的详情！")
+        # 获取学生本门课的学生
+        course_students=course.course_students
+        # 获取学生的分数
+        score = 0
+        for student in course_students:
+            if student.student_number == user.identifier:
+                print(f"student.student_name:{student.student_name}")
+                score = student.score
+                print(f"score:{student.score}")
+        # 课程详情序列化
+        courseInfo = {
+            'id': course.id,
+            'name': course.name,
+            'teacher_id': course.teacher_id,
+            'semester': course.semester,
+            'description': course.description,
+            'code': course.code,
+            'teacher_name': course.teacher.name,
+            'students': [{'student_name': student.student_name, 'score': student.score} for student in course.course_students]
+        }
+        print(f"返回课程{course.name}的详情！")
+        print(f"分数：{score}")
+        return jsonify({'success': True, 'courseInfo': courseInfo,'score':score})
 
     @app.route('/teacher_profile')
     def teacher_profile():
