@@ -21,7 +21,6 @@ import requests
 environment = os.getenv('FLASK_ENV', 'development')
 if "production" in environment:
     environment = 'production'
-openid="0"  # 微信小程序的openid
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
@@ -39,7 +38,6 @@ def create_app():
     APP_SECRET='09732f45784f51d2b9e5bad0902ec17a'
     @app.route('/getOpenId', methods=['GET', 'POST'])
     def get_openid():
-        global openid
         print("登录小程序")
         data = request.json
         code = data.get('code')
@@ -57,17 +55,17 @@ def create_app():
         # 如果成功获取 openid，则根据openid返回用户信息
         user=User.query.filter_by(openid=response['openid']).first()
         if user:
-            return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role})
+            return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,"openid":openid})
         else:
             #   返回信息提示注册登录
-            return jsonify({'success': True, 'user_id': -1, 'user_name': "未登录过小程序", 'user_role': 1})
+            return jsonify({'success': True, 'user_id': -1, 'user_name': "未登录过小程序", 'user_role': 1,"openid":openid})
   #-----微信小程序登录页面---------
     @app.route('/minilogin', methods=['GET', 'POST'])
     def minilogin():
-        global openid
         print("验证小程序登录")
-        print(f"openid:{openid}")
         data = request.json
+        openid = data.get('openid')
+        print(f"openid:{openid}")
         ident= data.get('identifier')   # 学号
         ident=ident.upper()
         print(f"ident:{ident}")
@@ -82,8 +80,10 @@ def create_app():
             session['user_name'] = user.name
             session['user_role'] = user.role
             session['user_identifier'] = user.identifier
+            print(f"session:{session}")
             user.openid = openid  # 保存用户的openid，以便下次微信登录时直接登录openid = session.get('openid')
             print("保存openid成功！")
+            session["openid"] = openid
             db.session.commit()
             print(f'{user.name}登录成功！')
             return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role})
@@ -108,7 +108,7 @@ def create_app():
             abort(403)  # 返回 403 Forbidden
 
         #登录状态检查，排除登录和注册页面
-        if  openid=="0" and 'user_id' not in session and request.endpoint not in ["getCourseById","getStudentCourses","minilogin","index", 'loginHandle', 'register', 'login', 'get_openid', 'main'] and not request.path.startswith('/getCourseById/'):   #禁止重定向加的是方法名，不是路由名
+        if   'user_id' not in session and request.endpoint not in ["getCourseById","getStudentCourses","minilogin","index", 'loginHandle', 'register', 'login', 'get_openid', 'main'] and not request.path.startswith('/getCourseById/'):   #禁止重定向加的是方法名，不是路由名
             # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
             return redirect(url_for('index'))
 
@@ -145,7 +145,7 @@ def create_app():
 
     # 注册页面
     @app.route('/register', methods=['GET', 'POST'])
-    def register(openid="0"):
+    def register():
         # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，才能注册
         if "logged_in" not in session or session["logged_in"] == False:
             if request.method == 'POST':
@@ -197,7 +197,7 @@ def create_app():
             return loginHandle()
 
     @app.route('/login', methods=['GET', 'POST'])
-    def login(openid="0"):
+    def login():
         # 如果openid为0，说明是电脑端登录，否则是微信小程序登录
         if openid == "0":
             if "logged_in" not in session or session["logged_in"] == False:
@@ -205,11 +205,11 @@ def create_app():
             else:
                 flash('您已登录！', 'success')
                 return loginHandle()
-        return loginHandle(openid=openid)
+        return loginHandle()
 
     # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
     @app.route('/loginHandle', methods=['POST'])
-    def loginHandle(openid="0"):
+    def loginHandle():
         # 如果session中登录状态为false，说明是第一次登录，从表单中获取学号和密码
         if "logged_in" not in session or session["logged_in"] == False:
             xuehao = request.form.get('xuehao')
@@ -234,7 +234,6 @@ def create_app():
         # 登录成功后才会执行到这里
         # 从数据库中查找用户，与用户输入的密码进行比对
         user = User.query.filter_by(identifier=session['user_identifier']).first()
-        user.openid = openid
         if user.role == "student":
             # 输出用戶信息
             print(f"用户{user.name}的学号为：{user.identifier}")
@@ -272,9 +271,12 @@ def create_app():
     # 微信小程序：返回学生的课程列表
     @app.route('/getStudentCourses', methods=['GET', 'POST'])
     def getStudentCourses():
-        print("微信小程序获取课程列表中！")
         # 从数据库中查找用户，与用户输入的密码进行比对
+        openid = request.args.get('openid')
+        print(f"openid:{openid}")
         user = User.query.filter_by(openid=openid).first()
+        print(f"{user.name}在微信小程序获取课程列表中！")
+        print(session)
         if user:
             # 返回学生的课程列表
             course_students = Course_Students.query.filter_by(student_number=user.identifier,
@@ -324,6 +326,7 @@ def create_app():
     def getCourseById(course_id):
         print("小程序：获取单个课程详情！")
         course = Course.query.get(course_id)
+        openid = request.args.get('openid')
         print(f"详情中的用户openid:{openid}")
         # 获取用户数据
         user = User.query.filter_by(openid=openid).first()
