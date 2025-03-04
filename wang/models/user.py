@@ -10,7 +10,7 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)  # 用户名
     email = db.Column(db.String(120), unique=True, nullable=False)  # 邮箱
     password = db.Column(db.String(256), nullable=False)  # 密码
-
+    openid = db.Column(db.String(100),  nullable=True) # 微信openid
     # 学生关系
     attendances = db.relationship('Attendance', backref='student', lazy=True)  # 学生的考勤记录
     submissions = db.relationship('Submission', backref='student', lazy=True)  # 学生的作业提交
