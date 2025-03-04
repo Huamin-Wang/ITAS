@@ -198,14 +198,12 @@ def create_app():
 
     @app.route('/login', methods=['GET', 'POST'])
     def login():
-        # 如果openid为0，说明是电脑端登录，否则是微信小程序登录
-        if openid == "0":
-            if "logged_in" not in session or session["logged_in"] == False:
-                return render_template('wang/login.html')
-            else:
-                flash('您已登录！', 'success')
-                return loginHandle()
-        return loginHandle()
+        if "logged_in" not in session or session["logged_in"] == False:
+            return render_template('wang/login.html')
+        else:
+            flash('您已登录！', 'success')
+            return loginHandle()
+
 
     # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
     @app.route('/loginHandle', methods=['POST'])
@@ -275,7 +273,8 @@ def create_app():
         openid = request.args.get('openid')
         print(f"openid:{openid}")
         user = User.query.filter_by(openid=openid).first()
-        print(f"{user.name}在微信小程序获取课程列表中！")
+        if user:
+            print(f"{user.name}在微信小程序获取课程列表中！")
         print(session)
         if user:
             # 返回学生的课程列表
