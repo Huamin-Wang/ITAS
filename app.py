@@ -9,12 +9,15 @@ from wang.models import init_db
 from wang.models.course import Course
 from wang.models.course_students import Course_Students
 from wang.models.user import User
+
 from datetime import timedelta
 import os
 import csv
 import io
 import chardet
 import requests
+
+from xu.views import ai_bp
 #from flask_migrate import Migrate
 
 # 获取环境变量的值，如果没有设置则默认为 'development'
@@ -36,6 +39,9 @@ def create_app():
     #-----微信小程序的appid和secret---------
     APP_ID = 'wx3dd32842e9e24690'
     APP_SECRET='09732f45784f51d2b9e5bad0902ec17a'
+
+    app.register_blueprint(ai_bp)  # 注册你的 Blueprint
+
     @app.route('/getOpenId', methods=['GET', 'POST'])
     def get_openid():
         print("登录小程序")
