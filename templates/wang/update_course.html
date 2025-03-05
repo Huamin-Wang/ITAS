@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>创建新课程</title>
+    <title>更新课程</title>
     <style>
         body {
             font-family: 'Microsoft YaHei', sans-serif;
-            background-color: #f0f2f5;
+            background-color: #f4f6f8;
             margin: 0;
             padding: 0;
             min-height: 100vh;
@@ -17,80 +18,88 @@
         }
 
         header {
-            background: linear-gradient(135deg, #1890ff, #096dd9);
+            background: linear-gradient(135deg, #2196F3, #1976D2);
             color: white;
             text-align: center;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             position: relative;
         }
 
         header h1 {
             margin: 0;
-            font-size: 2em;
+            font-size: 2.2em;
             font-weight: bold;
         }
 
         .back-to-home {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 25px;
+            left: 25px;
             color: white;
             text-decoration: none;
-            font-size: 1em;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-to-home i {
+            margin-right: 5px;
         }
 
         .container {
             flex: 1;
             width: 90%;
-            max-width: 600px;
-            margin: 30px auto;
-            padding: 20px;
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 30px;
             background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .form-group label {
             display: block;
-            font-size: 1.1em;
-            color: #333;
-            margin-bottom: 8px;
+            font-size: 1.2em;
+            color: #2c3e50;
+            margin-bottom: 10px;
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 10px;
-            font-size: 1em;
-            border: 1px solid #e8e8e8;
-            border-radius: 5px;
+            padding: 12px;
+            font-size: 1.05em;
+            border: 1px solid #dfe4ea;
+            border-radius: 8px;
             transition: border-color 0.3s ease;
         }
 
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
-            border-color: #1890ff;
+            border-color: #2196F3;
             outline: none;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
         }
 
         .form-group .file-upload {
-            border: 2px dashed #e8e8e8;
-            padding: 20px;
+            border: 2px dashed #dfe4ea;
+            padding: 25px;
             text-align: center;
-            border-radius: 5px;
-            background-color: #fafafa;
+            border-radius: 8px;
+            background-color: #f9fafb;
             cursor: pointer;
+            transition: border-color 0.3s ease;
         }
 
         .form-group .file-upload:hover {
-            border-color: #1890ff;
+            border-color: #2196F3;
         }
 
         .form-group .file-upload input[type="file"] {
@@ -98,25 +107,26 @@
         }
 
         .form-group .file-upload span {
-            color: #666;
+            color: #7f8c8d;
         }
 
         .form-group .file-upload span.highlight {
-            color: #1890ff;
+            color: #2196F3;
             font-weight: bold;
         }
 
         .form-group .hint {
-            font-size: 0.9em;
-            color: #666;
-            margin-top: 8px;
+            font-size: 0.95em;
+            color: #7f8c8d;
+            margin-top: 10px;
         }
 
         .form-group .example-file {
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: #1890ff;
+            margin-top: 12px;
+            font-size: 0.95em;
+            color: #2196F3;
             text-decoration: none;
+            display: inline-block;
         }
 
         .form-group .example-file:hover {
@@ -126,53 +136,53 @@
         .form-actions {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
-            margin-top: 30px;
+            gap: 15px;
+            margin-top: 35px;
         }
 
         .form-actions button {
-            padding: 12px 24px;
-            font-size: 1em;
+            padding: 14px 28px;
+            font-size: 1.05em;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             transition: background 0.3s ease;
         }
 
         .form-actions button.cancel {
-            background: #f0f0f0;
-            color: #333;
+            background: #ecf0f1;
+            color: #2c3e50;
         }
 
         .form-actions button.cancel:hover {
-            background: #e0e0e0;
+            background: #dfe6e9;
         }
 
         .form-actions button.submit {
-            background: #1890ff;
+            background: #2196F3;
             color: white;
         }
 
         .form-actions button.submit:hover {
-            background: #096dd9;
+            background: #1976D2;
         }
 
         footer {
-            background-color: #001529;
-            color: rgba(255,255,255,0.8);
+            background-color: #2c3e50;
+            color: rgba(255, 255, 255, 0.8);
             text-align: center;
-            padding: 20px 0;
+            padding: 25px 0;
         }
 
         @media (max-width: 768px) {
             header h1 {
-                font-size: 1.6em;
+                font-size: 1.8em;
             }
 
             .container {
                 width: 95%;
-                margin: 15px auto;
-                padding: 15px;
+                margin: 20px auto;
+                padding: 20px;
             }
 
             .form-actions {
@@ -183,11 +193,22 @@
                 width: 100%;
             }
         }
+
+        /* 新增提醒样式 */
+        .reminder {
+            color: #ff5722;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
+
 <body>
     <header>
-        <a href="/" class="back-to-home">返回首页</a>
+        <a href="/" class="back-to-home">
+            <i class="fas fa-home"></i> 返回首页
+        </a>
         <h1>更新课程</h1>
     </header>
 
@@ -211,15 +232,16 @@
                 <label for="semester">开课学期:</label>
                 <select id="semester" name="semester" value="course.semester" required>
                     <option value="">请选择学期</option>
-{#                    已经通过js自动生成当前年份上下几个学期的#}
+                    <!-- 已经通过js自动生成当前年份上下几个学期的 -->
                 </select>
             </div>
 
             <!-- 开课学生名单 -->
             <div class="form-group">
-                <label for="student_list">开课学生名单（可为空）:</label>
+                <label for="student_list">完整开课学生名单:</label>
+                <span class="reminder">（可为空，但如果需要更新上传，注意请上传教务系统完整名单，系统会自动比对，缺则添，多则删）</span>
                 <div class="file-upload">
-                    <input type="file" id="student_list" name="student_list" accept=".csv,.xlsx" >
+                    <input type="file" id="student_list" name="student_list" accept=".csv,.xlsx">
                     <span>点击上传</span>
                 </div>
                 <div class="hint">请从教务系统下载学生名单并上传（支持 .csv格式）</div>
@@ -229,7 +251,7 @@
             <!-- 课程介绍 -->
             <div class="form-group">
                 <label for="course_description">课程介绍:</label>
-                <textarea id="course_description" name="course_description" rows="4" ></textarea>
+                <textarea id="course_description" name="course_description" rows="4"></textarea>
                 <div class="hint">（可选）填写课程简介，帮助学生了解课程内容。</div>
             </div>
 
@@ -246,36 +268,37 @@
     </footer>
 
     <script>
-    // 文件上传交互
-    const fileUpload = document.querySelector('.file-upload');
-    const fileInput = document.querySelector('.file-upload input[type="file"]');
-    const fileUploadText = document.querySelector('.file-upload span');
+        // 文件上传交互
+        const fileUpload = document.querySelector('.file-upload');
+        const fileInput = document.querySelector('.file-upload input[type="file"]');
+        const fileUploadText = document.querySelector('.file-upload span');
 
-    fileUpload.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', () => {
-        if (fileInput.files.length > 0) {
-            fileUploadText.innerHTML = `<span class="highlight">${fileInput.files[0].name}</span>`;
-        }
-    });
+        fileUpload.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileUploadText.innerHTML = `<span class="highlight">${fileInput.files[0].name}</span>`;
+            }
+        });
 
-    // 动态生成学期选项
-    const semesterSelect = document.getElementById('semester');
-    const currentYear = new Date().getFullYear();
-    const semesters = [
-        { value: `${currentYear-1}-spring`, text: `${currentYear-1} 春季学期` },
-        { value: `${currentYear-1}-fall`, text: `${currentYear-1} 秋季学期` },
-        { value: `${currentYear}-spring`, text: `${currentYear} 春季学期` },
-        { value: `${currentYear}-fall`, text: `${currentYear} 秋季学期` },
-        { value: `${currentYear + 1}-spring`, text: `${currentYear + 1} 春季学期` },
-        { value: `${currentYear + 1}-fall`, text: `${currentYear + 1} 秋季学期` }
-    ];
+        // 动态生成学期选项
+        const semesterSelect = document.getElementById('semester');
+        const currentYear = new Date().getFullYear();
+        const semesters = [
+            { value: `${currentYear - 1}-spring`, text: `${currentYear - 1} 春季学期` },
+            { value: `${currentYear - 1}-fall`, text: `${currentYear - 1} 秋季学期` },
+            { value: `${currentYear}-spring`, text: `${currentYear} 春季学期` },
+            { value: `${currentYear}-fall`, text: `${currentYear} 秋季学期` },
+            { value: `${currentYear + 1}-spring`, text: `${currentYear + 1} 春季学期` },
+            { value: `${currentYear + 1}-fall`, text: `${currentYear + 1} 秋季学期` }
+        ];
 
-    semesters.forEach(semester => {
-        const option = document.createElement('option');
-        option.value = semester.value;
-        option.textContent = semester.text;
-        semesterSelect.appendChild(option);
-    });
-</script>
+        semesters.forEach(semester => {
+            const option = document.createElement('option');
+            option.value = semester.value;
+            option.textContent = semester.text;
+            semesterSelect.appendChild(option);
+        });
+    </script>
 </body>
+
 </html>
