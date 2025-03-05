@@ -173,11 +173,7 @@ def create_app():
                     return redirect(url_for('register'))
 
                 password_hash = generate_password_hash(password)
-                #如果是微信小程序注册，openid不为空
-                if openid is not None:
-                    user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash,openid=openid)
-                else:
-                    user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
+                user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
                 db.session.add(user)
                 db.session.commit()
                 # 注册成功后cookie保存用户信息
