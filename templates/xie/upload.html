@@ -1,0 +1,49 @@
+<!-- templates/xie/upload.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>资源管理</title>
+</head>
+<body>
+    <h1>文件管理</h1>
+
+    <!-- 显示Flash消息 -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flashes">
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <h3>上传新文件</h3>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="上传">
+    </form>
+
+    <h3>已上传文件列表</h3>
+    <ul>
+    {% for file in files %}
+        <li>{{ file }}
+            <form style="display:inline" method="POST"
+              action="{{ url_for('delete_file', filename=file) }}">
+                <button type="submit"
+                    onclick="return confirm('确认删除？')"
+                    class="btn btn-danger btn-sm">
+                删除
+                </button>
+            </form>
+        </li>
+    {% else %}
+        <li>暂无文件</li>
+    {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('teacher_profile' if session.user_role == 'teacher' else 'student_profile') }}">
+        <button>返回个人中心</button>
+    </a>
+</body>
+</html>

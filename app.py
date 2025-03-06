@@ -34,6 +34,10 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
+    UPLOAD_FOLDER = 'xie/uploads'  # 确保路径正确
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上传文件大小为16MB
     # 初始化数据库
     db = init_db(app)
     #-----微信小程序的appid和secret---------
@@ -602,6 +606,11 @@ def create_app():
     def fuctions():
         return render_template('wang/fuctions.html')
 
+    # 上传文件
+    @app.route('/upload', methods=['GET','POST'])
+    def upload():
+        if request.method == 'GET':
+            return render_template('xie/upload.html')
     # 返回app
     return app
     # ---迁移数据代码-----
