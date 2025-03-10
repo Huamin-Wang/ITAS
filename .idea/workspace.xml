@@ -4,7 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4f2d7fa2-e8ea-454a-bd0b-e52f0dae3747" name="更改" comment="1.美化教师管理界面" />
+    <list default="true" id="adbed7f5-7f6a-45a3-8bf2-365ad8289a36" name="更改" comment="">
+      <change afterPath="$PROJECT_DIR$/templates/qiu/quiz.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance/test1.db" beforeDir="false" afterPath="$PROJECT_DIR$/instance/test1.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/wang/courseManager.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/wang/courseManager.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,94 +24,43 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Flask Main" />
         <option value="HTML File" />
-        <option value="CSS File" />
-        <option value="Python Script" />
       </list>
-    </option>
-  </component>
-  <component name="FlaskConsoleOptions" custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform)); sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo, NoAppException&#10;for module in [&quot;main.py&quot;, &quot;wsgi.py&quot;, &quot;app.py&quot;]:&#10;    try: locals().update(ScriptInfo(app_import_path=module, create_app=None).load_app().make_shell_context()); print(&quot;\nFlask App: %s&quot; % app.import_name); break&#10;    except NoAppException: pass">
-    <envs>
-      <env key="FLASK_APP" value="app" />
-    </envs>
-    <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform)); sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;from flask.cli import ScriptInfo, NoAppException&#10;for module in [&quot;main.py&quot;, &quot;wsgi.py&quot;, &quot;app.py&quot;]:&#10;    try: locals().update(ScriptInfo(app_import_path=module, create_app=None).load_app().make_shell_context()); print(&quot;\nFlask App: %s&quot; % app.import_name); break&#10;    except NoAppException: pass" />
-    <option name="myEnvs">
-      <map>
-        <entry key="FLASK_APP" value="app" />
-      </map>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;Huamin-Wang&quot;
-  }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;git@github.com:Huamin-Wang/ITAS.git&quot;,
-    &quot;accountId&quot;: &quot;2364f12d-196b-4797-89e2-9257d39eefb8&quot;
-  }
-}</component>
   <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 2
 }</component>
-  <component name="ProjectId" id="2oVrAoOLoscjoYjMjdmENMrrUPg" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
-    <ConfirmationsSetting value="2" id="Add" />
-  </component>
+  <component name="ProjectId" id="2u6rIAKE7MZ4f5BNcwAhDUAJkBv" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
     "DefaultHtmlFileTemplate": "HTML File",
     "Flask 服务器.Flask (app.py).executor": "Run",
-    "Flask 服务器.Flask (xxy/chat.py).executor": "Run",
-    "Flask 服务器.flaskProject1.executor": "Run",
-    "JavaScript 调试.500.html.executor": "Run",
-    "Python.API.executor": "Run",
-    "Python.QAQ.executor": "Run",
-    "Python.app (1).executor": "Run",
-    "Python.app.executor": "Run",
-    "Python.course_students.executor": "Run",
-    "Python.intelligenceAPI.executor": "Run",
-    "Python.test.executor": "Run",
+    "Flask 服务器.Flask (app.py:create_app).executor": "Run",
+    "Python.ITAS.executor": "Run",
+    "Python.upload.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/86138/ITAS",
-    "list.type.of.created.stylesheet": "CSS",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="D:\嘉庚学院资料\2024-2025（1）\大创\代码\static" />
-      <recent name="D:\嘉庚学院资料\2024-2025（1）\大创\代码\wang\测试目录" />
-      <recent name="D:\嘉庚学院资料\2024-2025（1）\大创\代码\wang\XunfeiAPI" />
-      <recent name="D:\嘉庚学院资料\2024-2025（1）\大创\代码\flaskProject1\templates" />
-    </key>
-  </component>
-  <component name="RunManager" selected="Python.app">
-    <configuration name="500.html" type="JavascriptDebugType" temporary="true" nameIsGenerated="true" uri="http://localhost:63342/ITAS/templates/wang/500.html" useBuiltInWebServerPort="true">
-      <method v="2" />
-    </configuration>
-    <configuration name="API" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="flaskProject1" />
+  <component name="RunManager" selected="Flask 服务器.Flask (app.py)">
+    <configuration name="ITAS" type="PythonConfigurationType" factoryName="Python">
+      <module name="ITAS" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -108,77 +68,8 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/xu" />
+      <option name="WORKING_DIRECTORY" value="" />
       <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/xu/API.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="QAQ" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="flaskProject1" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/qiu" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/qiu/QAQ.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="ai" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="flaskProject1" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/xu" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="C:\Users\86138\ITAS\xu\ai.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="flaskProject1" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
@@ -191,390 +82,98 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <list>
-      <item itemvalue="JavaScript Debug.500.html" />
-      <item itemvalue="Python.API" />
-      <item itemvalue="Python.ai" />
-      <item itemvalue="Python.QAQ" />
-      <item itemvalue="Python.app" />
-    </list>
+    <configuration name="upload" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="ITAS" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/xie" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/xie/upload.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Flask (app.py)" type="Python.FlaskServer" temporary="true" nameIsGenerated="true">
+      <module name="ITAS" />
+      <option name="target" value="$PROJECT_DIR$/app.py" />
+      <option name="targetType" value="PATH" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Flask (app.py:create_app)" type="Python.FlaskServer" temporary="true" nameIsGenerated="true">
+      <option name="application" value="create_app" />
+      <module name="ITAS" />
+      <option name="target" value="$PROJECT_DIR$/app.py" />
+      <option name="targetType" value="PATH" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="launchJavascriptDebuger" value="false" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.app" />
-        <item itemvalue="Python.ai" />
-        <item itemvalue="Python.API" />
-        <item itemvalue="Python.QAQ" />
+        <item itemvalue="Flask 服务器.Flask (app.py)" />
+        <item itemvalue="Flask 服务器.Flask (app.py:create_app)" />
+        <item itemvalue="Python.upload" />
       </list>
     </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-e768b9ed790e-JavaScript-PY-243.21565.199" />
-        <option value="bundled-python-sdk-cab1f2013843-4ae2d6a61b08-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.21565.199" />
+        <option value="bundled-js-predefined-d6986cc7102b-1632447f56bf-JavaScript-PY-243.25659.43" />
+        <option value="bundled-python-sdk-181015f7ab06-4df51de95216-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-243.25659.43" />
       </set>
     </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="默认任务">
-      <changelist id="4f2d7fa2-e8ea-454a-bd0b-e52f0dae3747" name="更改" comment="" />
-      <created>1730965442896</created>
+      <changelist id="adbed7f5-7f6a-45a3-8bf2-365ad8289a36" name="更改" comment="" />
+      <created>1741579783588</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1730965442896</updated>
-      <workItem from="1730965444591" duration="455000" />
-      <workItem from="1730965965003" duration="166000" />
-      <workItem from="1731049109294" duration="10000" />
-      <workItem from="1731050529111" duration="40000" />
-      <workItem from="1733122487440" duration="3491000" />
-      <workItem from="1733716428891" duration="4244000" />
-      <workItem from="1733722201099" duration="4770000" />
-      <workItem from="1733744244972" duration="1479000" />
-      <workItem from="1734268660036" duration="40000" />
-      <workItem from="1734268740335" duration="869000" />
-      <workItem from="1734402540726" duration="276000" />
-      <workItem from="1734405308444" duration="2562000" />
-      <workItem from="1734408038058" duration="146000" />
-      <workItem from="1734411752253" duration="96000" />
-      <workItem from="1734412285863" duration="4524000" />
-      <workItem from="1734417219980" duration="740000" />
-      <workItem from="1734418063184" duration="67000" />
-      <workItem from="1734418195608" duration="849000" />
-      <workItem from="1734790484752" duration="3118000" />
-      <workItem from="1734793846806" duration="1059000" />
-      <workItem from="1734840771595" duration="3494000" />
-      <workItem from="1734845145006" duration="171000" />
-      <workItem from="1734967601590" duration="292000" />
-      <workItem from="1734967925620" duration="34000" />
-      <workItem from="1734968190783" duration="532000" />
-      <workItem from="1735637247954" duration="7075000" />
-      <workItem from="1735648351771" duration="681000" />
-      <workItem from="1735649129431" duration="197000" />
-      <workItem from="1736251065693" duration="7321000" />
-      <workItem from="1736323349664" duration="14881000" />
-      <workItem from="1736392014565" duration="3895000" />
-      <workItem from="1736406726395" duration="1123000" />
-      <workItem from="1736825121567" duration="2133000" />
-      <workItem from="1736844713428" duration="3756000" />
-      <workItem from="1736868527546" duration="1749000" />
-      <workItem from="1736910544132" duration="26124000" />
-      <workItem from="1737037799153" duration="3862000" />
-      <workItem from="1737084363782" duration="25777000" />
-      <workItem from="1737168741723" duration="4166000" />
-      <workItem from="1737173052897" duration="303000" />
-      <workItem from="1737193335177" duration="4409000" />
-      <workItem from="1737198398919" duration="705000" />
-      <workItem from="1737199117674" duration="2790000" />
-      <workItem from="1737202231174" duration="96000" />
-      <workItem from="1737207302955" duration="3016000" />
-      <workItem from="1737212986023" duration="324000" />
-      <workItem from="1737213319725" duration="111000" />
-      <workItem from="1737251910518" duration="6235000" />
-      <workItem from="1737259751744" duration="19000" />
-      <workItem from="1737259779242" duration="1310000" />
-      <workItem from="1737278296645" duration="2041000" />
-      <workItem from="1737335182910" duration="699000" />
-      <workItem from="1737336036976" duration="1542000" />
-      <workItem from="1737431117165" duration="621000" />
-      <workItem from="1737431831399" duration="219000" />
-      <workItem from="1737444327812" duration="6946000" />
-      <workItem from="1737467188277" duration="2646000" />
-      <workItem from="1737469881506" duration="2000" />
-      <workItem from="1737511065685" duration="2321000" />
-      <workItem from="1737732094607" duration="36000" />
-      <workItem from="1737732225886" duration="44000" />
-      <workItem from="1739005242919" duration="791000" />
-      <workItem from="1739010341252" duration="1559000" />
-      <workItem from="1739013336675" duration="3095000" />
-      <workItem from="1740891051819" duration="935000" />
-      <workItem from="1740895669019" duration="60000" />
-      <workItem from="1740896758095" duration="59000" />
-      <workItem from="1740906212630" duration="45000" />
-      <workItem from="1740906265639" duration="49000" />
-      <workItem from="1740913317159" duration="105000" />
-      <workItem from="1740913459758" duration="1225000" />
-      <workItem from="1740995117122" duration="276000" />
-      <workItem from="1741003031286" duration="9221000" />
-      <workItem from="1741156146123" duration="1573000" />
-      <workItem from="1741158054178" duration="27000" />
-      <workItem from="1741158124841" duration="10062000" />
+      <updated>1741579783588</updated>
+      <workItem from="1741579784898" duration="596000" />
+      <workItem from="1741580397179" duration="1279000" />
     </task>
-    <task id="LOCAL-00001" summary="增加注释">
-      <option name="closed" value="true" />
-      <created>1734415423296</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1734415423296</updated>
-    </task>
-    <task id="LOCAL-00002" summary="优化chat界面的代码和markdown的显示效果">
-      <option name="closed" value="true" />
-      <created>1734794908862</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1734794908862</updated>
-    </task>
-    <task id="LOCAL-00003" summary="ip历史记录独立显示，优化回答统一为markdown格式">
-      <option name="closed" value="true" />
-      <created>1734845291385</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1734845291385</updated>
-    </task>
-    <task id="LOCAL-00004" summary="在wang文件夹增加俩个大模型api供后续功能调用">
-      <option name="closed" value="true" />
-      <created>1735645517048</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1735645517048</updated>
-    </task>
-    <task id="LOCAL-00005" summary="增加开发文档，明确开发任务，修改每个人的文件夹命名">
-      <option name="closed" value="true" />
-      <created>1735648233941</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1735648233941</updated>
-    </task>
-    <task id="LOCAL-00006" summary="增加开发文档，明确开发任务，修改每个人的文件夹命名">
-      <option name="closed" value="true" />
-      <created>1735648392591</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1735648392592</updated>
-    </task>
-    <task id="LOCAL-00007" summary="增加数据库设计，并实现用户登录注册功能">
-      <option name="closed" value="true" />
-      <created>1736349608881</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1736349608881</updated>
-    </task>
-    <task id="LOCAL-00008" summary="增加数据库设计，并实现用户登录注册功能">
-      <option name="closed" value="true" />
-      <created>1736349628041</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1736349628041</updated>
-    </task>
-    <task id="LOCAL-00009" summary="将网页适配不同屏幕">
-      <option name="closed" value="true" />
-      <created>1736843766056</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1736843766056</updated>
-    </task>
-    <task id="LOCAL-00010" summary="添加course模型">
-      <option name="closed" value="true" />
-      <created>1736929114574</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1736929114574</updated>
-    </task>
-    <task id="LOCAL-00011" summary="大版本更新：&#10;1.教师个人中心页面&#10;2.学生个人中心页面">
-      <option name="closed" value="true" />
-      <created>1736946908190</created>
-      <option name="number" value="00011" />
-      <option name="presentableId" value="LOCAL-00011" />
-      <option name="project" value="LOCAL" />
-      <updated>1736946908190</updated>
-    </task>
-    <task id="LOCAL-00012" summary="更新：&#10;1.教师个人中心页面创建课程功能">
-      <option name="closed" value="true" />
-      <created>1737112133348</created>
-      <option name="number" value="00012" />
-      <option name="presentableId" value="LOCAL-00012" />
-      <option name="project" value="LOCAL" />
-      <updated>1737112133348</updated>
-    </task>
-    <task id="LOCAL-00013" summary="更新：&#10;1.学生登录后显示已经被教师上传名单中的课程">
-      <option name="closed" value="true" />
-      <created>1737125540192</created>
-      <option name="number" value="00013" />
-      <option name="presentableId" value="LOCAL-00013" />
-      <option name="project" value="LOCAL" />
-      <updated>1737125540192</updated>
-    </task>
-    <task id="LOCAL-00014" summary="修复：&#10;1.注册后点击注册页面重复注册问题&#10;2.登录后还可以重复登录问题">
-      <option name="closed" value="true" />
-      <created>1737172313968</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1737172313968</updated>
-    </task>
-    <task id="LOCAL-00015" summary="增加：&#10;1.查看注册学生名单">
-      <option name="closed" value="true" />
-      <created>1737200483629</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1737200483630</updated>
-    </task>
-    <task id="LOCAL-00016" summary="增加：&#10;1.用户输入学号忽略大小写">
-      <option name="closed" value="true" />
-      <created>1737210854820</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1737210854820</updated>
-    </task>
-    <task id="LOCAL-00017" summary="修复上一个版本的bug">
-      <option name="closed" value="true" />
-      <created>1737212909521</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1737212909521</updated>
-    </task>
-    <task id="LOCAL-00018" summary="新增：学生注册时，检查学号和姓名是否与教师上传的名单匹配，如不匹配，则禁止注册">
-      <option name="closed" value="true" />
-      <created>1737213419683</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1737213419683</updated>
-    </task>
-    <task id="LOCAL-00019" summary="1.移除注册时检查学生名单&#10;2.美化界面">
-      <option name="closed" value="true" />
-      <created>1737259428917</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1737259428917</updated>
-    </task>
-    <task id="LOCAL-00020" summary="1.优化消息提醒">
-      <option name="closed" value="true" />
-      <created>1737261121161</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1737261121161</updated>
-    </task>
-    <task id="LOCAL-00021" summary="1.添加首页底部的备案信息">
-      <option name="closed" value="true" />
-      <created>1737335459093</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1737335459093</updated>
-    </task>
-    <task id="LOCAL-00022" summary="1.添加超时自动清除用户信息&#10;2.添加500错误处理">
-      <option name="closed" value="true" />
-      <created>1737431701572</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1737431701572</updated>
-    </task>
-    <task id="LOCAL-00023" summary="1.添加屏蔽对 WordPress 相关路径的请求">
-      <option name="closed" value="true" />
-      <created>1737431920699</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1737431920699</updated>
-    </task>
-    <task id="LOCAL-00024" summary="1.合并之前两个版本的钩子函数">
-      <option name="closed" value="true" />
-      <created>1737432005607</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1737432005607</updated>
-    </task>
-    <task id="LOCAL-00025" summary="1.检查登录超时，设置为90分钟&#10;2.增加页面登录状态检查">
-      <option name="closed" value="true" />
-      <created>1737454711237</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1737454711237</updated>
-    </task>
-    <task id="LOCAL-00026" summary="1.新增教师课程管理页面中的随机选中学生">
-      <option name="closed" value="true" />
-      <created>1737469789697</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1737469789697</updated>
-    </task>
-    <task id="LOCAL-00027" summary="1.优化问题">
-      <option name="closed" value="true" />
-      <created>1737732257706</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1737732257707</updated>
-    </task>
-    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="增加注释" />
-    <MESSAGE value="优化chat界面的代码和markdown的显示效果" />
-    <MESSAGE value="ip历史记录独立显示，优化回答统一为markdown格式" />
-    <MESSAGE value="在wang文件夹增加俩个大模型api供后续功能调用" />
-    <MESSAGE value="增加开发文档，明确开发任务，修改每个人的文件夹命名" />
-    <MESSAGE value="增加数据库设计，并实现用户登录注册功能" />
-    <MESSAGE value="将网页适配不同屏幕" />
-    <MESSAGE value="添加course模型" />
-    <MESSAGE value="大版本更新：&#10;1.教师个人中心页面&#10;2.学生个人中心页面" />
-    <MESSAGE value="更新：&#10;1.教师个人中心页面创建课程功能" />
-    <MESSAGE value="更新：&#10;1.学生登录后显示已经被教师上传名单中的课程" />
-    <MESSAGE value="修复：&#10;1.注册后点击注册页面重复注册问题&#10;2.登录后还可以重复登录问题" />
-    <MESSAGE value="增加：&#10;1.查看注册学生名单" />
-    <MESSAGE value="增加：&#10;1.用户输入学号忽略大小写" />
-    <MESSAGE value="修复上一个版本的bug" />
-    <MESSAGE value="新增：学生注册时，检查学号和姓名是否与教师上传的名单匹配，如不匹配，则禁止注册" />
-    <MESSAGE value="1.移除注册时检查学生名单&#10;2.美化界面" />
-    <MESSAGE value="1.优化消息提醒" />
-    <MESSAGE value="1.添加首页底部的备案信息" />
-    <MESSAGE value="1.添加超时自动清除用户信息&#10;2.添加500错误处理" />
-    <MESSAGE value="1.添加屏蔽对 WordPress 相关路径的请求" />
-    <MESSAGE value="1.合并之前两个版本的钩子函数" />
-    <MESSAGE value="1.检查登录超时，设置为90分钟&#10;2.增加页面登录状态检查" />
-    <MESSAGE value="1.新增教师课程管理页面中的随机选中学生" />
-    <MESSAGE value="1.优化问题" />
-    <option name="LAST_COMMIT_MESSAGE" value="1.优化问题" />
-  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/ITAS$API.coverage" NAME="API Coverage Results" MODIFIED="1741160198817" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/xu" />
-    <SUITE FILE_PATH="coverage/ITAS$app.coverage" NAME="app Coverage Results" MODIFIED="1741182191258" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1740921673804" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ITAS$QAQ.coverage" NAME="QAQ 覆盖结果" MODIFIED="1740914689233" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/qiu" />
-    <SUITE FILE_PATH="coverage/$app.coverage" NAME="app 覆盖结果" MODIFIED="1741011292961" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/$course_students.coverage" NAME="course_students 覆盖结果" MODIFIED="1737105390581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/models" />
-    <SUITE FILE_PATH="coverage/$Flask__xxy_chat_py_.coverage" NAME="Flask (xxy/chat.py) 覆盖结果" MODIFIED="1735643597278" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/ITAS$app__1_.coverage" NAME="app (1) Coverage Results" MODIFIED="1741160237074" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/xu" />
-    <SUITE FILE_PATH="coverage/$API.coverage" NAME="API 覆盖结果" MODIFIED="1739006022839" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/XunfeiAPI" />
-    <SUITE FILE_PATH="coverage/$test.coverage" NAME="test 覆盖结果" MODIFIED="1737104844800" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/测试目录" />
-    <SUITE FILE_PATH="coverage/$intelligenceAPI.coverage" NAME="intelligenceAPI 覆盖结果" MODIFIED="1735637915212" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/XunfeiAPI" />
-    <SUITE FILE_PATH="coverage/app_py$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1737198417827" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/$flaskProject1.coverage" NAME="flaskProject1 覆盖结果" MODIFIED="1737256970114" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/flaskProject1$flaskProject1.coverage" NAME="flaskProject1 覆盖结果" MODIFIED="1730965831022" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ITAS$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1741581678730" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/ITAS$ITAS.coverage" NAME="ITAS 覆盖结果" MODIFIED="1741580598615" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/ITAS$upload.coverage" NAME="upload 覆盖结果" MODIFIED="1741580783739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/xie" />
+    <SUITE FILE_PATH="coverage/ITAS$Flask__app_py_create_app_.coverage" NAME="Flask (app.py:create_app) 覆盖结果" MODIFIED="1741581537473" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

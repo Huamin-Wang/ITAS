@@ -210,6 +210,20 @@ def create_app():
             flash('您已登录！', 'success')
             return loginHandle()
 
+    @app.route('/course/quiz/<int:course_id>', methods=['GET', 'POST'])
+    def quiz(course_id):
+        if request.method == 'GET':
+            # 渲染小测页面模板
+            session["currentCourse"] = course_id
+            return render_template('qiu/quiz.html', title=course_id)
+        elif request.method == 'POST':
+            # 处理 POST 请求，假设这里接收一个名为 'answer' 的表单数据
+            answer = request.form.get('answer')
+            if answer:
+                return render_template('result.html', answer=answer)
+            else:
+                return "未接收到答案，请重新提交。"
+
 
     # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
     @app.route('/loginHandle', methods=['POST'])
