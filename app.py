@@ -9,16 +9,13 @@ from wang.models import init_db
 from wang.models.course import Course
 from wang.models.course_students import Course_Students
 from wang.models.user import User
-
 from datetime import timedelta
 import os
 import csv
 import io
 import chardet
 import requests
-
-from xu.views import ai_bp
-#from flask_migrate import Migrate
+from flask_migrate import Migrate
 
 # 获取环境变量的值，如果没有设置则默认为 'development'
 environment = os.getenv('FLASK_ENV', 'development')
@@ -34,18 +31,11 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
-    UPLOAD_FOLDER = 'xie/uploads'  # 确保路径正确
-    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上传文件大小为16MB
     # 初始化数据库
     db = init_db(app)
     #-----微信小程序的appid和secret---------
     APP_ID = 'wx3dd32842e9e24690'
     APP_SECRET='09732f45784f51d2b9e5bad0902ec17a'
-
-    app.register_blueprint(ai_bp)  # 注册你的 Blueprint
-
     @app.route('/getOpenId', methods=['GET', 'POST'])
     def get_openid():
         print("登录小程序")
@@ -183,7 +173,11 @@ def create_app():
                     return redirect(url_for('register'))
 
                 password_hash = generate_password_hash(password)
-                user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
+                #如果是微信小程序注册，openid不为空
+                if openid is not None:
+                    user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash,openid=openid)
+                else:
+                    user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
                 db.session.add(user)
                 db.session.commit()
                 # 注册成功后cookie保存用户信息
@@ -209,20 +203,6 @@ def create_app():
         else:
             flash('您已登录！', 'success')
             return loginHandle()
-
-    @app.route('/course/quiz/<int:course_id>', methods=['GET', 'POST'])
-    def quiz(course_id):
-        if request.method == 'GET':
-            # 渲染小测页面模板
-            session["currentCourse"] = course_id
-            return render_template('qiu/quiz.html', title=course_id)
-        elif request.method == 'POST':
-            # 处理 POST 请求，假设这里接收一个名为 'answer' 的表单数据
-            answer = request.form.get('answer')
-            if answer:
-                return render_template('result.html', answer=answer)
-            else:
-                return "未接收到答案，请重新提交。"
 
 
     # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
@@ -620,17 +600,12 @@ def create_app():
     def fuctions():
         return render_template('wang/fuctions.html')
 
-    # 上传文件
-    @app.route('/upload', methods=['GET','POST'])
-    def upload():
-        if request.method == 'GET':
-            return render_template('xie/upload.html')
     # 返回app
     return app
     # ---迁移数据代码-----
     # # 返回app，db
-#     return db,app
-#
+    # return db,app
+
 # from sqlalchemy import text
 # db, app = create_app()  # 创建app
 # with app.app_context():
@@ -645,7 +620,7 @@ def create_app():
 # if __name__ == '__main__':
 #     app.run(host='0.0.0.0', port=80, debug=True)
 # ！！！迁移时，请注释掉下述代码if __name__ == '__main__':，否则会报错
-# ---迁移数据代码-----
+# ---迁移数据代码-----   步骤：  1.模型中创建迁移字段 2.删除alembic_version表 3.删除migrationgs文件夹  4.执行迁移命令：1）flask db init   2）flask db migrate -m "信息"     3）flask db upgrade：这步如有问题问ai，可能要修改一下迁移文件
 
 
 import socket
