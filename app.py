@@ -15,7 +15,7 @@ import csv
 import io
 import chardet
 import requests
-#from flask_migrate import Migrate
+from flask_migrate import Migrate
 
 # 获取环境变量的值，如果没有设置则默认为 'development'
 environment = os.getenv('FLASK_ENV', 'development')
@@ -604,8 +604,8 @@ def create_app():
     return app
     # ---迁移数据代码-----
     # # 返回app，db
-#     return db,app
-#
+    # return db,app
+
 # from sqlalchemy import text
 # db, app = create_app()  # 创建app
 # with app.app_context():
@@ -620,7 +620,7 @@ def create_app():
 # if __name__ == '__main__':
 #     app.run(host='0.0.0.0', port=80, debug=True)
 # ！！！迁移时，请注释掉下述代码if __name__ == '__main__':，否则会报错
-# ---迁移数据代码-----
+# ---迁移数据代码-----   步骤：  1.模型中创建迁移字段 2.删除alembic_version表 3.删除migrationgs文件夹  4.执行迁移命令：1）flask db init   2）flask db migrate -m "信息"     3）flask db upgrade：这步如有问题问ai，可能要修改一下迁移文件
 
 
 import socket
