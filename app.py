@@ -626,24 +626,24 @@ def create_app():
         if request.method == 'GET':
             return render_template('xie/upload.html')
     # 返回app
-    # return app
+    return app
     # ---迁移数据代码-----
     # # 返回app，db
-    return db,app
+    # return db,app
 #
 from sqlalchemy import text
-db, app = create_app()  # 创建app
-# with app.app_context():
-#     try:
-#         # 使用 text 函数将 SQL 语句包装起来
-#         db.session.execute(text('DROP TABLE alembic_version'))
-#         db.session.commit()
-#         print("alembic_version 表已删除")
-#     except Exception as e:
-#         print(f"删除 alembic_version 表时出错: {e}")
-migrate = Migrate(app, db)  # 添加数据库字段时，用来创建迁移对象
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+# db, app = create_app()  # 创建app
+# # with app.app_context():
+# #     try:
+# #         # 使用 text 函数将 SQL 语句包装起来
+# #         db.session.execute(text('DROP TABLE alembic_version'))
+# #         db.session.commit()
+# #         print("alembic_version 表已删除")
+# #     except Exception as e:
+# #         print(f"删除 alembic_version 表时出错: {e}")
+# migrate = Migrate(app, db)  # 添加数据库字段时，用来创建迁移对象
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=80, debug=True)
 # ！！！迁移时，请注释掉下述代码if __name__ == '__main__':，否则会报错
 # ---迁移数据代码-----    步骤：  1.模型中创建迁移字段 2.删除alembic_version表（删除完后注释掉删除代码） 3.删除migrationgs文件夹  4.执行迁移命令：1）flask db init   2）flask db migrate -m "信息"     3）flask db upgrade：这步如有问题问ai，可能要修改一下迁移文件
 
@@ -653,98 +653,98 @@ import ssl
 
 from waitress import serve
 
-# if __name__ == '__main__':
-#     app = create_app()  # 创建 app
-#
-#     if environment == 'production':
-#         print('Starting production server with Waitress...')
-#         # 配置 SSL 证书路径
-#         certfile = 'C:/Certbot/live/001ai.top/fullchain.pem'
-#         keyfile = 'C:/Certbot/live/001ai.top/privkey.pem'
-#
-#         try:
-#             # 创建 HTTPS 套接字
-#             https_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#             https_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-#             https_sock.bind(('0.0.0.0', 443))
-#             https_sock.listen(5)
-#
-#             # 创建 SSL 上下文 - 更宽松的配置
-#             context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-#             context.load_cert_chain(certfile=certfile, keyfile=keyfile)
-#
-#             # 允许更广泛的客户端兼容性
-#             try:
-#                 context.minimum_version = ssl.TLSVersion.TLSv1
-#                 # 更宽松的加密套件设置
-#                 context.set_ciphers('ALL:@SECLEVEL=0')
-#             except (AttributeError, ValueError):
-#                 # 如果 Python 版本不支持这些设置选项
-#                 pass
-#
-#             # 将普通套接字包装成 SSL 套接字
-#             ssl_sock = context.wrap_socket(https_sock, server_side=True)
-#
-#             # 启动 HTTPS 服务器
-#             def run_https_server():
-#                 while True:
-#                     try:
-#                         serve(app, sockets=[ssl_sock], url_scheme='https')
-#                     except ssl.SSLError as e:
-#                         print(f"SSL error: {e}. Continuing...")
-#                     except ConnectionError as e:
-#                         print(f"Connection error: {e}. Continuing...")
-#                     except Exception as e:
-#                         print(f"Unexpected error in HTTPS server: {e}")
-#                         # 在重大错误后短暂暂停以避免资源耗尽
-#                         import time
-#                         time.sleep(1)
-#
-#             # 创建一个简单的 Flask 应用用于处理 HTTP 重定向
-#             redirect_app = Flask(__name__)
-#
-#
-#             @redirect_app.route('/', defaults={'path': ''})
-#             @redirect_app.route('/<path:path>')
-#             def redirect_to_https(path):
-#                 return redirect(f'https://{request.host}{request.path}', code=301)
-#
-#
-#             # 创建 HTTP 套接字
-#             http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#             http_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-#             http_sock.bind(('0.0.0.0', 80))
-#             http_sock.listen(5)
-#
-#
-#             # 启动 HTTP 重定向服务器
-#             def run_http_server():
-#
-#                 try:
-#                     serve(redirect_app, sockets=[http_sock])
-#                 except Exception as e:
-#                     print(f"An unexpected error occurred in HTTP server: {e}")
-#
-#                 serve(redirect_app, sockets=[http_sock])
-#
-#
-#             # 分别在不同线程中启动 HTTP 和 HTTPS 服务器
-#             from threading import Thread
-#
-#             https_thread = Thread(target=run_https_server)
-#             http_thread = Thread(target=run_http_server)
-#
-#             https_thread.start()
-#             http_thread.start()
-#
-#             print('生产服务器正在运行。您可以通过以下网址访问应用程序：')
-#             print('https://www.001ai.top')
-#         except Exception as e:
-#             print(f"An error occurred while starting the server: {e}")
-#     else:
-#         print('使用 Waitress 启动开发服务器...')
-#         print('开发服务器正在运行，您可以通过以下网址访问应用程序：')
-#         print('http://127.0.0.1')
-#         print(f'http://{socket.gethostbyname(socket.gethostname())}')
-#         print('或从本地网络上的其他设备访问')
-#         serve(app, host='0.0.0.0', port=80)
+if __name__ == '__main__':
+    app = create_app()  # 创建 app
+
+    if environment == 'production':
+        print('Starting production server with Waitress...')
+        # 配置 SSL 证书路径
+        certfile = 'C:/Certbot/live/001ai.top/fullchain.pem'
+        keyfile = 'C:/Certbot/live/001ai.top/privkey.pem'
+
+        try:
+            # 创建 HTTPS 套接字
+            https_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            https_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            https_sock.bind(('0.0.0.0', 443))
+            https_sock.listen(5)
+
+            # 创建 SSL 上下文 - 更宽松的配置
+            context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+            context.load_cert_chain(certfile=certfile, keyfile=keyfile)
+
+            # 允许更广泛的客户端兼容性
+            try:
+                context.minimum_version = ssl.TLSVersion.TLSv1
+                # 更宽松的加密套件设置
+                context.set_ciphers('ALL:@SECLEVEL=0')
+            except (AttributeError, ValueError):
+                # 如果 Python 版本不支持这些设置选项
+                pass
+
+            # 将普通套接字包装成 SSL 套接字
+            ssl_sock = context.wrap_socket(https_sock, server_side=True)
+
+            # 启动 HTTPS 服务器
+            def run_https_server():
+                while True:
+                    try:
+                        serve(app, sockets=[ssl_sock], url_scheme='https')
+                    except ssl.SSLError as e:
+                        print(f"SSL error: {e}. Continuing...")
+                    except ConnectionError as e:
+                        print(f"Connection error: {e}. Continuing...")
+                    except Exception as e:
+                        print(f"Unexpected error in HTTPS server: {e}")
+                        # 在重大错误后短暂暂停以避免资源耗尽
+                        import time
+                        time.sleep(1)
+
+            # 创建一个简单的 Flask 应用用于处理 HTTP 重定向
+            redirect_app = Flask(__name__)
+
+
+            @redirect_app.route('/', defaults={'path': ''})
+            @redirect_app.route('/<path:path>')
+            def redirect_to_https(path):
+                return redirect(f'https://{request.host}{request.path}', code=301)
+
+
+            # 创建 HTTP 套接字
+            http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            http_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            http_sock.bind(('0.0.0.0', 80))
+            http_sock.listen(5)
+
+
+            # 启动 HTTP 重定向服务器
+            def run_http_server():
+
+                try:
+                    serve(redirect_app, sockets=[http_sock])
+                except Exception as e:
+                    print(f"An unexpected error occurred in HTTP server: {e}")
+
+                serve(redirect_app, sockets=[http_sock])
+
+
+            # 分别在不同线程中启动 HTTP 和 HTTPS 服务器
+            from threading import Thread
+
+            https_thread = Thread(target=run_https_server)
+            http_thread = Thread(target=run_http_server)
+
+            https_thread.start()
+            http_thread.start()
+
+            print('生产服务器正在运行。您可以通过以下网址访问应用程序：')
+            print('https://www.001ai.top')
+        except Exception as e:
+            print(f"An error occurred while starting the server: {e}")
+    else:
+        print('使用 Waitress 启动开发服务器...')
+        print('开发服务器正在运行，您可以通过以下网址访问应用程序：')
+        print('http://127.0.0.1')
+        print(f'http://{socket.gethostbyname(socket.gethostname())}')
+        print('或从本地网络上的其他设备访问')
+        serve(app, host='0.0.0.0', port=80)
