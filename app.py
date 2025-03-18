@@ -1,6 +1,7 @@
 from urllib.request import localhost
 from zipfile import error
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, \
+    send_from_directory
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash
 from threading import Thread
@@ -118,7 +119,7 @@ def create_app():
             abort(403)  # 返回 403 Forbidden
 
         #登录状态检查，排除登录和注册页面
-        if   'user_id' not in session and request.endpoint not in ["getCourseById","getStudentCourses","minilogin","index", 'loginHandle', 'register', 'login', 'get_openid', 'main'] and not request.path.startswith('/getCourseById/'):   #禁止重定向加的是方法名，不是路由名
+        if   'user_id' not in session and request.endpoint not in ["forum","getCourseById","getStudentCourses","minilogin","index", 'loginHandle', 'register', 'login', 'get_openid', 'main'] and not request.path.startswith('/getCourseById/'):   #禁止重定向加的是方法名，不是路由名
             # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
             return redirect(url_for('index'))
 
@@ -324,6 +325,12 @@ def create_app():
     def chatHandle():
         response = c.chat()
         return response
+    # 匿名论坛
+    @app.route('/forum')
+    def forum():
+        print(f"用户{session.get('user_name')}正在查看论坛！")
+        #重定向到http://116.205.170.203:81/forum.html
+        return redirect("http://116.205.170.203:81/forum.html", code=302)
 
     @app.route("/logout", methods=['GET'])
     def logout():
