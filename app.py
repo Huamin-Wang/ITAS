@@ -1,7 +1,9 @@
 from urllib.request import localhost
 from zipfile import error
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, \
-    send_from_directory
+
+
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
+
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash
 from threading import Thread
@@ -17,7 +19,6 @@ import csv
 import io
 import chardet
 import requests
-
 from xu.views import ai_bp
 from flask_migrate import Migrate
 
@@ -25,14 +26,15 @@ from flask_migrate import Migrate
 environment = os.getenv('FLASK_ENV', 'development')
 if "production" in environment:
     environment = 'production'
-
-
+# ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
     app = Flask(__name__)
+
     CORS(app, supports_credentials=True)  # 启用CORS支持
+
     # 配置数据库
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -43,6 +45,7 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上传文件大小为16MB
     # 初始化数据库
     db = init_db(app)
+
     # -----微信小程序的appid和secret---------
     APP_ID = 'wx3dd32842e9e24690'
     APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
@@ -106,6 +109,7 @@ def create_app():
         return jsonify({'success': False, 'message': '用户名或密码错误！'})
 
     # ！！！ ----------以下为电脑端项目中的路由处理函数
+
     @app.before_request
     def before_request():
         # ----HTTP 请求转发到 HTTPS（服务器代码）------
@@ -123,12 +127,9 @@ def create_app():
         if request.path.startswith(('/wordpress', '/wp-admin')):
             abort(403)  # 返回 403 Forbidden
 
-        # 登录状态检查，排除登录和注册页面
-        if 'user_id' not in session and request.endpoint not in ["forum", "getCourseById", "getStudentCourses",
-                                                                 "minilogin", "index", 'loginHandle', 'register',
-                                                                 'login', 'get_openid',
-                                                                 'main'] and not request.path.startswith(
-                '/getCourseById/'):  # 禁止重定向加的是方法名，不是路由名
+
+        #登录状态检查，排除登录和注册页面
+        if   'user_id' not in session and request.endpoint not in ["chat","forum","getCourseById","getStudentCourses","minilogin","index", 'loginHandle', 'register', 'login', 'get_openid', 'main'] and not request.path.startswith('/getCourseById/'):   #禁止重定向加的是方法名，不是路由名
             # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
             return redirect(url_for('index'))
 
@@ -193,7 +194,11 @@ def create_app():
                     return redirect(url_for('register'))
 
                 password_hash = generate_password_hash(password)
-                user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
+                #如果是微信小程序注册，openid不为空
+                if openid is not None:
+                    user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash,openid=openid)
+                else:
+                    user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
                 db.session.add(user)
                 db.session.commit()
                 # 注册成功后cookie保存用户信息
@@ -220,6 +225,7 @@ def create_app():
             flash('您已登录！', 'success')
             return loginHandle()
 
+
     @app.route('/course/quiz/<int:course_id>', methods=['GET', 'POST'])
     def quiz(course_id):
         if request.method == 'GET':
@@ -233,6 +239,7 @@ def create_app():
                 return render_template('result.html', answer=answer)
             else:
                 return "未接收到答案，请重新提交。"
+
 
     # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
     @app.route('/loginHandle', methods=['POST'])
@@ -336,12 +343,7 @@ def create_app():
         response = c.chat()
         return response
 
-    # 匿名论坛
-    @app.route('/forum')
-    def forum():
-        print(f"用户{session.get('user_name')}正在查看论坛！")
-        # 重定向到http://116.205.170.203:81/forum.html
-        return redirect("http://116.205.170.203:81/forum.html", code=302)
+
 
     @app.route("/logout", methods=['GET'])
     def logout():
@@ -483,6 +485,12 @@ def create_app():
         except error:
             flash('学生名单导入失败！', 'danger')
             return redirect(url_for('create_course'))
+      # 匿名论坛
+    @app.route('/forum')
+    def forum():
+        print(f"用户{session.get('user_name')}正在查看论坛！")
+        #重定向到http://116.205.170.203:81/forum.html
+        return redirect("http://116.205.170.203:81/forum.html", code=302)
 
     # 更新课程信息页面
     @app.route('/update_course/<int:course_id>', methods=['GET', 'POST'])
@@ -667,7 +675,8 @@ def create_app():
     # 列出我们还需要实现的的功能
     @app.route('/fuctions')
     def fuctions():
-        return render_template('wang/fuctions.html')
+        # 跳转论坛
+        return url_for('forum')
 
     # 上传文件
     @app.route('/upload', methods=['GET', 'POST'])
@@ -682,8 +691,10 @@ def create_app():
     # return db,app
 
 
+
 #
 from sqlalchemy import text
+
 # db, app = create_app()  # 创建app
 # with app.app_context():
 #     try:
@@ -697,7 +708,9 @@ from sqlalchemy import text
 # if __name__ == '__main__':
 #     app.run(host='0.0.0.0', port=80, debug=True)
 # ！！！迁移时，请注释掉下述代码if __name__ == '__main__':，否则会报错
-# ---迁移数据代码-----    步骤：  1.模型中创建迁移字段 2.删除alembic_version表（删除完后注释掉删除代码） 3.删除migrationgs文件夹  4.执行迁移命令：1）flask db init   2）flask db migrate -m "信息"     3）flask db upgrade：这步如有问题问ai，可能要修改一下迁移文件
+
+# ---迁移数据代码-----   步骤：  1.模型中创建迁移字段 2.删除alembic_version表 3.删除migrationgs文件夹  4.执行迁移命令：1）flask db init   2）flask db migrate -m "信息"     3）flask db upgrade：这步如有问题问ai，可能要修改一下迁移文件
+
 
 
 import socket
@@ -736,7 +749,6 @@ if __name__ == '__main__':
 
             # 将普通套接字包装成 SSL 套接字
             ssl_sock = context.wrap_socket(https_sock, server_side=True)
-
 
             # 启动 HTTPS 服务器
             def run_https_server():
