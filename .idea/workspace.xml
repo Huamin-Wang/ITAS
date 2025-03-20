@@ -4,27 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="adbed7f5-7f6a-45a3-8bf2-365ad8289a36" name="更改" comment="1.更新论坛跳转">
-      <change afterPath="$PROJECT_DIR$/templates/wang/assignments.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/ITAS.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ITAS.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/instance/test1.db" beforeDir="false" afterPath="$PROJECT_DIR$/instance/test1.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/README" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/alembic.ini" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/env.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/script.py.mako" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/versions/2735362e5526_添加.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/versions/d2f74118d0ce_add_openid_field_to_user_model.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/img_1.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/wang/courseManager.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/wang/courseManager.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wang/deepSeekAPI/API.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/wang/models/assignment.py" beforeDir="false" afterPath="$PROJECT_DIR$/wang/models/assignment.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/wang/models/quiz.py" beforeDir="false" afterPath="$PROJECT_DIR$/wang/models/quiz.py" afterDir="false" />
-    </list>
+    <list default="true" id="adbed7f5-7f6a-45a3-8bf2-365ad8289a36" name="更改" comment="1.增加教师作业布置功能" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -248,7 +228,7 @@
       <workItem from="1742095271128" duration="1534000" />
       <workItem from="1742214942963" duration="1973000" />
       <workItem from="1742307940551" duration="1450000" />
-      <workItem from="1742446549479" duration="7289000" />
+      <workItem from="1742446549479" duration="7621000" />
     </task>
     <task id="LOCAL-00001" summary="1.更新豆包api">
       <option name="closed" value="true" />
@@ -266,7 +246,31 @@
       <option name="project" value="LOCAL" />
       <updated>1742309390859</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="1.增加教师作业布置功能">
+      <option name="closed" value="true" />
+      <created>1742457543904</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1742457543904</updated>
+    </task>
+    <task id="LOCAL-00004" summary="1.增加教师作业布置功能">
+      <option name="closed" value="true" />
+      <created>1742457631555</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1742457631555</updated>
+    </task>
+    <task id="LOCAL-00005" summary="1.增加教师作业布置功能">
+      <option name="closed" value="true" />
+      <created>1742457659157</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1742457659157</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -275,13 +279,14 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="1.更新豆包api" />
     <MESSAGE value="1.更新论坛跳转" />
-    <option name="LAST_COMMIT_MESSAGE" value="1.更新论坛跳转" />
+    <MESSAGE value="1.增加教师作业布置功能" />
+    <option name="LAST_COMMIT_MESSAGE" value="1.增加教师作业布置功能" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/ITAS$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1741581678730" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/$Flask__app_py_create_app_.coverage" NAME="Flask (app.py:create_app) 覆盖结果" MODIFIED="1742455612278" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ITAS$ITAS.coverage" NAME="ITAS 覆盖结果" MODIFIED="1741580598615" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1742457337666" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/$Flask__app_py_.coverage" NAME="Flask (app.py) 覆盖结果" MODIFIED="1742457669924" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ITAS$Flask__app_py_create_app_.coverage" NAME="Flask (app.py:create_app) 覆盖结果" MODIFIED="1741581537473" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/ITAS$upload.coverage" NAME="upload 覆盖结果" MODIFIED="1741580783739" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/xie" />
     <SUITE FILE_PATH="coverage/$API.coverage" NAME="API 覆盖结果" MODIFIED="1742446616143" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/wang/DouBaoAPI" />
