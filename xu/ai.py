@@ -1,10 +1,9 @@
-# 请先安装OpenAI SDK：`pip3 install openai`
-
 from openai import OpenAI
 
 def get_answer(question: str):
     # 请替换为您的API密钥
     # 使用您的API密钥和DeepSeek的API基础URL创建客户端
+    global response
     client = OpenAI(api_key="sk-720be95e2f414916aac8bf36b1994e83", base_url="https://api.deepseek.com")
 
     try:
@@ -21,11 +20,3 @@ def get_answer(question: str):
         print(f"An error occurred: {e}")
         # 打印助手的响应
     return response.choices[0].message.content
-
-# 测试
-if __name__ == '__main__':
-    question = "你是什麽大模型"
-    answer = get_answer(question)
-    print(answer)
-
-
