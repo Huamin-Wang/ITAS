@@ -652,7 +652,6 @@ def create_app():
             course = Course.query.get(course_id)
             # Also fetch existing assignments for this course
             return render_template('wang/assignments.html', course=course, assignments=assignments)
-        # 课程管理页面：作业布置处理
         if request.method == 'POST':
             course = Course.query.get(course_id)
             assignment_name = request.form.get('title')  # From form field 'title' in HTML
@@ -667,9 +666,43 @@ def create_app():
                                     description=assignment_description, due_date=assignment_deadline)
             db.session.add(assignment)
             db.session.commit()
-            flash('作业布置成功！刷新网页获取！', 'success')
+            flash('作业布置成功！', 'success')
             print(f"用户{session.get('user_name')}为课程{course.name}布置了作业！")
-            return render_template('wang/assignments.html', course=course, assignments=assignments)
+            # 重新请求'/course/assignments/<int:course_id>'路径，刷新页面
+            return redirect(url_for('assignments', course_id=course_id))
+    # 课程管理页面：作业详情
+    @app.route('/course/assignment_detail/<int:assignment_id>', methods=['GET', 'POST'])
+    def assignment_detail(assignment_id):
+        flag = int(request.args.get('flag', 0))
+        print(type(flag))
+        print(f"flag:{flag}")
+        # 获取作业信息
+        assignment = Assignment.query.get(assignment_id)
+        course = Course.query.get(assignment.course_id)
+
+        if request.method == 'GET':
+            print(f"用户{session.get('user_name')}正在查看课程{course.name}的作业详情！")
+            if flag == 1:
+                # 删除作业
+                db.session.delete(assignment)
+                db.session.commit()
+                flash('作业删除成功！', 'success')
+                print(f"用户{session.get('user_name')}删除了课程{course.name}的作业！")
+                return redirect(url_for('assignments', course_id=course.id))
+            return render_template('wang/assignment_detail.html', assignment=assignment, course=course)
+
+        # 处理编辑作业的POST请求
+        if request.method == 'POST':
+            assignment.title = request.form.get('title')
+            assignment.description = request.form.get('description')
+            from datetime import datetime
+            assignment.due_date = datetime.strptime(request.form.get('due_date'), '%Y-%m-%d').date()
+            db.session.commit()
+            flash('作业编辑成功！', 'success')
+            print(f"用户{session.get('user_name')}编辑了课程{course.name}的作业！")
+            return redirect(url_for('assignments', assignment_id=assignment_id,course_id=course.id))
+
+
 
 
     # 列出我们还需要实现的的功能
