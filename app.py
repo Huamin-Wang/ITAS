@@ -6,7 +6,7 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash
 from threading import Thread
 import xie.chat as c
-from wang.models import init_db, Assignment
+from wang.models import init_db, Assignment, Submission
 from wang.models.course import Course
 from wang.models.course_students import Course_Students
 from wang.models.user import User
@@ -283,7 +283,30 @@ def create_app():
                 courses.append(course)
             print(f"用户{user.name}正在查看自己的课程！")
             print(courses)
-            return render_template('wang/student_profile.html', courses=courses)
+            # 获取学生所有课程的作业
+            Allassignments = []
+            # 根据courses获取所有的作业
+            for course in courses:
+                assignments = Assignment.query.filter_by(course_id=course.id).all()
+                for assignment in assignments:
+                    Allassignments.append(assignment)
+            # 输出待完成的作业
+            assignments_to_do = []
+                 #判断作业是否已经提交
+            for assignment in Allassignments:
+                print(f"assignment:{assignment}")
+                # 通过student_id和assignment_id查找submission表中的记录
+                # 如果有记录，说明已经提交
+                submission = Submission.query.filter_by(student_id=user.id, assignment_id=assignment.id).first()
+                if submission:
+                    print(f"用户{user.name}已经提交了作业{assignment.title}")
+                else:
+                    # 如果没有记录，说明未提交
+                    print(f"用户{user.name}未提交作业{assignment.title}")
+                    #将未提交作业添加到assignments_to_do中
+                    assignments_to_do.append(assignment)
+            print(f"assignments_to_do:{assignments_to_do}")
+            return render_template('wang/student_profile.html', courses=courses, assignments_to_do=assignments_to_do)
         elif user.role == "teacher":
             # 获取教师名下的课程
             courses = Course.query.filter_by(teacher_id=user.id).all()
@@ -353,6 +376,8 @@ def create_app():
     def course_detail(course_id):
         course = Course.query.get(course_id)
         user_name = session.get('user_name')
+
+        print(f"用户{user_name}正在查看课程{course.name}的详情！")
         return render_template('wang/course_detail.html', course=course, user_name=user_name)
 
     # 微信小程序：返回单个课程详情
