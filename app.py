@@ -1,7 +1,5 @@
-from urllib.request import localhost
+
 from zipfile import error
-
-
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
 
 from flask_cors import CORS
@@ -129,7 +127,7 @@ def create_app():
 
 
         #登录状态检查，排除登录和注册页面
-        if   'user_id' not in session and request.endpoint not in ["chat","forum","getCourseById","getStudentCourses","minilogin","index", 'loginHandle', 'register', 'login', 'get_openid', 'main'] and not request.path.startswith('/getCourseById/'):   #禁止重定向加的是方法名，不是路由名
+        if   'user_id' not in session and request.endpoint not in ["chatHandle","chat","forum","getCourseById","getStudentCourses","minilogin","index", 'loginHandle', 'register', 'login', 'get_openid', 'main'] and not request.path.startswith('/getCourseById/'):   #禁止重定向加的是方法名，不是路由名
             # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
             return redirect(url_for('index'))
 
@@ -194,11 +192,7 @@ def create_app():
                     return redirect(url_for('register'))
 
                 password_hash = generate_password_hash(password)
-                #如果是微信小程序注册，openid不为空
-                if openid is not None:
-                    user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash,openid=openid)
-                else:
-                    user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
+                user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
                 db.session.add(user)
                 db.session.commit()
                 # 注册成功后cookie保存用户信息
