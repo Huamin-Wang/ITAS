@@ -461,8 +461,8 @@ def create_app():
                 import wang.tools.studentTool as studentTool
                 FinallyScore= studentTool.updateFinallyScore(user.id,db)
                 print(f"FinallyScore:{FinallyScore}")
-                score = student.final_score
-                print(f"score:{student.final_score}")
+                score = student.finally_score
+                print(f"score:{student.finally_score}")
         # 课程详情序列化
         courseInfo = {
             'id': course.id,
@@ -472,7 +472,7 @@ def create_app():
             'description': course.description,
             'code': course.code,
             'teacher_name': course.teacher.name,
-            'students': [{'student_name': student.student_name, 'score': student.final_score} for student in
+            'students': [{'student_name': student.student_name, 'score': student.finally_score} for student in
                          course.course_students]
         }
         print(f"返回课程{course.name}的详情！")
