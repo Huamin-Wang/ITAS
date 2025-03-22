@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作业详情</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --error-color: #e74c3c;
+            --text-color: #2c3e50;
+            --border-color: #dfe6e9;
+            --bg-color: #f5f6fa;
+            --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: var(--bg-color);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .back-button {
+            text-decoration: none;
+            color: var(--text-color);
+            background: var(--bg-color);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #e0e0e0;
+        }
+
+        .assignment-title {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .deadline {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+
+        .deadline-approaching {
+            color: var(--error-color);
+            font-weight: bold;
+        }
+
+        .deadline-normal {
+            color: var(--success-color);
+        }
+
+        .description-box {
+            background: var(--bg-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .status-box {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .status-success {
+            background: #d5f5e3;
+            color: #27ae60;
+        }
+
+        .status-warning {
+            background: #fef9e7;
+            color: #f39c12;
+        }
+
+        .submission-form {
+            margin-top: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .submit-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+
+        .submit-button:hover {
+            background: #357abd;
+        }
+
+        .grade-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: var(--success-color);
+            color: white;
+        }
+
+        .grade-pending {
+            background: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2>作业详情</h2>
+                <a href="{{ url_for('submission', student_id=user.id) }}" class="back-button">返回作业列表</a>
+            </div>
+            <div class="card-body">
+                <h3 class="assignment-title">{{ assignment.title }}</h3>
+
+                <p class="deadline" id="deadline">
+                    截止日期: {{ assignment.due_date.strftime('%Y-%m-%d') }}
+                </p>
+
+                <div class="description-box">
+                    <h4>作业说明:</h4>
+                    <p>{{ assignment.description }}</p>
+                </div>
+
+                {% if submission %}
+                    <div class="status-box status-success">
+                        <h4>已提交</h4>
+                        <p>提交时间: {{ submission.submission_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        {% if submission.grade is not none %}
+                            <p>得分(满分10分): <span class="grade-badge">{{ submission.grade }}</span></p>
+                        {% else %}
+                            <p>得分: <span class="grade-badge grade-pending">教师尚未评分</span></p>
+                        {% endif %}
+                    </div>
+
+                    <div class="description-box">
+                        <h4>提交内容:</h4>
+                        <p>{{ submission.data }}</p>
+                    </div>
+                    <div class="feedback">
+                    <h4>AI评语:</h4>
+                        <p>{{ submission.feedback }}</p>
+                    </div>
+                {% else %}
+                    <div class="status-box status-warning">
+                        <h4>未提交</h4>
+                        <p>您尚未提交此作业，请在截止日期前完成提交。</p>
+                    </div>
+                {% endif %}
+
+                <div class="submission-form">
+                    <h3>{% if submission %}更新作业{% else %}提交作业{% endif %}</h3>
+                    <form action="{{ url_for('submission_detail', assignment_id=assignment.id) }}" method="post">
+                        <div class="form-group">
+                            <label class="form-label" for="content">作业内容:</label>
+                            <textarea id="content" name="content" required>{% if submission %}{{ submission.content }}{% endif %}</textarea>
+                        </div>
+                        <button type="submit" class="submit-button">
+                            {% if submission %}更新提交{% else %}提交作业{% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deadline = document.getElementById('deadline');
+        const dueDate = new Date("{{ assignment.due_date.strftime('%Y-%m-%d') }}");
+        const now = new Date();
+        const timeDiff = dueDate - now;
+        const daysRemaining = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+        if (daysRemaining <= 2 && daysRemaining >= 0) {
+            deadline.classList.add('deadline-approaching');
+            deadline.innerHTML = `截止日期: {{ assignment.due_date.strftime('%Y-%m-%d') }} (还剩 ${daysRemaining} 天)`;
+        } else if (daysRemaining < 0) {
+            deadline.classList.add('deadline-approaching');
+            deadline.innerHTML = '截止日期: {{ assignment.due_date.strftime("%Y-%m-%d") }} (已过期)';
+        } else {
+            deadline.classList.add('deadline-normal');
+        }
+    });
+</script>
+</html>

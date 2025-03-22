@@ -203,16 +203,21 @@
 
        <div class="dashboard-card">
            <h3>待完成作业</h3>
-           <p>查看您需要完成的作业列表，及时提交作业。</p>
-           <ul>
-               {% for assignment in assignments_to_do %}
-                   <li>
-                       <a href="/submissions/{{ session['user_id'] }}">
-                           {{ assignment.course_name }} - {{ assignment.title }}（截止日期：{{ assignment.due_date }}）
-                       </a>
-                   </li>
-               {% endfor %}
-           </ul>
+
+           {% if assignments_to_do %}
+               <ul>
+                   {% for assignment in assignments_to_do %}
+                       <li>
+                           <a href="/submission_detail/{{ assignment.id }}">
+                               {{ assignment.course_name }} - {{ assignment.title }}（截止日期：{{ assignment.due_date }}）
+                           </a>
+                       </li>
+                   {% endfor %}
+               </ul>
+           {% else %}
+               <p>你真棒，作业都做完了！</p>
+           {% endif %}
+        <a href="/submissions/{{ session['user_id'] }}">所有作业列表</a>
        </div>
 
 
