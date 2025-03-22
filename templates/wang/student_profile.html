@@ -183,6 +183,10 @@
 <div class="container">
     <div class="welcome-section">
         <h2>欢迎, {{ session['user_name'] }}同学!</h2>
+        <div style="text-align: center;">
+            <h3>关注微信公众号，查课堂评分</h3>
+            <img src="/static/weixinQR.jpg" alt="微信公众号二维码" style="width: 50px; height: 50px; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+        </div>
         <p>以下是您的学习数据和相关功能，如未显示课程，请联系教师上传名单或检查注册信息是否与学校教务系统一致</p>
     </div>
     {#将后端传递的所有课程展示#}
