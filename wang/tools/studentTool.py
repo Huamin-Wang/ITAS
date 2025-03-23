@@ -37,4 +37,40 @@ def  updateFinallyScore(studentID,db):
             print(f"Student {student.name} ({student.identifier})'s final score updated to {finally_score} for course {courseName.course.name}.")
     return finally_score
 
-
+# 根据学生id输出所有作业以及待完成作业
+def assignments(studentID,db):
+    from wang.models.submission import Submission
+    from wang.models.course import Course
+    user = User.query.get(studentID)
+    # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
+    course_students = Course_Students.query.filter_by(student_number=user.identifier,
+                                                      student_name=user.name).all()
+    # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
+    for course_student in course_students:
+        course_student.course_status = 'enrolled'
+        db.session.commit()  # 提交事务
+    courses = []
+    for course_student in course_students:
+        course = Course.query.get(course_student.course_id)
+        courses.append(course)
+    # 获取学生所有课程的作业
+    Allassignments = []
+    # 根据courses获取所有的作业
+    for course in courses:
+        assignments = Assignment.query.filter_by(course_id=course.id).all()
+        for assignment in assignments:
+            Allassignments.append(assignment)
+    # 输出待完成的作业
+    assignments_to_do = []
+    # 判断作业是否已经提交
+    for assignment in Allassignments:
+        # 通过student_id和assignment_id查找submission表中的记录
+        # 如果有记录，说明已经提交
+        submission = Submission.query.filter_by(student_id=user.id, assignment_id=assignment.id).first()
+        if submission:
+            pass   # 如果有记录，说明已经提交
+        else:
+            # 如果没有记录，说明未提交，输出未提交的作业
+            # 将未提交作业添加到assignments_to_do中
+            assignments_to_do.append(assignment)
+    return Allassignments,assignments_to_do

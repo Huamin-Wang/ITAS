@@ -4,6 +4,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash
 from threading import Thread
+
+import wang.tools.studentTool
 import xie.chat as c
 from wang.models import init_db, Assignment, Submission
 from wang.models.course import Course
@@ -127,13 +129,18 @@ def create_app():
             abort(403)  # 返回 403 Forbidden
 
         # 登录状态检查，排除登录和注册页面
-        if 'user_id' not in session and request.endpoint not in ["chatHandle", "chat", "forum", "getCourseById",
-                                                                 "getStudentCourses", "minilogin", "index",
-                                                                 'loginHandle', 'register', 'login', 'get_openid',
-                                                                 'main'] and not request.path.startswith(
+        # 如果openid不为空，则允许
+        if request.args.get('openid'):
+            print("小程序登录成功！")
+            pass
+        else:
+            if 'user_id' not in session and request.endpoint not in ["chatHandle", "chat", "forum", "getCourseById",
+                                                                     "getStudentCourses", "minilogin", "index",
+                                                                     'loginHandle', 'register', 'login', 'get_openid',
+                                                                     'main'] and not request.path.startswith(
                 '/getCourseById/'):  # 禁止重定向加的是方法名，不是路由名
-            # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
-            return redirect(url_for('index'))
+                # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
+                return redirect(url_for('index'))
 
     # 错误处理
     @app.errorhandler(500)
@@ -285,28 +292,8 @@ def create_app():
                 courses.append(course)
             print(f"用户{user.name}正在查看自己的课程！")
             print(courses)
-            # 获取学生所有课程的作业
-            Allassignments = []
-            # 根据courses获取所有的作业
-            for course in courses:
-                assignments = Assignment.query.filter_by(course_id=course.id).all()
-                for assignment in assignments:
-                    Allassignments.append(assignment)
-            # 输出待完成的作业
-            assignments_to_do = []
-            # 判断作业是否已经提交
-            for assignment in Allassignments:
-                print(f"assignment:{assignment}")
-                # 通过student_id和assignment_id查找submission表中的记录
-                # 如果有记录，说明已经提交
-                submission = Submission.query.filter_by(student_id=user.id, assignment_id=assignment.id).first()
-                if submission:
-                    print(f"用户{user.name}已经提交了作业{assignment.title}")
-                else:
-                    # 如果没有记录，说明未提交
-                    print(f"用户{user.name}未提交作业{assignment.title}")
-                    # 将未提交作业添加到assignments_to_do中
-                    assignments_to_do.append(assignment)
+            # 获取学生所有课程的作业,待做作业
+            Allassignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
             print(f"assignments_to_do:{assignments_to_do}")
             return render_template('wang/student_profile.html', courses=courses, assignments_to_do=assignments_to_do)
         elif user.role == "teacher":
@@ -321,6 +308,45 @@ def create_app():
                     db.session.commit()
 
             return render_template('wang/teacher_profile.html', courses=courses)
+    # 微信小程序：获取学生的作业列表
+    @app.route('/getStudentAssignments', methods=['GET', 'POST'])
+    def getStudentAssignments():
+        # 从数据库中查找用户，与用户输入的密码进行比对
+        openid = request.args.get('openid')
+        print(f"openid:{openid}")
+        user = User.query.filter_by(openid=openid).first()
+        if user:
+            print(f"{user.name}在微信小程序获取作业列表中！")
+        print(session)
+        allAssignments,assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
+        if user:
+            # 返回学生的所有作业列表
+            assignmentsJson = []
+            for assignment in allAssignments:
+                # 作业序列化
+                assignmentsJson.append({
+                    'assignment_id': assignment.id,
+                    'course_id': assignment.course_id,
+                    'title': assignment.title,
+                    'description': assignment.description,
+                    'deadline': assignment.due_date,
+                })
+            print("所有作业列表获取成功！")
+            # 返回待完成作业列表
+            assignments_to_doJson = []
+            for assignment in assignments_to_do:
+                # 作业序列化
+                assignments_to_doJson.append({
+                    'assignment_id': assignment.id,
+                    'course_id': assignment.course_id,
+                    'title': assignment.title,
+                    'description': assignment.description,
+                    'deadline': assignment.due_date,
+                })
+            print("待完成作业列表获取成功！")
+            print(f"assignments_to_do:{assignments_to_doJson}")
+            # 返回作业列表
+            return jsonify({'success': True, 'assignments': assignmentsJson, 'assignments_to_do': assignments_to_doJson})
 
     # 微信小程序：返回学生的课程列表
     @app.route('/getStudentCourses', methods=['GET', 'POST'])
