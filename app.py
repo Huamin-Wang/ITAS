@@ -73,11 +73,11 @@ def create_app():
         user = User.query.filter_by(openid=response['openid']).first()
         if user:
             return jsonify(
-                {'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role, "openid": openid})
+                {'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role, "openid": openid,"user_identifier":user.identifier})
         else:
             #   返回信息提示注册登录
             return jsonify(
-                {'success': True, 'user_id': -1, 'user_name': "未登录过小程序", 'user_role': 1, "openid": openid})
+                {'success': True, 'user_id': -1, 'user_name': "未登录过小程序,退出重新登录", 'user_role': "游客", "openid": openid})
 
     # -----微信小程序登录页面---------
     @app.route('/minilogin', methods=['GET', 'POST'])
@@ -100,13 +100,14 @@ def create_app():
             session['user_name'] = user.name
             session['user_role'] = user.role
             session['user_identifier'] = user.identifier
+            print(f"user_identifier{user.identifier}")
             print(f"session:{session}")
             user.openid = openid  # 保存用户的openid，以便下次微信登录时直接登录openid = session.get('openid')
             print("保存openid成功！")
             session["openid"] = openid
             db.session.commit()
             print(f'{user.name}登录成功！')
-            return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role})
+            return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,"user_identifier": user.identifier})
         return jsonify({'success': False, 'message': '用户名或密码错误！'})
 
     # ！！！ ----------以下为电脑端项目中的路由处理函数
