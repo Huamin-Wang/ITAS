@@ -1,3 +1,4 @@
+from tkinter.font import names
 from zipfile import error
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
 
@@ -73,7 +74,7 @@ def create_app():
         user = User.query.filter_by(openid=response['openid']).first()
         if user:
             return jsonify(
-                {'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role, "openid": openid,"user_identifier":user.identifier})
+                {'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role, "openid": openid,"user_identifier":user.identifier,"gender": user.gender})
         else:
             #   返回信息提示注册登录
             return jsonify(
@@ -107,8 +108,49 @@ def create_app():
             session["openid"] = openid
             db.session.commit()
             print(f'{user.name}登录成功！')
+            # 根据课程信息获取用户性别
+            # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
+            course_students = Course_Students.query.filter_by(student_number=user.identifier,
+                                                              student_name=user.name).all()
+            print(
+                f"用户{user.name}的课程有：{course_students}")
+
             return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,"user_identifier": user.identifier})
         return jsonify({'success': False, 'message': '用户名或密码错误！'})
+    # 微信小程序注册页面
+    @app.route('/miniRegister', methods=['GET', 'POST'])
+    def miniRegister():
+        print("从微信小程序注册")
+        data = request.json
+        openid = data.get('openid')
+        print(f"openid:{openid}")
+        identifier = data.get('user_identifier')
+        identifier = identifier.upper()
+        print(f"identifier:{identifier}")
+        role = data.get('user_role')
+        name = data.get('user_name')
+        gender = data.get("gender")
+        email = data.get('email')
+        password = data.get('password')
+        print()
+        existing_user = User.query.filter_by(identifier=identifier).first()
+        if existing_user:
+            return jsonify({'success': False, 'message': '注册失败，检查学号是否已存在！'})
+        password_hash = generate_password_hash(password)
+        user = User(gender=gender, identifier=identifier, role=role, name=name, email=email, password=password_hash, openid=openid)
+        db.session.add(user)
+        db.session.commit()
+        # 注册成功后cookie保存用户信息
+        session['user_id'] = user.id
+        session['user_name'] = user.name
+        session['user_role'] = user.role
+        session['user_identifier'] = user.identifier
+        # 在session中保存登录状态，已供全局使用
+        session["logged_in"] = True
+        print("注册成功！")
+        # 检查密码是否一致
+        return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,"user_identifier": user.identifier,"openid": openid})
+
 
     # ！！！ ----------以下为电脑端项目中的路由处理函数
 
@@ -131,9 +173,15 @@ def create_app():
 
         # 登录状态检查，排除登录和注册页面
         # 如果openid不为空，则允许
-        if request.args.get('openid'):
+        if request.method == 'GET':
+            openid = request.args.get('openid')
+            print(f"get请求前校验收到：openid:{openid}")
+        else:
+            data = request.get_json() if request.is_json else {}
+            openid = data.get('openid')
+            print(f"post请求前校验收到：openid:{openid}")
+        if openid:
             print("小程序登录成功！")
-            pass
         else:
             if 'user_id' not in session and request.endpoint not in ["chatHandle", "chat", "forum", "getCourseById",
                                                                      "getStudentCourses", "minilogin", "index",
@@ -185,6 +233,7 @@ def create_app():
                 identifier = identifier.upper()
                 role = request.form.get('role')
                 name = request.form.get('name')
+                gender=request.form.get('gender')
                 email = request.form.get('email')
                 password = request.form.get('password')
                 confirm_password = request.form.get('confirm_password')
@@ -204,7 +253,7 @@ def create_app():
                     return redirect(url_for('register'))
 
                 password_hash = generate_password_hash(password)
-                user = User(identifier=identifier, role=role, name=name, email=email, password=password_hash)
+                user = User(gender=gender,identifier=identifier, role=role, name=name, email=email, password=password_hash)
                 db.session.add(user)
                 db.session.commit()
                 # 注册成功后cookie保存用户信息
@@ -307,14 +356,13 @@ def create_app():
                 if student:
                     course_student.course_status = 'enrolled'
                     db.session.commit()
-
             return render_template('wang/teacher_profile.html', courses=courses)
     # 微信小程序：获取学生的作业列表
     @app.route('/getStudentAssignments', methods=['GET', 'POST'])
     def getStudentAssignments():
         # 从数据库中查找用户，与用户输入的密码进行比对
         openid = request.args.get('openid')
-        print(f"openid:{openid}")
+        print(f"getStudentAssignments：openid:{openid}")
         user = User.query.filter_by(openid=openid).first()
         if user:
             print(f"{user.name}在微信小程序获取作业列表中！")
@@ -820,7 +868,19 @@ def create_app():
     def fuctions():
         # 跳转论坛
         return url_for('forum')
-
+# 根据id删除用户
+    @app.route('/delete_user/<int:user_id>')
+    def delete_user(user_id):
+        user = User.query.get(user_id)
+        name=user.name
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            flash('用户删除成功！', 'success')
+            print(f"用户{session.get('user_name')}删除了用户{user.name}！")
+        else:
+            flash('用户不存在！', 'danger')
+        return  f"删除{name}成功！"
     # 上传文件
     @app.route('/upload', methods=['GET', 'POST'])
     def upload():
