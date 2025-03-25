@@ -73,8 +73,9 @@ def create_app():
         # 如果成功获取 openid，则根据openid返回用户信息
         user = User.query.filter_by(openid=response['openid']).first()
         if user:
-            return jsonify(
-                {'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role, "openid": openid,"user_identifier":user.identifier,"gender": user.gender})
+            return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,
+                            "user_identifier": user.identifier, "openid": openid, "email": user.email,
+                            "gender": user.gender})
         else:
             #   返回信息提示注册登录
             return jsonify(
@@ -115,9 +116,10 @@ def create_app():
             print(
                 f"用户{user.name}的课程有：{course_students}")
 
-            return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,"user_identifier": user.identifier})
+            return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,
+                            "user_identifier": user.identifier, "openid": openid, "email": user.email, "gender": user.gender})
         return jsonify({'success': False, 'message': '用户名或密码错误！'})
-    # 微信小程序注册页面
+    # 微信小程序注册、改资料页面
     @app.route('/miniRegister', methods=['GET', 'POST'])
     def miniRegister():
         print("从微信小程序注册")
@@ -137,9 +139,23 @@ def create_app():
         if existing_user:
             return jsonify({'success': False, 'message': '注册失败，检查学号是否已存在！'})
         password_hash = generate_password_hash(password)
-        user = User(gender=gender, identifier=identifier, role=role, name=name, email=email, password=password_hash, openid=openid)
-        db.session.add(user)
-        db.session.commit()
+        # 通过identifier和openid查找用户
+        user = User.query.filter_by(openid=openid).first()
+        if user:
+            # 如果用户存在，更新用户信息
+            user.name = name
+            user.role = role
+            user.email = email
+            user.password = password_hash
+            user.gender = gender
+            user.openid = openid
+            db.session.commit()
+            print("小程序中更新用户信息成功！")
+        else:
+            user = User(gender=gender, identifier=identifier, role=role, name=name, email=email, password=password_hash, openid=openid)
+            db.session.add(user)
+            db.session.commit()
+            print("注册成功！")
         # 注册成功后cookie保存用户信息
         session['user_id'] = user.id
         session['user_name'] = user.name
@@ -147,9 +163,9 @@ def create_app():
         session['user_identifier'] = user.identifier
         # 在session中保存登录状态，已供全局使用
         session["logged_in"] = True
-        print("注册成功！")
+
         # 检查密码是否一致
-        return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,"user_identifier": user.identifier,"openid": openid})
+        return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,"user_identifier": user.identifier,"openid": openid,"email": email,"gender": gender})
 
 
     # ！！！ ----------以下为电脑端项目中的路由处理函数
