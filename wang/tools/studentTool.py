@@ -74,3 +74,13 @@ def assignments(studentID,db):
             # 将未提交作业添加到assignments_to_do中
             assignments_to_do.append(assignment)
     return Allassignments,assignments_to_do
+
+# 根据用户id删除用户
+def delete_user(user_id, db):
+    user = User.query.get(user_id)
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        print(f"User {user.name} ({user.identifier}) deleted successfully.")
+    else:
+        print("User not found.")
