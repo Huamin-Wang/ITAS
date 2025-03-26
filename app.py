@@ -359,42 +359,45 @@ def create_app():
         # 登录成功后才会执行到这里
         # 从数据库中查找用户，与用户输入的密码进行比对
         user = User.query.filter_by(identifier=session['user_identifier']).first()
-        if user.role == "student":
-            # 输出用戶信息
-            print(f"用户{user.name}的学号为：{user.identifier}")
+        if user:
+            if user.role == "student":
+                # 输出用戶信息
+                print(f"用户{user.name}的学号为：{user.identifier}")
 
-            # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
-            course_students = Course_Students.query.filter_by(student_number=user.identifier,
-                                                              student_name=user.name).all()
-            print(
-                f"用户{user.name}的课程有：{course_students}")
+                # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
+                course_students = Course_Students.query.filter_by(student_number=user.identifier,
+                                                                  student_name=user.name).all()
+                print(
+                    f"用户{user.name}的课程有：{course_students}")
 
-            print(f"course_students:{course_students}")
-            # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
-            for course_student in course_students:
-                course_student.course_status = 'enrolled'
-                db.session.commit()  # 提交事务
-            courses = []
-            for course_student in course_students:
-                course = Course.query.get(course_student.course_id)
-                courses.append(course)
-            print(f"用户{user.name}正在查看自己的课程！")
-            print(courses)
-            # 获取学生所有课程的作业,待做作业
-            Allassignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
-            print(f"assignments_to_do:{assignments_to_do}")
-            return render_template('wang/student_profile.html', courses=courses, assignments_to_do=assignments_to_do)
-        elif user.role == "teacher":
-            # 获取教师名下的课程
-            courses = Course.query.filter_by(teacher_id=user.id).all()
-            # 将course_students的所有学生的学号进行比对user表中的所有用户，如果有，已经注册为user用户的学生状态改为enrolled
-            course_students = Course_Students.query.all()
-            for course_student in course_students:
-                student = User.query.filter_by(identifier=course_student.student_number).first()
-                if student:
+                print(f"course_students:{course_students}")
+                # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
+                for course_student in course_students:
                     course_student.course_status = 'enrolled'
-                    db.session.commit()
-            return render_template('wang/teacher_profile.html', courses=courses)
+                    db.session.commit()  # 提交事务
+                courses = []
+                for course_student in course_students:
+                    course = Course.query.get(course_student.course_id)
+                    courses.append(course)
+                print(f"用户{user.name}正在查看自己的课程！")
+                print(courses)
+                # 获取学生所有课程的作业,待做作业
+                Allassignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
+                print(f"assignments_to_do:{assignments_to_do}")
+                return render_template('wang/student_profile.html', courses=courses, assignments_to_do=assignments_to_do)
+            elif user.role == "teacher":
+                # 获取教师名下的课程
+                courses = Course.query.filter_by(teacher_id=user.id).all()
+                # 将course_students的所有学生的学号进行比对user表中的所有用户，如果有，已经注册为user用户的学生状态改为enrolled
+                course_students = Course_Students.query.all()
+                for course_student in course_students:
+                    student = User.query.filter_by(identifier=course_student.student_number).first()
+                    if student:
+                        course_student.course_status = 'enrolled'
+                        db.session.commit()
+                return render_template('wang/teacher_profile.html', courses=courses)
+            # 返回首页
+        return  render_template("index.html")
     # 微信小程序：获取学生的作业列表
     @app.route('/getStudentAssignments', methods=['GET', 'POST'])
     def getStudentAssignments():
