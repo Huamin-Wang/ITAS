@@ -98,12 +98,12 @@
         <!-- 显示用户本课程的成绩。 -->
         {% for student in course.course_students %}
             {% if student.student_name == user_name %}
-                <p><strong>您目前的平时成绩：</strong>{{ student.score }}</p>
+                <p><strong>您目前的课程评分成绩：</strong>{{ student.finally_score }}</p>
             {% endif %}
         {% endfor %}
         {% for student in course.course_students|sort(attribute='score', reverse=True) %}
             {% if student.student_name == user_name %}
-                <p><strong>您目前的平时成绩排名：</strong>{{ loop.index }}</p>
+                <p><strong>您目前的课程评分成绩排名：</strong>{{ loop.index }}</p>
             {% endif %}
         {% endfor %}
         <div class="course-info">
@@ -120,7 +120,7 @@
                 <tr>
                     <th>排名</th>
                     <th>学生姓名</th>
-                    <th>平时成绩</th>
+                    <th>成绩</th>
                 </tr>
             </thead>
             <tbody>
@@ -128,7 +128,7 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td>{{ student.student_name }}</td>
-                        <td>{{ student.score }}</td>
+                        <td>{{ student.finally_score }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
