@@ -1043,7 +1043,7 @@ if __name__ == '__main__':
 
             # 允许更广泛的客户端兼容性
             try:
-                context.minimum_version = ssl.TLSVersion.TLSv1
+                context.minimum_version = ssl.TLSVersion.TLSv1_2
                 # 更宽松的加密套件设置
                 context.set_ciphers('ALL:@SECLEVEL=0')
             except (AttributeError, ValueError):
@@ -1052,7 +1052,6 @@ if __name__ == '__main__':
 
             # 将普通套接字包装成 SSL 套接字
             ssl_sock = context.wrap_socket(https_sock, server_side=True)
-
 
             # 启动 HTTPS 服务器
             def run_https_server():
@@ -1069,16 +1068,13 @@ if __name__ == '__main__':
                         import time
                         time.sleep(1)
 
-
             # 创建一个简单的 Flask 应用用于处理 HTTP 重定向
             redirect_app = Flask(__name__)
-
 
             @redirect_app.route('/', defaults={'path': ''})
             @redirect_app.route('/<path:path>')
             def redirect_to_https(path):
                 return redirect(f'https://{request.host}{request.path}', code=301)
-
 
             # 创建 HTTP 套接字
             http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -1086,29 +1082,36 @@ if __name__ == '__main__':
             http_sock.bind(('0.0.0.0', 80))
             http_sock.listen(5)
 
-
-            # 启动 HTTP 重定向服务器
+            # 启动 HTTP 重定向服务器 - 修复重复调用问题并加入循环重试机制
             def run_http_server():
-
-                try:
-                    serve(redirect_app, sockets=[http_sock])
-                except Exception as e:
-                    print(f"An unexpected error occurred in HTTP server: {e}")
-
-                serve(redirect_app, sockets=[http_sock])
-
+                while True:
+                    try:
+                        serve(redirect_app, sockets=[http_sock])
+                    except ConnectionError as e:
+                        print(f"Connection error in HTTP server: {e}. Continuing...")
+                    except Exception as e:
+                        print(f"Unexpected error in HTTP server: {e}")
+                        import time
+                        time.sleep(1)
 
             # 分别在不同线程中启动 HTTP 和 HTTPS 服务器
             from threading import Thread
 
-            https_thread = Thread(target=run_https_server)
-            http_thread = Thread(target=run_http_server)
+            https_thread = Thread(target=run_https_server, daemon=True)
+            http_thread = Thread(target=run_http_server, daemon=True)
 
             https_thread.start()
             http_thread.start()
 
             print('生产服务器正在运行。您可以通过以下网址访问应用程序：')
             print('https://www.001ai.top')
+
+            # 保持主线程运行，避免程序退出
+            try:
+                https_thread.join()
+            except KeyboardInterrupt:
+                print("服务器停止运行")
+
         except Exception as e:
             print(f"An error occurred while starting the server: {e}")
     else:
