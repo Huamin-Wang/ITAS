@@ -26,3 +26,5 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.id} - {self.name}>'
+    def to_dict(self):
+        return f"<User {self.id} - {self.name}>"
