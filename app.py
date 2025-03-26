@@ -906,24 +906,88 @@ def create_app():
     def fuctions():
         # 跳转论坛
         return url_for('forum')
-# 根据id删除用户
-    @app.route('/delete_user/<int:user_id>')
-    def delete_user(user_id):
-        user = User.query.get(user_id)
-        name=user.name
-        if user:
-            db.session.delete(user)
-            db.session.commit()
-            flash('用户删除成功！', 'success')
-            print(f"用户{session.get('user_name')}删除了用户{user.name}！")
-        else:
-            flash('用户不存在！', 'danger')
-        return  f"删除{name}成功！"
+
+    # 超级管理员账户
+    @app.route('/admin', methods=['GET', 'POST'])
+    def admin():
+        import  wang.tools.userTool as userTool
+        if request.method == 'GET':
+            print(f"用户{session.get('user_identifier')}正在查看管理员页面！")
+            if session.get('user_identifier') != 'JGXY2459'.upper()  :  # 开发环境改成你自己的账户即可通过admin直接访问
+                return '您没有权限访问此页面！'
+            # 查找所有用户
+            users = User.query.all()
+            return render_template('wang/admin.html', users=users, total_users=len(users))
+        if request.method =='POST':
+            data = request.get_json()
+            user_id = data.get('delete_id')
+            #根据id删除用户
+            if user_id:
+                user = User.query.get(user_id)
+                if user:
+                    userTool.delete_user(user_id,db)
+                    print(f"用户{user.name}已被删除！")
+                    return jsonify({'success': True, 'user': user.to_dict()})
+                return jsonify({'success': False, 'message': '用户不存在！'})
+            identifier = data.get('identifier')
+            #根据学号删除用户
+            if identifier:
+                user = User.query.filter_by(identifier=identifier).first()
+                if user:
+                    userTool.delete_user(identifier,db)
+                    print(f"用户{user.name}已被删除！")
+                    return jsonify({'success': True, 'user': user.to_dict()})
+                return jsonify({'success': False, 'message': '用户不存在！'})
+            # 解绑openid：这里收到的还是用户的id
+            openid_id=data.get('openid_id')
+            if openid_id:
+                user = User.query.filter_by(id=openid_id).first()
+                if user:
+                    userTool.clearOpenid(openid_id,db)
+                    print(f"用户{user.name}的openid已被清除！")
+                    return jsonify({'success': True, 'user': user.to_dict()})
+                return jsonify({'success': False, 'message': '用户不存在！'})
+            # 更新用户信息
+            userData=data.get('userData')
+            # print(f"用户数据：{userData}")
+            if userData:
+                user = User.query.filter_by(id=userData['user_id']).first()
+                if user:
+                    user.name = userData['name']
+                    user.identifier = userData['identifier']
+                    user.email = userData['email']
+                    user.role = userData['role']
+                    user.gender=userData['gender']
+                    db.session.commit()
+                    print(f"用户{user.name}的信息已被更新！")
+                    return jsonify({'success': True, 'user': user.to_dict()})
+                return jsonify({'success': False, 'message': '用户不存在！'})
+    #解绑微信的openid
+    @app.route('/unbindOpenId', methods=['POST'])
+    def unbind_openid():
+        data = request.get_json()
+        openid = data.get('openid')
+        # Find the user by the OpenID
+        user = User.query.filter_by(openid=openid).first()
+        user.openid = None
+        db.session.commit()
+        # Return a response
+        print(f"用户{user.name}的openid已被清除！微信解绑成功！")
+        return jsonify({
+            'success': True,
+            'message': 'OpenID successfully unbound'
+        })
+
     # 上传文件
     @app.route('/upload', methods=['GET', 'POST'])
     def upload():
         if request.method == 'GET':
             return render_template('xie/upload.html')
+
+
+
+
+
 
     # 返回app
     return app

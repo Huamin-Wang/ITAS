@@ -76,11 +76,3 @@ def assignments(studentID,db):
     return Allassignments,assignments_to_do
 
 # 根据用户id删除用户
-def delete_user(user_id, db):
-    user = User.query.get(user_id)
-    if user:
-        db.session.delete(user)
-        db.session.commit()
-        print(f"User {user.name} ({user.identifier}) deleted successfully.")
-    else:
-        print("User not found.")
