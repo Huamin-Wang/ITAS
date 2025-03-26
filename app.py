@@ -962,6 +962,21 @@ def create_app():
                     print(f"用户{user.name}的信息已被更新！")
                     return jsonify({'success': True, 'user': user.to_dict()})
                 return jsonify({'success': False, 'message': '用户不存在！'})
+    #解绑微信的openid
+    @app.route('/unbindOpenId', methods=['POST'])
+    def unbind_openid():
+        data = request.get_json()
+        openid = data.get('openid')
+        # Find the user by the OpenID
+        user = User.query.filter_by(openid=openid).first()
+        user.openid = None
+        db.session.commit()
+        # Return a response
+        print(f"用户{user.name}的openid已被清除！微信解绑成功！")
+        return jsonify({
+            'success': True,
+            'message': 'OpenID successfully unbound'
+        })
 
     # 上传文件
     @app.route('/upload', methods=['GET', 'POST'])
