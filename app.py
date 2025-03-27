@@ -213,13 +213,13 @@ def create_app():
         # 如果openid不为空，则允许
         if request.method == 'GET':
             openid = request.args.get('openid')
-            print(f"get请求前校验收到：openid:{openid}")
+            if openid==None:
+                print(f'''用户{session["user_name"]}在电脑端操作ing''')
         else:
             data = request.get_json() if request.is_json else {}
             openid = data.get('openid')
-            print(f"post请求前校验收到：openid:{openid}")
         if openid:
-            print("小程序登录成功！")
+            print(f'''用户{session["user_name"]}在微信小程序端操作ing''')
         else:
             if 'user_id' not in session and request.endpoint not in ["chatHandle", "chat", "forum", "getCourseById",
                                                                      "getStudentCourses", "minilogin", "index",
@@ -496,7 +496,6 @@ def create_app():
         # 更新final_score=平时分+作业分数
         import wang.tools.studentTool as studentTool
         FinallyScore = studentTool.updateFinallyScore(session.get('user_id'), db)
-        print(f"FinallyScore:{FinallyScore}")
         return render_template('wang/course_detail.html', course=course, user_name=user_name)
 
     # 学生作业列表页面

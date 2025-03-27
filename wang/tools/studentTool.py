@@ -34,7 +34,7 @@ def  updateFinallyScore(studentID,db):
             courseName.finally_score = finally_score
         # 提交更改
             db.session.commit()
-            print(f"Student {student.name} ({student.identifier})'s final score updated to {finally_score} for course {courseName.course.name}.")
+            # print(f"Student {student.name} ({student.identifier})'s final score updated to {finally_score} for course {courseName.course.name}.")
     return finally_score
 
 # 根据学生id输出所有作业以及待完成作业
