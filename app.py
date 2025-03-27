@@ -359,42 +359,45 @@ def create_app():
         # 登录成功后才会执行到这里
         # 从数据库中查找用户，与用户输入的密码进行比对
         user = User.query.filter_by(identifier=session['user_identifier']).first()
-        if user.role == "student":
-            # 输出用戶信息
-            print(f"用户{user.name}的学号为：{user.identifier}")
+        if user:
+            if user.role == "student":
+                # 输出用戶信息
+                print(f"用户{user.name}的学号为：{user.identifier}")
 
-            # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
-            course_students = Course_Students.query.filter_by(student_number=user.identifier,
-                                                              student_name=user.name).all()
-            print(
-                f"用户{user.name}的课程有：{course_students}")
+                # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
+                course_students = Course_Students.query.filter_by(student_number=user.identifier,
+                                                                  student_name=user.name).all()
+                print(
+                    f"用户{user.name}的课程有：{course_students}")
 
-            print(f"course_students:{course_students}")
-            # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
-            for course_student in course_students:
-                course_student.course_status = 'enrolled'
-                db.session.commit()  # 提交事务
-            courses = []
-            for course_student in course_students:
-                course = Course.query.get(course_student.course_id)
-                courses.append(course)
-            print(f"用户{user.name}正在查看自己的课程！")
-            print(courses)
-            # 获取学生所有课程的作业,待做作业
-            Allassignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
-            print(f"assignments_to_do:{assignments_to_do}")
-            return render_template('wang/student_profile.html', courses=courses, assignments_to_do=assignments_to_do)
-        elif user.role == "teacher":
-            # 获取教师名下的课程
-            courses = Course.query.filter_by(teacher_id=user.id).all()
-            # 将course_students的所有学生的学号进行比对user表中的所有用户，如果有，已经注册为user用户的学生状态改为enrolled
-            course_students = Course_Students.query.all()
-            for course_student in course_students:
-                student = User.query.filter_by(identifier=course_student.student_number).first()
-                if student:
+                print(f"course_students:{course_students}")
+                # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
+                for course_student in course_students:
                     course_student.course_status = 'enrolled'
-                    db.session.commit()
-            return render_template('wang/teacher_profile.html', courses=courses)
+                    db.session.commit()  # 提交事务
+                courses = []
+                for course_student in course_students:
+                    course = Course.query.get(course_student.course_id)
+                    courses.append(course)
+                print(f"用户{user.name}正在查看自己的课程！")
+                print(courses)
+                # 获取学生所有课程的作业,待做作业
+                Allassignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
+                print(f"assignments_to_do:{assignments_to_do}")
+                return render_template('wang/student_profile.html', courses=courses, assignments_to_do=assignments_to_do)
+            elif user.role == "teacher":
+                # 获取教师名下的课程
+                courses = Course.query.filter_by(teacher_id=user.id).all()
+                # 将course_students的所有学生的学号进行比对user表中的所有用户，如果有，已经注册为user用户的学生状态改为enrolled
+                course_students = Course_Students.query.all()
+                for course_student in course_students:
+                    student = User.query.filter_by(identifier=course_student.student_number).first()
+                    if student:
+                        course_student.course_status = 'enrolled'
+                        db.session.commit()
+                return render_template('wang/teacher_profile.html', courses=courses)
+            # 返回首页
+        return  render_template("index.html")
     # 微信小程序：获取学生的作业列表
     @app.route('/getStudentAssignments', methods=['GET', 'POST'])
     def getStudentAssignments():
@@ -1025,50 +1028,25 @@ if __name__ == '__main__':
     app = create_app()  # 创建 app
 
     if environment == 'production':
-        print('Starting production server with Waitress...')
+        print('正在启动生产服务器...')
+
         # 配置 SSL 证书路径
         certfile = 'C:/Certbot/live/001ai.top/fullchain.pem'
         keyfile = 'C:/Certbot/live/001ai.top/privkey.pem'
 
         try:
-            # 创建 HTTPS 套接字
-            https_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            https_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            https_sock.bind(('0.0.0.0', 443))
-            https_sock.listen(5)
+            # 使用 CherryPy 的 WSGI 服务器作为更可靠的SSL解决方案
+            from cheroot.wsgi import Server as WSGIServer
+            from cheroot.ssl.builtin import BuiltinSSLAdapter
 
-            # 创建 SSL 上下文 - 更宽松的配置
-            context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-            context.load_cert_chain(certfile=certfile, keyfile=keyfile)
+            # 创建 HTTPS 服务器
+            server = WSGIServer(('0.0.0.0', 443), app)
+            server.ssl_adapter = BuiltinSSLAdapter(
+                certificate=certfile,
+                private_key=keyfile
+            )
 
-            # 允许更广泛的客户端兼容性
-            try:
-                context.minimum_version = ssl.TLSVersion.TLSv1_2
-                # 更宽松的加密套件设置
-                context.set_ciphers('ALL:@SECLEVEL=0')
-            except (AttributeError, ValueError):
-                # 如果 Python 版本不支持这些设置选项
-                pass
-
-            # 将普通套接字包装成 SSL 套接字
-            ssl_sock = context.wrap_socket(https_sock, server_side=True)
-
-            # 启动 HTTPS 服务器
-            def run_https_server():
-                while True:
-                    try:
-                        serve(app, sockets=[ssl_sock], url_scheme='https')
-                    except ssl.SSLError as e:
-                        print(f"SSL error: {e}. Continuing...")
-                    except ConnectionError as e:
-                        print(f"Connection error: {e}. Continuing...")
-                    except Exception as e:
-                        print(f"Unexpected error in HTTPS server: {e}")
-                        # 在重大错误后短暂暂停以避免资源耗尽
-                        import time
-                        time.sleep(1)
-
-            # 创建一个简单的 Flask 应用用于处理 HTTP 重定向
+            # 创建 HTTP 重定向应用
             redirect_app = Flask(__name__)
 
             @redirect_app.route('/', defaults={'path': ''})
@@ -1076,44 +1054,26 @@ if __name__ == '__main__':
             def redirect_to_https(path):
                 return redirect(f'https://{request.host}{request.path}', code=301)
 
-            # 创建 HTTP 套接字
-            http_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            http_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            http_sock.bind(('0.0.0.0', 80))
-            http_sock.listen(5)
-
-            # 启动 HTTP 重定向服务器 - 修复重复调用问题并加入循环重试机制
-            def run_http_server():
-                while True:
-                    try:
-                        serve(redirect_app, sockets=[http_sock])
-                    except ConnectionError as e:
-                        print(f"Connection error in HTTP server: {e}. Continuing...")
-                    except Exception as e:
-                        print(f"Unexpected error in HTTP server: {e}")
-                        import time
-                        time.sleep(1)
-
-            # 分别在不同线程中启动 HTTP 和 HTTPS 服务器
+            # 在单独的线程中启动 HTTP 重定向服务器
             from threading import Thread
 
-            https_thread = Thread(target=run_https_server, daemon=True)
-            http_thread = Thread(target=run_http_server, daemon=True)
+            def run_http_server():
+                serve(redirect_app, host='0.0.0.0', port=80)
 
-            https_thread.start()
+            http_thread = Thread(target=run_http_server)
+            http_thread.daemon = True
             http_thread.start()
 
-            print('生产服务器正在运行。您可以通过以下网址访问应用程序：')
+            print('生产服务器已启动。您可以通过以下网址访问应用：')
             print('https://www.001ai.top')
 
-            # 保持主线程运行，避免程序退出
-            try:
-                https_thread.join()
-            except KeyboardInterrupt:
-                print("服务器停止运行")
+            # 启动 HTTPS 服务器（主线程）
+            server.start()
 
         except Exception as e:
-            print(f"An error occurred while starting the server: {e}")
+            print(f"启动服务器时出现错误: {e}")
+            import traceback
+            traceback.print_exc()
     else:
         print('使用 Waitress 启动开发服务器...')
         print('开发服务器正在运行，您可以通过以下网址访问应用程序：')
