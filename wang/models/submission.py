@@ -6,4 +6,6 @@ class Submission(db.Model):
     assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'), nullable=False)
     student_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     submission_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    data= db.Column(db.Text, nullable=True)    # JSON format
     grade = db.Column(db.Float)
+    feedback = db.Column(db.Text, nullable=True)  # JSON format

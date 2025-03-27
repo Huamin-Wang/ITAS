@@ -19,7 +19,9 @@ class Course_Students(db.Model):
     #加入课程状态
     # 当学生用户加入时，状态为"enrolled"，当学生退出时，状态为"not_enrolled"，默认为"not_enrolled"
     course_status = db.Column(db.String(20), nullable=False, server_default='not_enrolled')
-    # 添加分数表现字段
+    # 平时表现分数
     score = db.Column(db.Float, nullable=True, server_default='0')  # 假设分数为浮点数类型
+    # 总分数
+    finally_score = db.Column(db.Float, nullable=True, server_default='0')  # 假设分数为浮点数类型
     # Relationship
     course = db.relationship('Course', back_populates='course_students')

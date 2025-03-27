@@ -207,18 +207,18 @@
         <div class="dashboard-card">
             <h3>发布抢答</h3>
             <p>课堂发布抢答</p>
-            <button onclick="location.href='/course/quiz'">进入抢答管理</button>
+            <button onclick="location.href='/course/quiz/{{ course.id }}'">进入抢答管理</button>
         </div>
         <div class="dashboard-card">
             <h3>作业管理</h3>
             <p>发布、批改和管理作业。</p>
-            <button onclick="location.href='/course/assignments'">进入作业管理</button>
+            <button onclick="location.href='/course/assignments/{{ course.id }}'">进入作业管理</button>
         </div>
 
         <div class="dashboard-card">
-            <h3>作业管理</h3>
-            <p>发布、批改和管理作业。</p>
-            <button onclick="location.href='/course/assignments'">进入作业管理</button>
+            <h3>管理</h3>
+            <p>管理</p>
+            <button onclick="location.href='/course/assignments'">管理</button>
         </div>
         <div class="dashboard-card">
             <h3>成绩管理</h3>

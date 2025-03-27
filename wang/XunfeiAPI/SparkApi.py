@@ -13,7 +13,7 @@ from time import mktime
 from urllib.parse import urlencode
 from wsgiref.handlers import format_date_time
 
-import websocket  # 使用websocket_client
+import websocket
 answer = ""
 sid = ''
 content=""
@@ -145,5 +145,4 @@ def main(appid, api_key, api_secret, Spark_url,domain, question):
     ws.question = question
     ws.domain = domain
     ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
-
 
