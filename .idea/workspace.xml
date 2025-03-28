@@ -5,6 +5,14 @@
   </component>
   <component name="ChangeListManager">
 <<<<<<< HEAD
+    <list default="true" id="4f2d7fa2-e8ea-454a-bd0b-e52f0dae3747" name="更改" comment="1.美化教师管理界面">
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/wang/student_profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/wang/student_profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/xie/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/xie/upload.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/xie/upload.py" beforeDir="false" afterPath="$PROJECT_DIR$/xie/upload.py" afterDir="false" />
+    </list>
+=======
+<<<<<<< HEAD
     <list default="true" id="adbed7f5-7f6a-45a3-8bf2-365ad8289a36" name="更改" comment="1.增加教师作业布置功能" />
 =======
     <list default="true" id="adbed7f5-7f6a-45a3-8bf2-365ad8289a36" name="更改" comment="1.更新豆包api">
@@ -14,6 +22,7 @@
       <change beforePath="$PROJECT_DIR$/static/img_1.png" beforeDir="false" />
     </list>
 >>>>>>> 763db063d684215f8a764d75bb8a636e84e7764f
+>>>>>>> a11da499cccd1557eeb36d20cfcd2b955b54f4f2
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -65,6 +74,27 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
+<<<<<<< HEAD
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Flask 服务器.Flask (app.py).executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.Flask (xxy/chat.py).executor&quot;: &quot;Run&quot;,
+    &quot;Flask 服务器.flaskProject1.executor&quot;: &quot;Run&quot;,
+    &quot;JavaScript 调试.500.html.executor&quot;: &quot;Run&quot;,
+    &quot;Python.API.executor&quot;: &quot;Run&quot;,
+    &quot;Python.QAQ.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.course_students.executor&quot;: &quot;Run&quot;,
+    &quot;Python.intelligenceAPI.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/86138/ITAS&quot;,
+    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
+=======
     &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
     &quot;Flask 服务器.Flask (app.py).executor&quot;: &quot;Run&quot;,
     &quot;Flask 服务器.Flask (app.py:create_app).executor&quot;: &quot;Run&quot;,
@@ -78,6 +108,7 @@
     &quot;deletionFromPopupRequiresConfirmation&quot;: &quot;false&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;last_opened_file_path&quot;: &quot;D:/嘉庚学院资料/2024-2025（1）/大创/代码/templates/wang/forum&quot;,
+>>>>>>> a11da499cccd1557eeb36d20cfcd2b955b54f4f2
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -209,12 +240,19 @@
     </configuration>
     <list>
 <<<<<<< HEAD
+      <item itemvalue="JavaScript 调试.500.html" />
+      <item itemvalue="Python.API" />
+      <item itemvalue="Python.QAQ" />
+      <item itemvalue="Python.ai" />
+=======
+<<<<<<< HEAD
       <item itemvalue="Flask 服务器.Flask (app.py:create_app)" />
 =======
 >>>>>>> 763db063d684215f8a764d75bb8a636e84e7764f
       <item itemvalue="Flask 服务器.Flask (app.py)" />
       <item itemvalue="Python.API" />
       <item itemvalue="Python.API (1)" />
+>>>>>>> a11da499cccd1557eeb36d20cfcd2b955b54f4f2
       <item itemvalue="Python.app" />
     </list>
     <recent_temporary>
@@ -251,6 +289,86 @@
       <created>1741579783588</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
+<<<<<<< HEAD
+      <updated>1730965442896</updated>
+      <workItem from="1730965444591" duration="455000" />
+      <workItem from="1730965965003" duration="166000" />
+      <workItem from="1731049109294" duration="10000" />
+      <workItem from="1731050529111" duration="40000" />
+      <workItem from="1733122487440" duration="3491000" />
+      <workItem from="1733716428891" duration="4244000" />
+      <workItem from="1733722201099" duration="4770000" />
+      <workItem from="1733744244972" duration="1479000" />
+      <workItem from="1734268660036" duration="40000" />
+      <workItem from="1734268740335" duration="869000" />
+      <workItem from="1734402540726" duration="276000" />
+      <workItem from="1734405308444" duration="2562000" />
+      <workItem from="1734408038058" duration="146000" />
+      <workItem from="1734411752253" duration="96000" />
+      <workItem from="1734412285863" duration="4524000" />
+      <workItem from="1734417219980" duration="740000" />
+      <workItem from="1734418063184" duration="67000" />
+      <workItem from="1734418195608" duration="849000" />
+      <workItem from="1734790484752" duration="3118000" />
+      <workItem from="1734793846806" duration="1059000" />
+      <workItem from="1734840771595" duration="3494000" />
+      <workItem from="1734845145006" duration="171000" />
+      <workItem from="1734967601590" duration="292000" />
+      <workItem from="1734967925620" duration="34000" />
+      <workItem from="1734968190783" duration="532000" />
+      <workItem from="1735637247954" duration="7075000" />
+      <workItem from="1735648351771" duration="681000" />
+      <workItem from="1735649129431" duration="197000" />
+      <workItem from="1736251065693" duration="7321000" />
+      <workItem from="1736323349664" duration="14881000" />
+      <workItem from="1736392014565" duration="3895000" />
+      <workItem from="1736406726395" duration="1123000" />
+      <workItem from="1736825121567" duration="2133000" />
+      <workItem from="1736844713428" duration="3756000" />
+      <workItem from="1736868527546" duration="1749000" />
+      <workItem from="1736910544132" duration="26124000" />
+      <workItem from="1737037799153" duration="3862000" />
+      <workItem from="1737084363782" duration="25777000" />
+      <workItem from="1737168741723" duration="4166000" />
+      <workItem from="1737173052897" duration="303000" />
+      <workItem from="1737193335177" duration="4409000" />
+      <workItem from="1737198398919" duration="705000" />
+      <workItem from="1737199117674" duration="2790000" />
+      <workItem from="1737202231174" duration="96000" />
+      <workItem from="1737207302955" duration="3016000" />
+      <workItem from="1737212986023" duration="324000" />
+      <workItem from="1737213319725" duration="111000" />
+      <workItem from="1737251910518" duration="6235000" />
+      <workItem from="1737259751744" duration="19000" />
+      <workItem from="1737259779242" duration="1310000" />
+      <workItem from="1737278296645" duration="2041000" />
+      <workItem from="1737335182910" duration="699000" />
+      <workItem from="1737336036976" duration="1542000" />
+      <workItem from="1737431117165" duration="621000" />
+      <workItem from="1737431831399" duration="219000" />
+      <workItem from="1737444327812" duration="6946000" />
+      <workItem from="1737467188277" duration="2646000" />
+      <workItem from="1737469881506" duration="2000" />
+      <workItem from="1737511065685" duration="2321000" />
+      <workItem from="1737732094607" duration="36000" />
+      <workItem from="1737732225886" duration="44000" />
+      <workItem from="1739005242919" duration="791000" />
+      <workItem from="1739010341252" duration="1559000" />
+      <workItem from="1739013336675" duration="3095000" />
+      <workItem from="1740891051819" duration="935000" />
+      <workItem from="1740895669019" duration="60000" />
+      <workItem from="1740896758095" duration="59000" />
+      <workItem from="1740906212630" duration="45000" />
+      <workItem from="1740906265639" duration="49000" />
+      <workItem from="1740913317159" duration="105000" />
+      <workItem from="1740913459758" duration="1225000" />
+      <workItem from="1740995117122" duration="276000" />
+      <workItem from="1741003031286" duration="9221000" />
+      <workItem from="1741156146123" duration="1573000" />
+      <workItem from="1741158054178" duration="27000" />
+      <workItem from="1741158124841" duration="10062000" />
+      <workItem from="1743052651914" duration="24000" />
+=======
       <updated>1741579783588</updated>
       <workItem from="1741579784898" duration="596000" />
       <workItem from="1741580397179" duration="1279000" />
@@ -262,6 +380,7 @@
 =======
       <workItem from="1742307940551" duration="1410000" />
 >>>>>>> 763db063d684215f8a764d75bb8a636e84e7764f
+>>>>>>> a11da499cccd1557eeb36d20cfcd2b955b54f4f2
     </task>
     <task id="LOCAL-00001" summary="1.更新豆包api">
       <option name="closed" value="true" />

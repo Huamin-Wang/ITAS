@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>资源管理</title>
+    <title>文件下载</title>
     <style>
         body {
             font-family: 'Microsoft YaHei', sans-serif;
@@ -73,27 +73,13 @@
             line-height: 1.6;
         }
 
-        .file-actions {
-            display: flex;
-            gap: 10px;
+        .file-info a {
+            color: #1890ff;
+            text-decoration: none;
         }
 
-        .file-actions button {
-            background: #1890ff;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .file-actions button:hover {
-            background: #096dd9;
-        }
-
-        .upload-form {
-            margin-bottom: 20px;
+        .file-info a:hover {
+            text-decoration: underline;
         }
 
         .return-button {
@@ -128,34 +114,19 @@
 
 <header>
     <a href="{{ url_for('teacher_profile' if session.user_role == 'teacher' else 'student_profile') }}" class="back-to-home">返回个人中心</a>
-    <h1>文件管理</h1>
-    <p>以下是本课程的资源管理页面。</p>
+    <h1>文件下载</h1>
+    <p>以下是本课程的可下载资源。</p>
 </header>
 
 <div class="container">
-    <h3>上传新文件</h3>
-    <form method="POST" enctype="multipart/form-data" class="upload-form">
-        <input type="file" name="file">
-        <input type="submit" value="上传">
-    </form>
-
     <h3>已上传文件列表</h3>
-    <ul class="file-list">
+    <ul>
     {% for file in files %}
-        <li class="file-item">
-            <div class="file-info">
-                <a href="{{ url_for('download_file', filename=file) }}">{{ file }}</a>
-            </div>
-            <div class="file-actions">
-                <form method="POST" action="{{ url_for('delete_file', filename=file) }}">
-                    <button type="submit" onclick="return confirm('确认删除？')">删除</button>
-                </form>
-            </div>
-        </li>
-    {% else %}
-        <li>暂无文件</li>
+    <li>
+        <a href="{{ url_for('download_file', file_id=file.id) }}">{{ file.name }}</a>
+    </li>
     {% endfor %}
-    </ul>
+</ul>
 </div>
 
 <footer>
