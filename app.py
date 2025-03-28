@@ -583,7 +583,7 @@ def create_app():
         for student in course_students:
             if student.student_number == user.identifier:
                 print(f"student.student_name:{student.student_name}")
-                # 更新final_score=平时分+作业分数
+                # 更新final_score=平时分+作业分数（每个作业1分，更改在updateFinallyScore）
                 import wang.tools.studentTool as studentTool
                 FinallyScore = studentTool.updateFinallyScore(user.id, db)
                 print(f"FinallyScore:{FinallyScore}")

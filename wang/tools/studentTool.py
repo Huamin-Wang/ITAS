@@ -23,13 +23,14 @@ def  updateFinallyScore(studentID,db):
                     if submission.student_id == student.id:
                         # 添加作业分数
                         if submission and submission.grade is not None:
-                            all_assignments.append(submission.grade)
+                            # all_assignments.append(submission.grade)
+                            all_assignments.append(1) # 由于豆包评分不准，交了作业就是1分
         # 计算作业总分
             total_assignment_score = sum(all_assignments) if all_assignments else 0
         # 获取平时分
             score = courseName.score
         # !!!!!!!!!!!当前课程总分，这里可以调整成绩比例，作业目前默认每道题10分!!!!!!!!!!!!
-            finally_score = score*10+ total_assignment_score/2
+            finally_score = score*10+ total_assignment_score #score：平时分 total_assignment_score：作业总分
         # 更新数据库总分
             courseName.finally_score = finally_score
         # 提交更改
