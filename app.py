@@ -79,7 +79,8 @@ def create_app():
         else:
             #   返回信息提示注册登录
             return jsonify(
-                {'success': True, 'user_id': -1, 'user_name': "未登录过小程序,退出重新登录", 'user_role': "游客", "openid": openid})
+                {'success': True, 'user_id': -1, 'user_name': "未登录过小程序,退出重新登录", 'user_role': "游客",
+                 "openid": openid})
 
     # -----微信小程序登录页面---------
     @app.route('/minilogin', methods=['GET', 'POST'])
@@ -117,8 +118,10 @@ def create_app():
                 f"用户{user.name}的课程有：{course_students}")
 
             return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,
-                            "user_identifier": user.identifier, "openid": openid, "email": user.email, "gender": user.gender})
+                            "user_identifier": user.identifier, "openid": openid, "email": user.email,
+                            "gender": user.gender})
         return jsonify({'success': False, 'message': '用户名或密码错误！'})
+
     # 微信小程序注册页面
     @app.route('/miniRegister', methods=['GET', 'POST'])
     def miniRegister():
@@ -139,7 +142,8 @@ def create_app():
         if existing_user:
             return jsonify({'success': False, 'message': '注册失败，检查学号是否已存在！'})
         password_hash = generate_password_hash(password)
-        user = User(gender=gender, identifier=identifier, role=role, name=name, email=email, password=password_hash, openid=openid)
+        user = User(gender=gender, identifier=identifier, role=role, name=name, email=email, password=password_hash,
+                    openid=openid)
         db.session.add(user)
         db.session.commit()
         print("注册成功！")
@@ -150,9 +154,10 @@ def create_app():
         session['user_identifier'] = user.identifier
         # 在session中保存登录状态，已供全局使用
         session["logged_in"] = True
-        return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,"user_identifier": user.identifier,"openid": openid,"email": email,"gender": gender})
+        return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,
+                        "user_identifier": user.identifier, "openid": openid, "email": email, "gender": gender})
 
-    #微信小程序资料编辑页面
+    # 微信小程序资料编辑页面
     @app.route('/miniEdit', methods=['GET', 'POST'])
     def miniEdit():
         print("从微信小程序改个人资料")
@@ -213,13 +218,14 @@ def create_app():
         # 如果openid不为空，则允许
         if request.method == 'GET':
             openid = request.args.get('openid')
-            if openid==None:
+            if openid == None and 'user_name' in session:
                 print(f'''用户{session["user_name"]}在电脑端操作ing''')
         else:
             data = request.get_json() if request.is_json else {}
             openid = data.get('openid')
         if openid:
-            print(f'''用户{session["user_name"]}在微信小程序端操作ing''')
+            if 'user_name' in session:
+                print(f'''用户{session["user_name"]}在微信小程序端操作ing''')
         else:
             if 'user_id' not in session and request.endpoint not in ["chatHandle", "chat", "forum", "getCourseById",
                                                                      "getStudentCourses", "minilogin", "index",
@@ -271,7 +277,7 @@ def create_app():
                 identifier = identifier.upper()
                 role = request.form.get('role')
                 name = request.form.get('name')
-                gender=request.form.get('gender')
+                gender = request.form.get('gender')
                 email = request.form.get('email')
                 password = request.form.get('password')
                 confirm_password = request.form.get('confirm_password')
@@ -291,7 +297,8 @@ def create_app():
                     return redirect(url_for('register'))
 
                 password_hash = generate_password_hash(password)
-                user = User(gender=gender,identifier=identifier, role=role, name=name, email=email, password=password_hash)
+                user = User(gender=gender, identifier=identifier, role=role, name=name, email=email,
+                            password=password_hash)
                 db.session.add(user)
                 db.session.commit()
                 # 注册成功后cookie保存用户信息
@@ -384,7 +391,8 @@ def create_app():
                 # 获取学生所有课程的作业,待做作业
                 Allassignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
                 print(f"assignments_to_do:{assignments_to_do}")
-                return render_template('wang/student_profile.html', courses=courses, assignments_to_do=assignments_to_do)
+                return render_template('wang/student_profile.html', courses=courses,
+                                       assignments_to_do=assignments_to_do)
             elif user.role == "teacher":
                 # 获取教师名下的课程
                 courses = Course.query.filter_by(teacher_id=user.id).all()
@@ -397,7 +405,8 @@ def create_app():
                         db.session.commit()
                 return render_template('wang/teacher_profile.html', courses=courses)
             # 返回首页
-        return  render_template("index.html")
+        return render_template("index.html")
+
     # 微信小程序：获取学生的作业列表
     @app.route('/getStudentAssignments', methods=['GET', 'POST'])
     def getStudentAssignments():
@@ -408,7 +417,7 @@ def create_app():
         if user:
             print(f"{user.name}在微信小程序获取作业列表中！")
         print(session)
-        allAssignments,assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
+        allAssignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
         if user:
             # 返回学生的所有作业列表
             assignmentsJson = []
@@ -436,7 +445,8 @@ def create_app():
             print("待完成作业列表获取成功！")
             print(f"assignments_to_do:{assignments_to_doJson}")
             # 返回作业列表
-            return jsonify({'success': True, 'assignments': assignmentsJson, 'assignments_to_do': assignments_to_doJson})
+            return jsonify(
+                {'success': True, 'assignments': assignmentsJson, 'assignments_to_do': assignments_to_doJson})
 
     # 微信小程序：返回学生的课程列表
     @app.route('/getStudentCourses', methods=['GET', 'POST'])
@@ -526,7 +536,7 @@ def create_app():
         assignment = Assignment.query.get(assignment_id)
         # 查找用户
         user = User.query.get(session.get('user_id'))
-        content=""
+        content = ""
         # 获取作业提交记录
         submission = Submission.query.filter_by(assignment_id=assignment_id, student_id=user.id).first()
         if request.method == 'POST':
@@ -547,13 +557,14 @@ def create_app():
             # 评分逻辑
             assignment = Assignment.query.get(assignment_id)
             import wang.DouBaoAPI.ping_fen as ping_fen
-            得分, 评语, answer = ping_fen.test_批阅代码小程序("题目标题："+assignment.title+"；题目详情："+assignment.description, 10, content) # 题目，分数，答案
+            得分, 评语, answer = ping_fen.test_批阅代码小程序(
+                "题目标题：" + assignment.title + "；题目详情：" + assignment.description, 10, content)  # 题目，分数，答案
             print(f"得分：{得分} 评语：{评语}")
             # 更新评分
-            submission.grade=得分
-            submission.feedback=评语
+            submission.grade = 得分
+            submission.feedback = 评语
             db.session.commit()
-        return render_template('wang/submission_detail.html', assignment=assignment, user=user, submission=submission,)
+        return render_template('wang/submission_detail.html', assignment=assignment, user=user, submission=submission, )
 
     # 微信小程序：返回单个课程详情
     @app.route('/getCourseById/<int:course_id>', methods=['GET', 'POST'])
@@ -574,7 +585,7 @@ def create_app():
                 print(f"student.student_name:{student.student_name}")
                 # 更新final_score=平时分+作业分数
                 import wang.tools.studentTool as studentTool
-                FinallyScore= studentTool.updateFinallyScore(user.id,db)
+                FinallyScore = studentTool.updateFinallyScore(user.id, db)
                 print(f"FinallyScore:{FinallyScore}")
                 score = student.finally_score
                 print(f"score:{student.finally_score}")
@@ -912,45 +923,45 @@ def create_app():
     # 超级管理员账户
     @app.route('/admin', methods=['GET', 'POST'])
     def admin():
-        import  wang.tools.userTool as userTool
+        import wang.tools.userTool as userTool
         if request.method == 'GET':
             print(f"用户{session.get('user_identifier')}正在查看管理员页面！")
-            if session.get('user_identifier') != 'JGXY2459'.upper()  :  # 开发环境改成你自己的账户即可通过admin直接访问
+            if session.get('user_identifier') != 'JGXY2459'.upper():  # 开发环境改成你自己的账户即可通过admin直接访问
                 return '您没有权限访问此页面！'
             # 查找所有用户
             users = User.query.all()
             return render_template('wang/admin.html', users=users, total_users=len(users))
-        if request.method =='POST':
+        if request.method == 'POST':
             data = request.get_json()
             user_id = data.get('delete_id')
-            #根据id删除用户
+            # 根据id删除用户
             if user_id:
                 user = User.query.get(user_id)
                 if user:
-                    userTool.delete_user(user_id,db)
+                    userTool.delete_user(user_id, db)
                     print(f"用户{user.name}已被删除！")
                     return jsonify({'success': True, 'user': user.to_dict()})
                 return jsonify({'success': False, 'message': '用户不存在！'})
             identifier = data.get('identifier')
-            #根据学号删除用户
+            # 根据学号删除用户
             if identifier:
                 user = User.query.filter_by(identifier=identifier).first()
                 if user:
-                    userTool.delete_user(identifier,db)
+                    userTool.delete_user(identifier, db)
                     print(f"用户{user.name}已被删除！")
                     return jsonify({'success': True, 'user': user.to_dict()})
                 return jsonify({'success': False, 'message': '用户不存在！'})
             # 解绑openid：这里收到的还是用户的id
-            openid_id=data.get('openid_id')
+            openid_id = data.get('openid_id')
             if openid_id:
                 user = User.query.filter_by(id=openid_id).first()
                 if user:
-                    userTool.clearOpenid(openid_id,db)
+                    userTool.clearOpenid(openid_id, db)
                     print(f"用户{user.name}的openid已被清除！")
                     return jsonify({'success': True, 'user': user.to_dict()})
                 return jsonify({'success': False, 'message': '用户不存在！'})
             # 更新用户信息
-            userData=data.get('userData')
+            userData = data.get('userData')
             # print(f"用户数据：{userData}")
             if userData:
                 user = User.query.filter_by(id=userData['user_id']).first()
@@ -959,12 +970,13 @@ def create_app():
                     user.identifier = userData['identifier']
                     user.email = userData['email']
                     user.role = userData['role']
-                    user.gender=userData['gender']
+                    user.gender = userData['gender']
                     db.session.commit()
                     print(f"用户{user.name}的信息已被更新！")
                     return jsonify({'success': True, 'user': user.to_dict()})
                 return jsonify({'success': False, 'message': '用户不存在！'})
-    #解绑微信的openid
+
+    # 解绑微信的openid
     @app.route('/unbindOpenId', methods=['POST'])
     def unbind_openid():
         data = request.get_json()
@@ -985,11 +997,6 @@ def create_app():
     def upload():
         if request.method == 'GET':
             return render_template('xie/upload.html')
-
-
-
-
-
 
     # 返回app
     return app
@@ -1025,7 +1032,9 @@ from waitress import serve
 
 if __name__ == '__main__':
     app = create_app()  # 创建 app
-
+    # 输出app启动时间
+    from datetime import datetime
+    print(f"应用程序启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     if environment == 'production':
         print('正在启动生产服务器...')
 
@@ -1048,16 +1057,20 @@ if __name__ == '__main__':
             # 创建 HTTP 重定向应用
             redirect_app = Flask(__name__)
 
+
             @redirect_app.route('/', defaults={'path': ''})
             @redirect_app.route('/<path:path>')
             def redirect_to_https(path):
                 return redirect(f'https://{request.host}{request.path}', code=301)
 
+
             # 在单独的线程中启动 HTTP 重定向服务器
             from threading import Thread
 
+
             def run_http_server():
                 serve(redirect_app, host='0.0.0.0', port=80)
+
 
             http_thread = Thread(target=run_http_server)
             http_thread.daemon = True
@@ -1072,6 +1085,7 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"启动服务器时出现错误: {e}")
             import traceback
+
             traceback.print_exc()
     else:
         print('使用 Waitress 启动开发服务器...')
