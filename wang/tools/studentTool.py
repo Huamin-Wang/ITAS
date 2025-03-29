@@ -43,13 +43,14 @@ def assignments(studentID,db):
     from wang.models.submission import Submission
     from wang.models.course import Course
     user = User.query.get(studentID)
-    # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
+    # 获取学生名下的课程：把course_students表中学号能匹配上的所有记录中的课程id找出来
     course_students = Course_Students.query.filter_by(student_number=user.identifier,
-                                                      student_name=user.name).all()
-    # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
+                                                      ).all()
+    # 将course_students表中自己的学号对应的记录中的状态改为enrolled
     for course_student in course_students:
         course_student.course_status = 'enrolled'
         db.session.commit()  # 提交事务
+    # 获取学生所有课程
     courses = []
     for course_student in course_students:
         course = Course.query.get(course_student.course_id)
@@ -76,4 +77,4 @@ def assignments(studentID,db):
             assignments_to_do.append(assignment)
     return Allassignments,assignments_to_do
 
-# 根据用户id删除用户
+
