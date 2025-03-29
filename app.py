@@ -113,7 +113,7 @@ def create_app():
             # 根据课程信息获取用户性别
             # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
             course_students = Course_Students.query.filter_by(student_number=user.identifier,
-                                                              student_name=user.name).all()
+                                                              ).all()
             print(
                 f"用户{user.name}的课程有：{course_students}")
 
@@ -465,7 +465,7 @@ def create_app():
         if user:
             # 返回学生的课程列表
             course_students = Course_Students.query.filter_by(student_number=user.identifier,
-                                                              student_name=user.name).all()
+                                                              ).all()
             courses = []
             for course_student in course_students:
                 course = Course.query.get(course_student.course_id)
@@ -507,8 +507,16 @@ def create_app():
         course = Course.query.get(course_id)
         print(f"课程详情页面中的课程为：{course}")
         xuehao = session.get('user_identifier')
-        user_name = session.get('username')
+        user_name = session.get('user_name')
         print(f"用户{user_name}正在查看课程{course.name}的详情！")
+        # 获取学生本门课的学生
+        course_students = course.course_students
+        # 获取学生的分数
+        for student in course_students:
+            if student.score==None:
+                student.score = 0
+        # 提交到数据库
+        db.session.commit()
         # 更新final_score=平时分+作业分数
         import wang.tools.studentTool as studentTool
         studentTool.updateFinallyScore(session.get('user_id'), db)  # 更新分数即可，不必传值
