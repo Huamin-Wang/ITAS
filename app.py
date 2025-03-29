@@ -131,9 +131,11 @@ def create_app():
         print(f"openid:{openid}")
         identifier = data.get('user_identifier')
         identifier = identifier.upper()
+        identifier = identifier.replace(' ', '')
         print(f"identifier:{identifier}")
         role = data.get('user_role')
         name = data.get('user_name')
+        name = name.replace(' ', '')
         gender = data.get("gender")
         email = data.get('email')
         password = data.get('password')
@@ -275,8 +277,10 @@ def create_app():
                 identifier = request.form.get('identifier')  # 学号
                 # 将学号统一转成大写
                 identifier = identifier.upper()
+                identifier = identifier.replace(' ', '')
                 role = request.form.get('role')
                 name = request.form.get('name')
+                name = name.replace(' ', '')
                 gender = request.form.get('gender')
                 email = request.form.get('email')
                 password = request.form.get('password')
@@ -371,9 +375,9 @@ def create_app():
                 # 输出用戶信息
                 print(f"用户{user.name}的学号为：{user.identifier}")
 
-                # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
+                # 获取学生名下的课程：把course_students表中学号匹配上的所有记录中的课程id找出来
                 course_students = Course_Students.query.filter_by(student_number=user.identifier,
-                                                                  student_name=user.name).all()
+                                                                  ).all()
                 print(
                     f"用户{user.name}的课程有：{course_students}")
 
@@ -501,12 +505,14 @@ def create_app():
     @app.route('/course_detail/<int:course_id>')
     def course_detail(course_id):
         course = Course.query.get(course_id)
-        user_name = session.get('user_name')
+        print(f"课程详情页面中的课程为：{course}")
+        xuehao = session.get('user_identifier')
+        user_name = session.get('username')
         print(f"用户{user_name}正在查看课程{course.name}的详情！")
         # 更新final_score=平时分+作业分数
         import wang.tools.studentTool as studentTool
-        FinallyScore = studentTool.updateFinallyScore(session.get('user_id'), db)
-        return render_template('wang/course_detail.html', course=course, user_name=user_name)
+        studentTool.updateFinallyScore(session.get('user_id'), db)  # 更新分数即可，不必传值
+        return render_template('wang/course_detail.html', course=course, user_name=user_name,xuehao=xuehao)
 
     # 学生作业列表页面
     @app.route('/submissions/<int:student_id>', methods=['GET', 'POST'])
@@ -515,7 +521,7 @@ def create_app():
         student = User.query.get(student_id)
         # 获取学生名下的课程
         course_students = Course_Students.query.filter_by(student_number=student.identifier,
-                                                          student_name=student.name).all()
+                                                          ).all()
         courses = []
         for course_student in course_students:
             course = Course.query.get(course_student.course_id)
@@ -1034,6 +1040,7 @@ if __name__ == '__main__':
     app = create_app()  # 创建 app
     # 输出app启动时间
     from datetime import datetime
+
     print(f"应用程序启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     if environment == 'production':
         print('正在启动生产服务器...')

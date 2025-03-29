@@ -97,12 +97,13 @@
         <h1>{{ course.name }}</h1>
         <!-- 显示用户本课程的成绩。 -->
         {% for student in course.course_students %}
-            {% if student.student_name == user_name %}
+            {% if student.student_number == xuehao %}
                 <p><strong>您目前的课程评分成绩：</strong>{{ student.finally_score }}</p>
             {% endif %}
         {% endfor %}
         {% for student in course.course_students|sort(attribute='score', reverse=True) %}
-            {% if student.student_name == user_name %}
+{#            {% for student in course.course_students|selectattr('score', 'ne', None)|sort(attribute='score', reverse=True) %}#}
+            {% if student.student_number == xuehao %}
                 <p><strong>您目前的课程评分成绩排名：</strong>{{ loop.index }}</p>
             {% endif %}
         {% endfor %}
