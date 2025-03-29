@@ -408,8 +408,10 @@ def create_app():
             xuehao = xuehao.upper()
             print(f"用户输入的学号为：{xuehao}")
             password = request.form.get('password')
+            print(f"用户输入的密码为：{password}")
             # 从数据库中查找用户，与用户输入的密码进行比对
             user = User.query.filter_by(identifier=xuehao).first()
+            print(f"用户{user}")
             if user and user.check_password(password):
                 # 在session中保存登录状态，已供全局使用
                 session["logged_in"] = True
