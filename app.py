@@ -519,7 +519,10 @@ def create_app():
         db.session.commit()
         # 更新final_score=平时分+作业分数
         import wang.tools.studentTool as studentTool
-        studentTool.updateFinallyScore(session.get('user_id'), db)  # 更新分数即可，不必传值
+        # 查找所有学生
+        students= User.query.filter_by(role="student").all()
+        for student in students:
+            studentTool.updateFinallyScore_byUserID(student.id, db)  # 更新本门课所有人分数即可，不必传值
         return render_template('wang/course_detail.html', course=course, user_name=user_name,xuehao=xuehao)
 
     # 学生作业列表页面
