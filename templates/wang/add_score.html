@@ -3,8 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>添加成绩</title>
+    <title>课程成绩管理系统</title>
     <style>
+        :root {
+            --primary-color: #4299e1;
+            --danger-color: #e53e3e;
+            --success-color: #48bb78;
+            --bg-color: #f7f9fc;
+            --text-color: #2d3748;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,258 +24,282 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
             line-height: 1.6;
             padding: 1rem;
             max-width: 1200px;
             margin: 0 auto;
-            background: #f7f9fc;
-            color: #2d3748;
+            background: var(--bg-color);
+            color: var(--text-color);
         }
 
         .container {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-md);
             padding: 2rem;
             margin: 1rem 0;
-            position: relative;
+            animation: fadeIn 0.3s ease;
         }
 
-        h1 {
-            color: #2d3748;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 2rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #4299e1;
-            font-size: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+.rank {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 0.4rem 1rem;
+            background-color: #4299e1;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 200;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.1);
+            z-index: 1000;
         }
 
-        h2 {
-            color: #2d3748;
-            margin: 1.5rem 0 1rem;
-            font-size: 1.25rem;
+        .rank:hover {
+            background-color: #3182ce;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
+        }
+
+        /* 修改 header-actions 的样式以适应新的布局 */
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .rank {
+                position: static;
+                display: block;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+        }
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            padding: 0.5rem 1rem;
+            color: white;
+            background: var(--primary-color);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
         .search-container {
-            margin-bottom: 2rem;
             position: sticky;
             top: 0;
             background: white;
             padding: 1rem 0;
-            z-index: 10;
-            border-bottom: 1px solid #e2e8f0;
+            z-index: 20;
+            backdrop-filter: blur(8px);
         }
 
-        .submit-container {
-            position: sticky;
-            top: 120px;
-            z-index: 10;
-            background: white;
-            padding: 1rem 0;
-            text-align: center;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #4a5568;
-            font-weight: 500;
-        }
-
-        input[type="text"] {
+        .search-input {
             width: 100%;
             padding: 0.75rem;
-            border: 2px solid #e2e8f0;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 1rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
 
-        input[type="text"]:focus {
+        .search-input:focus {
             outline: none;
-            border-color: #4299e1;
+            border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
         }
 
-        #student-list {
+        .student-list {
             list-style: none;
             border-radius: 8px;
             overflow: hidden;
         }
 
-        #student-list li {
+        .student-item {
             padding: 1rem;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.2s ease;
-            position: relative;
+            transition: var(--transition);
         }
 
-        #student-list li:hover {
-            background-color: #f7fafc;
+        .student-item:hover {
+            background-color: rgba(66, 153, 225, 0.05);
         }
 
         .student-info {
-            display: flex;
+            display: grid;
+            grid-template-columns: auto auto auto;
+            gap: 1.5rem;
             align-items: center;
-            gap: 1rem;
         }
 
-        .student-number {
-            color: #718096;
-            font-size: 0.9rem;
+        .score-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 500;
         }
 
         .current-score {
             background: #ebf8ff;
-            padding: 0.25rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.875rem;
-            color: #2b6cb0;
+            color: var(--primary-color);
         }
 
         .score-change {
-            background: #fed7d7;
-            padding: 0.25rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.875rem;
-            color: #c53030;
             display: none;
+            animation: slideIn 0.3s ease;
         }
 
-        .scored-indicator {
-            display: none;
-            position: absolute;
-            right: 150px;
-            background: #48bb78;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.875rem;
+        @keyframes slideIn {
+            from { transform: translateX(-10px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
-        .is-scored .scored-indicator {
-            display: block;
-        }
-
-        .subtract-indicator {
-            display: none;
-            position: absolute;
-            right: 150px;
-            background: #e53e3e;
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.875rem;
-        }
-
-        .is-subtracted .subtract-indicator {
-            display: block;
-        }
-
-        input[type="number"] {
+        .score-input {
             width: 120px;
             padding: 0.5rem;
-            border: 2px solid #e2e8f0;
+            border: 2px solid var(--border-color);
             border-radius: 6px;
             font-size: 0.9rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
 
-        input[type="number"]:focus {
+        .score-input:focus {
             outline: none;
-            border-color: #4299e1;
+            border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
         }
 
-        button {
-            display: inline-block;
-            width: 200px;
+        .submit-container {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 1rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+        }
+
+        .btn {
             padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             font-weight: 500;
+            min-width: 200px;
         }
 
-        .btn-add {
-            background-color: #4299e1;
+        .btn-primary {
+            background: var(--primary-color);
             color: white;
         }
 
-        .btn-subtract {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: #e2e8f0;
-            color: #2d3748;
-            width: 120px;
-            height: 40px;
-            font-size: 0.9rem;
-            border-radius: 8px;
-            opacity: 0.7;
-            transition: all 0.3s ease;
-        }
-
-        .btn-subtract:hover {
-            opacity: 1;
-            background-color: #c53030;
+        .btn-danger {
+            background: var(--danger-color);
             color: white;
         }
 
-
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
-        .btn-add:hover {
-            background-color: #3182ce;
-        }
-
-        .btn-subtract:hover {
-            background-color: #c53030;
-        }
-
-        .scored-students-container {
+        .recent-scores {
             position: fixed;
             top: 1rem;
             right: 1rem;
             width: 300px;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-md);
             padding: 1rem;
-            z-index: 100;
+            z-index: 30;
             max-height: 80vh;
             overflow-y: auto;
         }
 
-        .scored-students-list {
-            list-style: none;
-            padding: 0;
-        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
 
-        .scored-students-list li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+            .student-item {
+                flex-direction: column;
+                gap: 1rem;
+            }
 
-        .scored-students-list li:last-child {
-            border-bottom: none;
-        }
+            .student-info {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
 
+            .score-input {
+                width: 100%;
+            }
+
+            .recent-scores {
+                position: static;
+                width: 100%;
+                margin-top: 2rem;
+                max-height: none;
+            }
+
+            .submit-container {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .nav-link {
+                text-align: center;
+            }
+        }
         .back-home {
             position: fixed;
             top: 10px;
@@ -285,177 +321,170 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
         }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-
-            #student-list li {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .student-info {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
-
-            input[type="number"] {
-                width: 100%;
-            }
-
-            .scored-indicator,
-            .subtract-indicator {
-                position: static;
-                margin-top: 0.5rem;
-            }
-
-            .scored-students-container {
-                position: static;
-                width: 100%;
-                margin-top: 2rem;
-                max-height: none;
-            }
-
-            .submit-container {
-                flex-direction: column;
-                gap: 0.5rem;
-            }
-
-            button {
-                width: 100%;
-            }
-        }
     </style>
 </head>
 <body>
-<a href="/course_manage/{{course.id}}" class="back-home">返回课程</a>
-
-<div class="container">
-    <h1>课程：{{ course.name }} 添加成绩</h1>
-    <form method="post" action="{{ url_for('add_score', course_id=course.id) }}" id="scoreForm">
-        <div class="search-container">
-            <label for="search" style="display: block; text-align: center;">按学号或姓名搜索学生：</label>
-            <input type="text" id="search" name="search" placeholder="请输入学号或姓名" oninput="filterStudents()">
+    <div class="container">
+        <div class="header">
+            <h1>{{ course.name }} - 问答成绩管理</h1>
+            <div class="header-actions">
+                <a href="/course_manage/{{course.id}}" class="back-home">返回课程</a>
+                <a href="/course/ranking/{{ course.id }}" class="rank">查看排名</a>
+            </div>
         </div>
 
-        <div class="submit-container">
-            <button type="submit" class="btn-add" onclick="submitForm('add'); return false;">提交增加的分数</button>
-            <button type="button" class="btn-subtract" onclick="confirmSubmit()">扣除分数</button>
-        </div>
+        <form method="post" action="{{ url_for('add_score', course_id=course.id) }}" id="scoreForm">
+            <div class="search-container">
+                <input type="text"
+                       class="search-input"
+                       id="search"
+                       placeholder="输入学号或姓名搜索学生"
+                       autocomplete="off"
+                       oninput="debounce(filterStudents, 300)()">
+            </div>
 
-        <ul id="student-list">
-            {% for student in course_students %}
-            <li data-student="{{ student.student_number }} {{ student.student_name }}">
-                <div class="student-info">
-                    <span class="student-number">{{ student.student_number }}</span>
-                    <span class="student-name">{{ student.student_name }}</span>
-                    <span class="current-score">当前分值: {{ student.score or 0 }}</span>
-                    <span class="score-change"></span>
-                </div>
-                <span class="scored-indicator">即将加分</span>
-                <span class="subtract-indicator">即将扣分</span>
-                <input type="number"
-                       name="score_{{ student.student_number }}"
-                       data-student-number="{{ student.student_number }}"
-                       placeholder="输入分数"
-                       value="0"
-                       min="0"
-                       oninput="checkScored(this)">
+            <ul class="student-list" id="student-list">
+                {% for student in course_students %}
+                <li class="student-item" data-student="{{ student.student_number }} {{ student.student_name }}">
+                    <div class="student-info">
+                        <span>{{ student.student_number }}</span>
+                        <span>{{ student.student_name }}</span>
+                        <span class="score-badge current-score">当前分值: {{ student.score or 0 }}</span>
+                        <span class="score-badge score-change"></span>
+                    </div>
+                    <input type="number"
+                           class="score-input"
+                           name="score_{{ student.student_number }}"
+                           data-student-number="{{ student.student_number }}"
+                           placeholder="输入分数"
+                           value="0"
+                           min="0"
+                           oninput="checkScored(this)">
+                </li>
+                {% endfor %}
+            </ul>
+
+            <div class="submit-container">
+                <button type="submit" class="btn btn-primary" onclick="submitForm('add'); return false;">
+                    提交增加的分数
+                </button>
+                <button type="button" class="btn btn-danger" onclick="confirmSubmit()">
+                    扣除分数
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="recent-scores">
+        <h2>最近操作记录</h2>
+        <ul class="student-list">
+            {% for student_name, score in session.get("scored_students", {}).items() %}
+            <li class="student-item">
+                <span>{{ student_name }}</span>
+                <span class="score-badge current-score">{{ score }} 分</span>
             </li>
             {% endfor %}
         </ul>
-    </form>
-</div>
+    </div>
 
-<div class="scored-students-container">
-    <h2>最近操作分数的学生名单</h2>
-    <ul class="scored-students-list">
-        {% for student_name, score in session.get("scored_students", {}).items() %}
-        <li>
-            <span>{{ student_name }}</span>
-            <span>{{ score }} 分</span>
-        </li>
-        {% endfor %}
-    </ul>
-</div>
+    <script>
+        let currentMode = 'add';
 
-<script>
-    let currentMode = 'add';
-
-    function confirmSubmit() {
-        if (confirm("确定要扣除分数吗？此操作不可撤销！")) {
-            submitForm('subtract');
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
-    }
 
-    function submitForm(mode) {
-        currentMode = mode;
-        const form = document.getElementById('scoreForm');
-        const inputs = form.querySelectorAll('input[type="number"]');
+        function confirmSubmit() {
+            if (confirm("确定要扣除分数吗？此操作不可撤销！")) {
+                submitForm('subtract');
+            }
+        }
 
-        // 如果是减分模式，将所有大于0的输入值转换为负数
-        if (mode === 'subtract') {
+        function submitForm(mode) {
+            currentMode = mode;
+            const form = document.getElementById('scoreForm');
+            const inputs = form.querySelectorAll('.score-input');
+
+            if (mode === 'subtract') {
+                inputs.forEach(input => {
+                    const value = parseFloat(input.value) || 0;
+                    if (value > 0) {
+                        input.value = -value;
+                    }
+                });
+            }
+
+            // 添加表单提交前的数据验证
+            let hasChanges = false;
             inputs.forEach(input => {
-                const value = parseFloat(input.value) || 0;
-                if (value > 0) {
-                    input.value = -value;
+                if (parseFloat(input.value) !== 0) {
+                    hasChanges = true;
                 }
+            });
+
+            if (!hasChanges) {
+                alert('请至少输入一个分数！');
+                return;
+            }
+
+            form.submit();
+        }
+
+        function filterStudents() {
+            const input = document.getElementById('search');
+            const filter = input.value.trim().toUpperCase();
+            const items = document.querySelectorAll('.student-item');
+
+            items.forEach(item => {
+                const txtValue = item.getAttribute('data-student');
+                item.style.display = txtValue.toUpperCase().includes(filter) ? "" : "none";
             });
         }
 
-        form.submit();
-    }
+        function checkScored(input) {
+            const item = input.closest('.student-item');
+            const currentScore = parseFloat(item.querySelector('.current-score').textContent.split(': ')[1]);
+            const inputValue = parseFloat(input.value) || 0;
+            const scoreChange = item.querySelector('.score-change');
 
-    function filterStudents() {
-        const input = document.getElementById('search');
-        const filter = input.value.toUpperCase();
-        const ul = document.getElementById("student-list");
-        const li = ul.getElementsByTagName('li');
-
-        for (let i = 0; i < li.length; i++) {
-            const txtValue = li[i].getAttribute('data-student');
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                li[i].style.display = "";
-            } else {
-                li[i].style.display = "none";
+            if (inputValue === 0) {
+                scoreChange.style.display = 'none';
+                return;
             }
-        }
-    }
 
-    function checkScored(input) {
-        const li = input.closest('li');
-        const currentScore = parseFloat(li.querySelector('.current-score').textContent.split(': ')[1]);
-        const inputValue = parseFloat(input.value) || 0;
-        const scoreChange = li.querySelector('.score-change');
+            scoreChange.style.display = 'inline-block';
 
-        li.classList.remove('is-scored', 'is-subtracted');
-
-        if (inputValue > 0) {
             if (currentMode === 'add') {
-                li.classList.add('is-scored');
-                scoreChange.style.display = 'inline-block';
                 scoreChange.style.background = '#c6f6d5';
                 scoreChange.style.color = '#2f855a';
                 scoreChange.textContent = `加分后: ${currentScore + inputValue}`;
             } else {
-                li.classList.add('is-subtracted');
-                scoreChange.style.display = 'inline-block';
                 scoreChange.style.background = '#fed7d7';
                 scoreChange.style.color = '#c53030';
                 scoreChange.textContent = `减分后: ${Math.max(0, currentScore - inputValue)}`;
             }
-        } else {
-            scoreChange.style.display = 'none';
         }
-    }
 
-    // 初始化时为所有分数输入框添加事件监听
-    document.querySelectorAll('input[type="number"]').forEach(input => {
-        input.addEventListener('input', () => checkScored(input));
-    });
-</script>
+        // 初始化事件监听
+        document.querySelectorAll('.score-input').forEach(input => {
+            input.addEventListener('input', () => checkScored(input));
+        });
+
+        // 添加快捷键支持
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                submitForm('add');
+            }
+        });
+    </script>
 </body>
 </html>
