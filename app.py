@@ -521,7 +521,7 @@ def create_app():
         import wang.tools.studentTool as studentTool
         # 查找所有学生
         students= User.query.filter_by(role="student").all()
-        for student in students:
+        for student in students:   # 每次学生点击都会更新所有人的分数，吃点性能，后期可以优化
             studentTool.updateFinallyScore_byUserID(student.id, db)  # 更新本门课所有人分数即可，不必传值
         return render_template('wang/course_detail.html', course=course, user_name=user_name,xuehao=xuehao)
 
@@ -871,7 +871,24 @@ def create_app():
             return redirect(url_for('add_score', course_id=course.id))
         print(f"用户{course.name}正在为学生加分！")
         return render_template('wang/add_score.html', course=course, course_students=course_students)
-
+    # 显示学生排名
+    @app.route('/course/ranking/<int:course_id>',methods=['GET', 'POST'])
+    def ranking(course_id):
+        course = Course.query.get(course_id)
+        course_students = course.course_students
+        if request.method == 'POST':
+            #刷新排名
+            import wang.tools.studentTool as studentTool
+            # 查找所有学生
+            students = User.query.filter_by(role="student").all()
+            for student in students:  # 每次学生点击都会更新所有人的分数，吃点性能，后期可以优化
+                studentTool.updateFinallyScore_byUserID(student.id, db)
+            print(f"用户{course.name}正在刷新课程{course.name}的排名！")
+        # 对学生进行排序，按分数从高到低排序
+        course_students.sort(key=lambda x: x.finally_score, reverse=True)
+        print(f"用户{course.name}正在查看课程{course.name}的排名！")
+        from datetime import datetime
+        return render_template('wang/ranking.html', course=course, course_students=course_students, now=datetime.now)
     # 课程管理页面：作业布置
     @app.route('/course/assignments/<int:course_id>', methods=['GET', 'POST'])
     def assignments(course_id):
