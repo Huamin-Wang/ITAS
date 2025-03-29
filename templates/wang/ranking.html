@@ -304,22 +304,7 @@
                 </div>
                 <div class="stat-label">最高分</div>
             </div>
-            <div class="stat-card">
-                {% set pass_count = 0 %}
-                {% for student in course_students %}
-                    {% if student.finally_score and student.finally_score >= 60 %}
-                        {% set pass_count = pass_count + 1 %}
-                    {% endif %}
-                {% endfor %}
-                <div class="stat-value">
-                    {% if course_students|length > 0 %}
-                        {{ (pass_count / course_students|length * 100)|round }}%
-                    {% else %}
-                        0%
-                    {% endif %}
-                </div>
-                <div class="stat-label">通过率</div>
-            </div>
+
         </div>
 
         <div class="search-box">
