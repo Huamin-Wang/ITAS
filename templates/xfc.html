@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 悬浮窗问答</title>
+    <title>{% block title %}默认标题{% endblock %}</title>
     <style>
         /* 悬浮标样式 */
        .floating-icon {
@@ -135,6 +135,11 @@
 </head>
 
 <body>
+    <!-- 页面主体内容 -->
+    {% block content %}
+    {% endblock %}
+
+    <!-- 悬浮窗 -->
     <div class="floating-icon" onclick="toggleDialog()">💬</div>
     <div class="dialog" id="dialog" {% if show_dialog %}style="display: flex;" {% endif %}>
         <div class="chat-header">AI 问答助手</div>
@@ -145,8 +150,10 @@
             {% endif %}
         </div>
         <div class="input-area">
-            <form method="post">
-                <input type="text" name="question" placeholder="输入你的问题">
+            <form method="post" action="/chat_apis">
+                <label>
+                    <input type="text" name="question" placeholder="输入你的问题">
+                </label>
                 <button type="submit">发送</button>
             </form>
         </div>

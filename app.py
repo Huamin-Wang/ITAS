@@ -1,24 +1,23 @@
-from urllib.request import localhost
+import csv
+import io
+import os
+from datetime import timedelta
 from zipfile import error
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
+
+import chardet
+import requests
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, \
+    send_from_directory
 from flask_cors import CORS
+from openai import OpenAI
 from werkzeug.security import generate_password_hash
-from threading import Thread
+
 import xie.chat as c
+from wang.DouBaoAPI.API import get_answer
 from wang.models import init_db
 from wang.models.course import Course
 from wang.models.course_students import Course_Students
 from wang.models.user import User
-
-from datetime import timedelta
-import os
-import csv
-import io
-import chardet
-import requests
-
-from xu.views import ai_bp
-from flask_migrate import Migrate
 
 # 获取环境变量的值，如果没有设置则默认为 'development'
 environment = os.getenv('FLASK_ENV', 'development')
@@ -44,7 +43,34 @@ def create_app():
     APP_ID = 'wx3dd32842e9e24690'
     APP_SECRET='09732f45784f51d2b9e5bad0902ec17a'
 
-    app.register_blueprint(ai_bp)  # 注册你的 Blueprint
+    def get_answers(question: str):
+        try:
+            client = OpenAI(
+                base_url="https://ark.cn-beijing.volces.com/api/v3",
+                api_key="e864c037-480f-4533-bb04-df290365997f",
+            )
+            completion = client.chat.completions.create(
+                model="doubao-lite-4k-character-240828",
+                messages=[
+                    {"role": "system", "content": "你是人工智能助手"},
+                    {"role": "user", "content": question},
+                ],
+            )
+            return completion.choices[0].message.content
+        except Exception as e:
+            print(f"大模型调用出错: {e}")
+            return "抱歉，大模型调用出错，请稍后再试。"
+
+    @app.route('/chat_apis', methods=['GET', 'POST'])
+    def chat_apis():
+        answer = None
+        question = None
+        show_dialog = False
+        if request.method == 'POST':
+            question = request.form.get('question')
+            answer = get_answers(question)
+            show_dialog = True
+        return render_template('wang/student_profile.html', answer=answer, question=question, show_dialog=show_dialog)
 
     @app.route('/getOpenId', methods=['GET', 'POST'])
     def get_openid():
@@ -226,7 +252,7 @@ def create_app():
 
 
     # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
-    @app.route('/loginHandle', methods=['POST'])
+    @app.route('/loginHandle', methods=['GET','POST'])
     def loginHandle():
         # 如果session中登录状态为false，说明是第一次登录，从表单中获取学号和密码
         if "logged_in" not in session or session["logged_in"] == False:
@@ -273,7 +299,21 @@ def create_app():
                 courses.append(course)
             print(f"用户{user.name}正在查看自己的课程！")
             print(courses)
-            return render_template('wang/student_profile.html', courses=courses)
+            answer = None
+            question = None
+            show_dialog = False
+            if request.method == 'POST':
+                try:
+                    question = request.form.get('question')
+                    if question:
+                        answer = get_answers(question)
+                        show_dialog = True
+                except Exception as e:
+                    print(f"获取答案出错: {e}")
+                    answer = "获取答案时出现错误，请稍后再试！"
+                    show_dialog = True
+            return render_template('wang/student_profile.html', courses=courses,answer=answer, question=question, show_dialog=show_dialog)
+
         elif user.role == "teacher":
             # 获取教师名下的课程
             courses = Course.query.filter_by(teacher_id=user.id).all()
@@ -339,7 +379,7 @@ def create_app():
     def course_detail(course_id):
         course = Course.query.get(course_id)
         user_name = session.get('user_name')
-        return render_template('wang/course_detail.html', course=course, user_name=user_name)
+        return render_template('wang/course_detail.html',course=course, user_name=user_name)
     # 微信小程序：返回单个课程详情
     @app.route('/getCourseById/<int:course_id>', methods=['GET', 'POST'])
     def getCourseById(course_id):
@@ -631,7 +671,6 @@ def create_app():
     # # 返回app，db
     # return db,app
 #
-from sqlalchemy import text
 # db, app = create_app()  # 创建app
 # # with app.app_context():
 # #     try:
@@ -655,6 +694,8 @@ from waitress import serve
 
 if __name__ == '__main__':
     app = create_app()  # 创建 app
+
+    app.run(debug=True, host='127.0.0.1', port=5000)
 
     if environment == 'production':
         print('Starting production server with Waitress...')
