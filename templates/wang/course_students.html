@@ -139,6 +139,9 @@
         <!-- 已选课学生名单 -->
         <h2><i class="fas fa-users icon"></i>已注册账号学生名单</h2>
         <p class="count"><i class="fas fa-check-circle icon"></i>已注册学生数量: {{ enrolled_students_count }}</p>
+        <form action="/course_students/{{ course.id }}" method="POST">
+            <button type="submit">刷新注册状态</button>
+        </form>
         <table>
             <thead>
                 <tr>

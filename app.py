@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash
 from threading import Thread
-
+import wang.tools.studentTool as studentTool
 import wang.tools.studentTool
 import xie.chat as c
 from wang.models import init_db, Assignment, Submission
@@ -502,7 +502,7 @@ def create_app():
         return loginHandle()
 
     # 学生课程详情页面
-    @app.route('/course_detail/<int:course_id>')
+    @app.route('/course_detail/<int:course_id>', methods=['GET', 'POST'])
     def course_detail(course_id):
         course = Course.query.get(course_id)
         print(f"课程详情页面中的课程为：{course}")
@@ -517,12 +517,12 @@ def create_app():
                 student.score = 0
         # 提交到数据库
         db.session.commit()
-        # 更新final_score=平时分+作业分数
-        import wang.tools.studentTool as studentTool
-        # 查找所有学生
-        students= User.query.filter_by(role="student").all()
-        for student in students:   # 每次学生点击都会更新所有人的分数，吃点性能，后期可以优化
-            studentTool.updateFinallyScore_byUserID(student.id, db)  # 更新本门课所有人分数即可，不必传值
+        if request.method == 'POST':
+            # 更新final_score=平时分+作业分数
+            # 查找所有学生
+            students = User.query.filter_by(role="student").all()
+            for student in students:  # 每次学生点击都会更新所有人的分数，吃点性能，后期可以优化
+                studentTool.updateFinallyScore_byUserID(student.id, db)  # 更新本门课所有人分数即可，不必传值
         return render_template('wang/course_detail.html', course=course, user_name=user_name,xuehao=xuehao)
 
     # 学生作业列表页面
@@ -826,10 +826,22 @@ def create_app():
                                enrolled_students_count=enrolled_students_count)
 
     # 课程管理页面：显示该课程下的选课情况：显示应选人数、已选人数、未选人数等信息
-    @app.route('/course_students/<int:course_id>')
+    @app.route('/course_students/<int:course_id>',methods=['GET','POST'])
     def course_students(course_id):
         course = Course.query.get(course_id)
         course_students = course.course_students
+        # 更新本门课学生的注册状态
+        if request.method == 'POST':
+            print(f"{session['user_name']}正在刷新学生注册状态")
+            # 将course_students表的学生与students用户中的学生进行比对，如果有，则将course_students表中的学生状态改为enrolled，没有则改为not_enrolled
+            for course_student in course_students:
+                student = User.query.filter_by(identifier=course_student.student_number).first()
+                if student:
+                    course_student.course_status = 'enrolled'
+                    db.session.commit()
+                else:
+                    course_student.course_status = 'not_enrolled'
+                    db.session.commit()
         # 选课的学生名单
         enrolled_students = [student for student in course.course_students if student.course_status == 'enrolled']
         enrolled_students_count = len(
