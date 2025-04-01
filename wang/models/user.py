@@ -8,6 +8,7 @@ class User(db.Model):
     identifier = db.Column(db.String(50), unique=True, nullable=False)  # 用户标识符
     role = db.Column(db.String(10), nullable=False)  # 用户角色
     name = db.Column(db.String(100), nullable=False)  # 用户名
+    gender = db.Column(db.String(10), nullable=True)  # 性别
     email = db.Column(db.String(120), unique=True, nullable=False)  # 邮箱
     password = db.Column(db.String(256), nullable=False)  # 密码
     openid = db.Column(db.String(100),  nullable=True) # 微信openid
@@ -25,3 +26,5 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.id} - {self.name}>'
+    def to_dict(self):
+        return f"<User {self.id} - {self.name}>"

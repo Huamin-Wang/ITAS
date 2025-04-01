@@ -1,8 +1,10 @@
 import os
 from openai import OpenAI
 
+
 # 请确保您已将 API Key 存储在环境变量 ARK_API_KEY 中
 # 初始化Openai客户端，从环境变量中读取您的API Key
+
 
 
 def get_answer(question: str):

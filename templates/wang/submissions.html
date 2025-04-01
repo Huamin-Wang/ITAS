@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>作业提交详情</title>
+            <style>
+                :root {
+                    --primary-color: #1890ff;
+                    --danger-color: #ff4d4f;
+                    --bg-color: #f4f4f4;
+                    --shadow-color: rgba(0, 0, 0, 0.1);
+                    --text-color: #333;
+                    --text-secondary: #666;
+                }
+
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: var(--bg-color);
+                    margin: 0;
+                    padding: 0;
+                }
+
+                /* Navigation Styles */
+                .navigation {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 1rem 2rem;
+                    background: white;
+                    box-shadow: 0 2px 8px var(--shadow-color);
+                }
+
+                .back-button {
+                    text-decoration: none;
+                    color: var(--text-secondary);
+                    padding: 0.5rem 1rem;
+                    border-radius: 4px;
+                    transition: background 0.3s ease;
+                }
+
+                .back-button:hover {
+                    background: var(--bg-color);
+                }
+
+                .current-time {
+                    color: var(--text-secondary);
+                    font-size: 0.9rem;
+                }
+
+                /* Container Styles */
+                .container {
+                    width: 80%;
+                    max-width: 1200px;
+                    margin: 2rem auto;
+                    padding: 2rem;
+                    background: white;
+                    border-radius: 12px;
+                    box-shadow: 0 2px 12px var(--shadow-color);
+                }
+
+                h1 {
+                    color: var(--primary-color);
+                    text-align: center;
+                    margin-bottom: 2rem;
+                }
+
+                /* Assignment List Styles */
+                .assignment-list {
+                    list-style: none;
+                    padding: 0;
+                }
+
+                .assignment-list li {
+                    background: #fff;
+                    padding: 1rem;
+                    margin-bottom: 1rem;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 8px var(--shadow-color);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .assignment-info {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+
+                .assignment-title {
+                    font-weight: bold;
+                    color: var(--text-color);
+                }
+
+                .assignment-deadline {
+                    color: var(--text-secondary);
+                    font-size: 0.9rem;
+                }
+
+                .deadline-passed {
+                    color: var(--danger-color);
+                    font-weight: bold;
+                    margin-left: 0.5rem;
+                }
+
+                .submit-link {
+                    text-decoration: none;
+                    color: var(--primary-color);
+                    padding: 0.5rem 1rem;
+                    border: 1px solid var(--primary-color);
+                    border-radius: 4px;
+                    transition: all 0.3s ease;
+                }
+
+                .submit-link:hover {
+                    background: var(--primary-color);
+                    color: white;
+                }
+
+                .no-assignments {
+                    text-align: center;
+                    color: var(--text-secondary);
+                    font-style: italic;
+                }
+            </style>
+        </head>
+        <body>
+            <nav class="navigation">
+                <a href="{{ url_for('student_profile') }}" class="back-button">返回</a>
+            </nav>
+            <div class="container">
+                <h1>{{ student.name }}的所有作业</h1>
+                {% if Allassignments %}
+                    <ul class="assignment-list">
+                        {% for assignment in Allassignments %}
+                            <li>
+                                <div class="assignment-info">
+                                    <span class="assignment-title">{{ assignment.title }}</span>
+                                  <span class="assignment-deadline">
+                                      截止日期：{{ assignment.due_date.strftime('%Y-%m-%d %H:%M') }}
+                                      <span class="deadline-passed" data-due-date="{{ assignment.due_date }}"></span>
+                                  </span>
+                                </div>
+                                <a href="{{ url_for('submission_detail', assignment_id=assignment.id) }}"
+                                   class="submit-link"
+                                   data-due-date="{{ assignment.due_date }}">
+                                    进入提交
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="no-assignments">暂无作业</p>
+                {% endif %}
+            </div>
+
+        <script>
+            {#检查作业是否截止#}
+    document.addEventListener('DOMContentLoaded', function () {
+        function checkDeadlines() {
+            const now = new Date();
+            document.querySelectorAll('.deadline-passed').forEach(function(element) {
+                const dueDate = new Date(element.getAttribute('data-due-date'));
+                if (now > dueDate) {
+                    element.textContent = '已截止';
+                }
+            });
+        }
+
+        checkDeadlines();
+        setInterval(checkDeadlines, 1000);
+    });
+</script>
+        </body>
+        </html>

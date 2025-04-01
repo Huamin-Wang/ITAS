@@ -187,6 +187,10 @@
 <div class="container">
     <div class="welcome-section">
         <h2>欢迎, {{ session['user_name'] }}同学!</h2>
+        <div style="text-align: center;">
+            <h3>关注微信公众号，进入AI教学助手，体验更完整功能！</h3>
+            <img src="/static/weixinQR.jpg" alt="微信公众号二维码" style="width: 50px; height: 50px; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+        </div>
         <p>以下是您的学习数据和相关功能，如未显示课程，请联系教师上传名单或检查注册信息是否与学校教务系统一致</p>
     </div>
     {#将后端传递的所有课程展示#}
@@ -203,61 +207,34 @@
     </div>
 
 
-    <div class="dashboard-grid">
-        <div class="dashboard-card">
-            <h3>我的课程</h3>
-            <p>查看您当前选修的所有课程，获取最新的课程资料和学习进度。</p>
-            <ul>
-                <li>数学分析</li>
-                <li>数据结构与算法</li>
-                <li>人工智能导论</li>
-            </ul>
-        </div>
 
-        <div class="dashboard-card">
-            <h3>待完成作业</h3>
-            <p>查看您需要完成的作业列表，及时提交作业。</p>
-            <ul>
-                <li>数学分析 - 作业3（截止日期：2024-03-15）</li>
-                <li>数据结构与算法 - 编程作业2（截止日期：2024-03-20）</li>
-            </ul>
-        </div>
 
-        <div class="dashboard-card">
-            <h3>成绩查询</h3>
-            <p>查看您的最新成绩和考试结果。</p>
-            <ul>
-                <li>数学分析 - 期中考试：85分</li>
-                <li>数据结构与算法 - 期末考试：92分</li>
-            </ul>
-        </div>
+       <div class="dashboard-card">
+           <h3>待完成作业</h3>
 
-        <div class="dashboard-card">
-            <h3>学习资源</h3>
-            <p>获取推荐的学习资源，包括视频、文档和练习题。</p>
-            <ul>
-                <li>数学分析 - 视频教程</li>
-                <li>数据结构与算法 - 习题集</li>
-            </ul>
-        </div>
+           {% if assignments_to_do %}
+               <ul>
+                   {% for assignment in assignments_to_do %}
+                       <li>
+                           <a href="/submission_detail/{{ assignment.id }}">
+                               {{ assignment.course_name }} - {{ assignment.title }}（截止日期：{{ assignment.due_date }}）
+                           </a>
+                       </li>
+                   {% endfor %}
+               </ul>
+           {% else %}
+               <p>你真棒，作业都做完了！</p>
+           {% endif %}
+        <a href="/submissions/{{ session['user_id'] }}">所有作业列表</a>
+       </div>
 
-        <div class="dashboard-card">
-            <h3>学习进度</h3>
-            <p>查看您的学习进度和完成情况。</p>
-            <ul>
-                <li>数学分析 - 已完成70%</li>
-                <li>数据结构与算法 - 已完成85%</li>
-            </ul>
-        </div>
 
-        <div class="dashboard-card">
-            <h3>互动讨论</h3>
-            <p>参与课程讨论，与老师和同学交流学习心得。</p>
-            <ul>
-                <li>数学分析 - 讨论主题：极限与连续</li>
-                <li>数据结构与算法 - 讨论主题：动态规划</li>
-            </ul>
-        </div>
+
+
+
+
+
+
     </div>
 </div>
 
