@@ -1,6 +1,7 @@
-.idea
-.venv
+.idea/
+.venv/
 .pycache
-instance
-pycache__
-
+instance/
+pycache__/
+__pycache__/
+*.pyc
