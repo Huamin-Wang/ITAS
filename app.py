@@ -3,6 +3,7 @@ from zipfile import error
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
 
 from flask_cors import CORS
+from openai import OpenAI
 from werkzeug.security import generate_password_hash
 from threading import Thread
 import wang.tools.studentTool as studentTool
@@ -47,7 +48,34 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上传文件大小为16MB
     # 初始化数据库
     db = init_db(app)
+    def get_answers(question: str):
+        try:
+            client = OpenAI(
+                base_url="https://ark.cn-beijing.volces.com/api/v3",
+                api_key="e864c037-480f-4533-bb04-df290365997f",
+            )
+            completion = client.chat.completions.create(
+                model="doubao-lite-4k-character-240828",
+                messages=[
+                    {"role": "system", "content": "你是教学小助手"},
+                    {"role": "user", "content": question},
+                ],
+            )
+            return completion.choices[0].message.content
+        except Exception as e:
+            print(f"大模型调用出错: {e}")
+            return "抱歉，大模型调用出错，请稍后再试。"
 
+    @app.route('/chat_apis', methods=['GET', 'POST'])
+    def chat_apis():
+        answer = None
+        question = None
+        show_dialog = False
+        if request.method == 'POST':
+            question = request.form.get('question')
+            answer = get_answers(question)
+            show_dialog = True
+        return render_template('wang/student_profile.html', answer=answer, question=question, show_dialog=show_dialog)
     # -----微信小程序的appid和secret---------
     APP_ID = 'wx3dd32842e9e24690'
     APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'

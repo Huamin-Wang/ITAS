@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>学生中心 - 基于大模型的智能教学辅助系统</title>
+    {% extends 'xfc.html' %}
+    {% block title %}学生中心 - 基于大模型的智能教学辅助系统{% endblock %}
+{#    <title>学生中心 - 基于大模型的智能教学辅助系统</title>#}
+{% block content %}
     <style>
         body {
             font-family: 'Microsoft YaHei', sans-serif;
@@ -108,6 +111,20 @@
             line-height: 1.6;
         }
 
+        .dashboard-card button {
+            background: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card button:hover {
+            background: #096dd9;
+        }
+
         footer {
             background-color: #001529;
             color: rgba(255, 255, 255, 0.8);
@@ -159,6 +176,7 @@
             margin-top: 30px;
         }
     </style>
+    <title></title>
 </head>
 <body>
 
@@ -231,12 +249,16 @@
 
 
 
+
+
+
+
     </div>
-</div>
 
 <footer>
     <p>&copy; 2025 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
 </footer>
 
 </body>
+{% endblock %}
 </html>
