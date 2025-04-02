@@ -2,4 +2,5 @@
 .venv
 .pycache
 instance
-__pycache__
+pycache__
+
