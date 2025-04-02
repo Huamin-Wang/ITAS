@@ -1,166 +1,49 @@
+<!-- templates/xie/upload.html -->
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>资源管理</title>
-    <style>
-        body {
-            font-family: 'Microsoft YaHei', sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        header {
-            background: linear-gradient(135deg, #1890ff, #096dd9);
-            color: white;
-            text-align: center;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            position: relative;
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 2em;
-            font-weight: bold;
-        }
-
-        .back-to-home {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            text-decoration: none;
-            font-size: 1em;
-        }
-
-        .container {
-            flex: 1;
-            width: 90%;
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-            position: relative;
-        }
-
-        .file-list {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .file-item {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-            padding: 10px;
-            background-color: #f8f9fa;
-            border: 1px solid #e8e8e8;
-            border-radius: 5px;
-        }
-
-        .file-info {
-            flex: 1;
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .file-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .file-actions button {
-            background: #1890ff;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .file-actions button:hover {
-            background: #096dd9;
-        }
-
-        .upload-form {
-            margin-bottom: 20px;
-        }
-
-        .return-button {
-            margin-bottom: 20px;
-        }
-
-        footer {
-            background-color: #001529;
-            color: rgba(255, 255, 255, 0.8);
-            text-align: center;
-            padding: 20px 0;
-        }
-
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 1.6em;
-            }
-
-            .container {
-                width: 95%;
-                margin: 15px auto;
-                padding: 15px;
-            }
-
-            .file-item {
-                margin-bottom: 15px;
-            }
-        }
-    </style>
 </head>
 <body>
-
-<header>
-    <a href="{{ url_for('teacher_profile' if session.user_role == 'teacher' else 'student_profile') }}" class="back-to-home">返回个人中心</a>
     <h1>文件管理</h1>
-    <p>以下是本课程的资源管理页面。</p>
-</header>
 
-<div class="container">
+    <!-- 显示Flash消息 -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flashes">
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
     <h3>上传新文件</h3>
-    <form method="POST" enctype="multipart/form-data" class="upload-form">
+    <form method="POST" enctype="multipart/form-data">
         <input type="file" name="file">
         <input type="submit" value="上传">
     </form>
 
     <h3>已上传文件列表</h3>
-    <ul class="file-list">
+    <ul>
     {% for file in files %}
-        <li class="file-item">
-            <div class="file-info">
-                <a href="{{ url_for('download_file', filename=file) }}">{{ file }}</a>
-            </div>
-            <div class="file-actions">
-                <form method="POST" action="{{ url_for('delete_file', filename=file) }}">
-                    <button type="submit" onclick="return confirm('确认删除？')">删除</button>
-                </form>
-            </div>
+        <li>{{ file }}
+            <form style="display:inline" method="POST"
+              action="{{ url_for('delete_file', filename=file) }}">
+                <button type="submit"
+                    onclick="return confirm('确认删除？')"
+                    class="btn btn-danger btn-sm">
+                删除
+                </button>
+            </form>
         </li>
     {% else %}
         <li>暂无文件</li>
     {% endfor %}
     </ul>
-</div>
 
-<footer>
-    <p>&copy; 2024 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
-</footer>
-
+    <a href="{{ url_for('teacher_profile' if session.user_role == 'teacher' else 'student_profile') }}">
+        <button>返回个人中心</button>
+    </a>
 </body>
 </html>

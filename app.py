@@ -1,9 +1,7 @@
-import csv
-import io
-import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
 from tkinter.font import names
 from zipfile import error
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
+
 from flask_cors import CORS
 from openai import OpenAI
 from werkzeug.security import generate_password_hash
@@ -15,9 +13,15 @@ from wang.models import init_db, Assignment, Submission
 from wang.models.course import Course
 from wang.models.course_students import Course_Students
 from wang.models.user import User
+
 from datetime import timedelta
+import os
+import csv
+import io
 import chardet
 import requests
+from xu.views import ai_bp
+from flask_migrate import Migrate
 
 # 获取环境变量的值，如果没有设置则默认为 'development'
 environment = os.getenv('FLASK_ENV', 'development')
@@ -44,11 +48,6 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上传文件大小为16MB
     # 初始化数据库
     db = init_db(app)
-
-    # -----微信小程序的appid和secret---------
-    APP_ID = 'wx3dd32842e9e24690'
-    APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
-
     def get_answers(question: str):
         try:
             client = OpenAI(
@@ -58,7 +57,7 @@ def create_app():
             completion = client.chat.completions.create(
                 model="doubao-lite-4k-character-240828",
                 messages=[
-                    {"role": "system", "content": "你是人工智能助手"},
+                    {"role": "system", "content": "你是教学小助手"},
                     {"role": "user", "content": question},
                 ],
             )
@@ -77,6 +76,11 @@ def create_app():
             answer = get_answers(question)
             show_dialog = True
         return render_template('wang/student_profile.html', answer=answer, question=question, show_dialog=show_dialog)
+    # -----微信小程序的appid和secret---------
+    APP_ID = 'wx3dd32842e9e24690'
+    APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
+
+    app.register_blueprint(ai_bp)  # 注册你的 Blueprint
 
     @app.route('/getOpenId', methods=['GET', 'POST'])
     def get_openid():
@@ -368,7 +372,7 @@ def create_app():
                 return "未接收到答案，请重新提交。"
 
     # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
-    @app.route('/loginHandle', methods=['GET','POST'])
+    @app.route('/loginHandle', methods=['POST'])
     def loginHandle():
         # 如果session中登录状态为false，说明是第一次登录，从表单中获取学号和密码
         if "logged_in" not in session or session["logged_in"] == False:
@@ -404,41 +408,8 @@ def create_app():
                                                                   ).all()
                 print(
                     f"用户{user.name}的课程有：{course_students}")
-            print(f"course_students:{course_students}")
-            # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
-            for course_student in course_students:
-                course_student.course_status = 'enrolled'
-                db.session.commit()  # 提交事务
-            courses = []
-            for course_student in course_students:
-                course = Course.query.get(course_student.course_id)
-                courses.append(course)
-            print(f"用户{user.name}正在查看自己的课程！")
-            print(courses)
-            answer = None
-            question = None
-            show_dialog = False
-            if request.method == 'POST':
-                try:
-                    question = request.form.get('question')
-                    if question:
-                        answer = get_answers(question)
-                        show_dialog = True
-                except Exception as e:
-                    print(f"获取答案出错: {e}")
-                    answer = "获取答案时出现错误，请稍后再试！"
-                    show_dialog = True
-            return render_template('wang/student_profile.html', courses=courses,answer=answer, question=question, show_dialog=show_dialog)
 
-        elif user.role == "teacher":
-            # 获取教师名下的课程
-            courses = Course.query.filter_by(teacher_id=user.id).all()
-            # 将course_students的所有学生的学号进行比对user表中的所有用户，如果有，已经注册为user用户的学生状态改为enrolled
-            course_students = Course_Students.query.all()
-            for course_student in course_students:
-                student = User.query.filter_by(identifier=course_student.student_number).first()
-                if student:
-                    print(f"course_students:{course_students}")
+                print(f"course_students:{course_students}")
                 # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
                 for course_student in course_students:
                     course_student.course_status = 'enrolled'
@@ -452,7 +423,19 @@ def create_app():
                 # 获取学生所有课程的作业,待做作业
                 Allassignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
                 print(f"assignments_to_do:{assignments_to_do}")
-                return render_template('wang/student_profile.html', courses=courses,assignments_to_do=assignments_to_do)
+                return render_template('wang/student_profile.html', courses=courses,
+                                       assignments_to_do=assignments_to_do)
+            elif user.role == "teacher":
+                # 获取教师名下的课程
+                courses = Course.query.filter_by(teacher_id=user.id).all()
+                # 将course_students的所有学生的学号进行比对user表中的所有用户，如果有，已经注册为user用户的学生状态改为enrolled
+                course_students = Course_Students.query.all()
+                for course_student in course_students:
+                    student = User.query.filter_by(identifier=course_student.student_number).first()
+                    if student:
+                        course_student.course_status = 'enrolled'
+                        db.session.commit()
+                return render_template('wang/teacher_profile.html', courses=courses)
             # 返回首页
         return render_template("index.html")
 
@@ -553,7 +536,6 @@ def create_app():
         print(f"课程详情页面中的课程为：{course}")
         xuehao = session.get('user_identifier')
         user_name = session.get('user_name')
-        return render_template('wang/course_detail.html',course=course, user_name=user_name)
         print(f"用户{user_name}正在查看课程{course.name}的详情！")
         # 获取学生本门课的学生
         course_students = course.course_students
@@ -628,6 +610,7 @@ def create_app():
             submission.feedback = 评语
             db.session.commit()
         return render_template('wang/submission_detail.html', assignment=assignment, user=user, submission=submission, )
+
     # 微信小程序：返回单个课程详情
     @app.route('/getCourseById/<int:course_id>', methods=['GET', 'POST'])
     def getCourseById(course_id):
@@ -1096,7 +1079,9 @@ def create_app():
     # return db,app
 
 
+#
 from sqlalchemy import text
+
 # db, app = create_app()  # 创建app
 # # with app.app_context():
 # #     try:
@@ -1123,7 +1108,7 @@ if __name__ == '__main__':
     app = create_app()  # 创建 app
     # 输出app启动时间
     from datetime import datetime
-    app.run(debug=True, host='127.0.0.1', port=5000)
+
     print(f"应用程序启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     if environment == 'production':
         print('正在启动生产服务器...')

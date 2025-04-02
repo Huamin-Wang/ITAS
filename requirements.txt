@@ -206,6 +206,3 @@ xyzservices==2024.6.0
 zipp==3.19.2
 zope.event==5.0
 zope.interface==7.2
-
-pandas~=2.2.3
-openai~=1.65.3
