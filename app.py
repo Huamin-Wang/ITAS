@@ -1,44 +1,12 @@
-
-#app.py
 import csv
 import io
 import os
-from io import BytesIO
-from datetime import timedelta
-from zipfile import error
-
-import chardet
-import requests
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file
-
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
 from tkinter.font import names
 from zipfile import error
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
-
-
 from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
 from openai import OpenAI
 from werkzeug.security import generate_password_hash
-
-from werkzeug.utils import secure_filename
-
-from wang.models import init_db
-from wang.models.course import Course
-from wang.models.course_students import Course_Students
-from wang.models.user import User
-import sys
-import os
-
-# 添加 xie 模块所在的路径
-xie_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'xie'))
-sys.path.append(xie_path)
-
-import xie.chat as c
-
-# from flask_migrate import Migrate
-
-
 from threading import Thread
 import wang.tools.studentTool as studentTool
 import wang.tools.studentTool
@@ -48,12 +16,8 @@ from wang.models.course import Course
 from wang.models.course_students import Course_Students
 from wang.models.user import User
 from datetime import timedelta
-import os
-import csv
-import io
 import chardet
 import requests
-
 
 # 获取环境变量的值，如果没有设置则默认为 'development'
 environment = os.getenv('FLASK_ENV', 'development')
@@ -61,36 +25,25 @@ if "production" in environment:
     environment = 'production'
 
 
-
-
+# ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # 所有的路由处理函数都放到create_app()函数中
 def create_app():
     app = Flask(__name__)
+
     CORS(app, supports_credentials=True)  # 启用CORS支持
+
     # 配置数据库
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
-    app.config['UPLOAD_FOLDER'] = 'uploads'
-    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
-
+    UPLOAD_FOLDER = 'xie/uploads'  # 确保路径正确
+    ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上传文件大小为16MB
     # 初始化数据库
     db = init_db(app)
-
-    class File(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        name = db.Column(db.String(120), unique=True, nullable=False)
-        data = db.Column(db.LargeBinary, nullable=False)
-        mimetype = db.Column(db.String(255), nullable=False)
-
-    # 创建数据库表
-    with app.app_context():
-        db.create_all()
-
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
 
     # -----微信小程序的appid和secret---------
     APP_ID = 'wx3dd32842e9e24690'
@@ -144,20 +97,14 @@ def create_app():
         # 如果成功获取 openid，则根据openid返回用户信息
         user = User.query.filter_by(openid=response['openid']).first()
         if user:
-
-            return jsonify(
-                {'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role, "openid": openid})
-        else:
-            #   返回信息提示注册登录
-            return jsonify(
-                {'success': True, 'user_id': -1, 'user_name': "未登录过小程序", 'user_role': 1, "openid": openid})
-
             return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,
                             "user_identifier": user.identifier, "openid": openid, "email": user.email,
                             "gender": user.gender})
-
-
-
+        else:
+            #   返回信息提示注册登录
+            return jsonify(
+                {'success': True, 'user_id': -1, 'user_name': "未登录过小程序,退出重新登录", 'user_role': "游客",
+                 "openid": openid})
 
     # -----微信小程序登录页面---------
     @app.route('/minilogin', methods=['GET', 'POST'])
@@ -198,9 +145,6 @@ def create_app():
                             "user_identifier": user.identifier, "openid": openid, "email": user.email,
                             "gender": user.gender})
         return jsonify({'success': False, 'message': '用户名或密码错误！'})
-
-
-    # ！！！ ----------以下为电脑端项目中的路由处理函数
 
     # 微信小程序注册页面
     @app.route('/miniRegister', methods=['GET', 'POST'])
@@ -279,7 +223,6 @@ def create_app():
 
     # ！！！ ----------以下为电脑端项目中的路由处理函数
 
-
     @app.before_request
     def before_request():
         # ----HTTP 请求转发到 HTTPS（服务器代码）------
@@ -298,7 +241,6 @@ def create_app():
             abort(403)  # 返回 403 Forbidden
 
         # 登录状态检查，排除登录和注册页面
-
         # 如果openid不为空，则允许
         if request.method == 'GET':
             openid = request.args.get('openid')
@@ -318,7 +260,6 @@ def create_app():
                 '/getCourseById/'):  # 禁止重定向加的是方法名，不是路由名
                 # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
                 return redirect(url_for('index'))
-
 
     # 错误处理
     @app.errorhandler(500)
@@ -412,7 +353,6 @@ def create_app():
             flash('您已登录！', 'success')
             return loginHandle()
 
-
     @app.route('/course/quiz/<int:course_id>', methods=['GET', 'POST'])
     def quiz(course_id):
         if request.method == 'GET':
@@ -437,10 +377,8 @@ def create_app():
             xuehao = xuehao.upper()
             print(f"用户输入的学号为：{xuehao}")
             password = request.form.get('password')
-            print(f"用户输入的密码为：{password}")
             # 从数据库中查找用户，与用户输入的密码进行比对
             user = User.query.filter_by(identifier=xuehao).first()
-            print(f"用户{user}")
             if user and user.check_password(password):
                 # 在session中保存登录状态，已供全局使用
                 session["logged_in"] = True
@@ -461,11 +399,8 @@ def create_app():
                 # 输出用戶信息
                 print(f"用户{user.name}的学号为：{user.identifier}")
 
-
-
                 # 获取学生名下的课程：把course_students表中学号匹配上的所有记录中的课程id找出来
                 course_students = Course_Students.query.filter_by(student_number=user.identifier,
-
                                                                   ).all()
                 print(
                     f"用户{user.name}的课程有：{course_students}")
@@ -562,10 +497,6 @@ def create_app():
             return jsonify(
                 {'success': True, 'assignments': assignmentsJson, 'assignments_to_do': assignments_to_doJson})
 
-
-            return render_template('wang/teacher_profile.html', courses=courses)
-
-
     # 微信小程序：返回学生的课程列表
     @app.route('/getStudentCourses', methods=['GET', 'POST'])
     def getStudentCourses():
@@ -640,7 +571,6 @@ def create_app():
                 studentTool.updateFinallyScore_byUserID(student.id, db)  # 更新本门课所有人分数即可，不必传值
         return render_template('wang/course_detail.html', course=course, user_name=user_name,xuehao=xuehao)
 
-
     # 学生作业列表页面
     @app.route('/submissions/<int:student_id>', methods=['GET', 'POST'])
     def submission(student_id):
@@ -698,7 +628,6 @@ def create_app():
             submission.feedback = 评语
             db.session.commit()
         return render_template('wang/submission_detail.html', assignment=assignment, user=user, submission=submission, )
-
     # 微信小程序：返回单个课程详情
     @app.route('/getCourseById/<int:course_id>', methods=['GET', 'POST'])
     def getCourseById(course_id):
@@ -716,7 +645,7 @@ def create_app():
         for student in course_students:
             if student.student_number == user.identifier:
                 print(f"student.student_name:{student.student_name}")
-                # 更新final_score=平时分+作业分数（每个作业1分，更改在updateFinallyScore）
+                # 更新final_score=平时分+作业分数
                 import wang.tools.studentTool as studentTool
                 FinallyScore = studentTool.updateFinallyScore_byUserID(user.id, db)
                 print(f"FinallyScore:{FinallyScore}")
@@ -1154,64 +1083,17 @@ def create_app():
             'message': 'OpenID successfully unbound'
         })
 
-
-    # 文件上传路由
-    @app.route('/upload', methods=['GET', 'POST'])
-    def upload_file():
-        if request.method == 'POST':
-            if 'file' not in request.files:
-                flash('没有选择文件')
-                return redirect(request.url)
-            file = request.files['file']
-            if file.filename == '':
-                flash('没有选择文件')
-                return redirect(request.url)
-            if file:
-                filename = secure_filename(file.filename)
-                existing_file = File.query.filter_by(name=filename).first()
-                if existing_file:
-                    flash('文件已存在')
-                    return redirect(url_for('list_files'))
-                file_data = file.read()
-                new_file = File(name=filename, data=file_data, mimetype=file.mimetype)
-                db.session.add(new_file)
-                db.session.commit()
-                flash('文件上传成功')
-                return redirect(url_for('list_files'))
-        return render_template('xie/upload.html')
-
-    # 文件下载路由
-    @app.route('/download/')
-    def list_files():
-        files = File.query.all()
-        return render_template('xie/download.html', files=files)
-
-    @app.route('/download/<int:file_id>')
-    def download_file(file_id):
-        file = File.query.get(file_id)
-        if file is None:
-            abort(404)
-        return send_file(
-            BytesIO(file.data),
-            mimetype=file.mimetype,
-            as_attachment=True,
-            download_name=file.name
-        )
-
     # 上传文件
     @app.route('/upload', methods=['GET', 'POST'])
     def upload():
         if request.method == 'GET':
             return render_template('xie/upload.html')
 
-
     # 返回app
     return app
     # ---迁移数据代码-----
-    # # 返回app，db
-
+    # 返回app，db
     # return db,app
-
 
 
 from sqlalchemy import text
@@ -1262,40 +1144,7 @@ if __name__ == '__main__':
                 private_key=keyfile
             )
 
-
-            # 允许更广泛的客户端兼容性
-            try:
-                context.minimum_version = ssl.TLSVersion.TLSv1
-                # 更宽松的加密套件设置
-                context.set_ciphers('ALL:@SECLEVEL=0')
-            except (AttributeError, ValueError):
-                # 如果 Python 版本不支持这些设置选项
-                pass
-
-            # 将普通套接字包装成 SSL 套接字
-            ssl_sock = context.wrap_socket(https_sock, server_side=True)
-
-
-            # 启动 HTTPS 服务器
-            def run_https_server():
-                while True:
-                    try:
-                        serve(app, sockets=[ssl_sock], url_scheme='https')
-                    except ssl.SSLError as e:
-                        print(f"SSL error: {e}. Continuing...")
-                    except ConnectionError as e:
-                        print(f"Connection error: {e}. Continuing...")
-                    except Exception as e:
-                        print(f"Unexpected error in HTTPS server: {e}")
-                        # 在重大错误后短暂暂停以避免资源耗尽
-                        import time
-                        time.sleep(1)
-
-
-            # 创建一个简单的 Flask 应用用于处理 HTTP 重定向
-
             # 创建 HTTP 重定向应用
-
             redirect_app = Flask(__name__)
 
 
