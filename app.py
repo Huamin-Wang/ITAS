@@ -436,13 +436,11 @@ def create_app():
                 # 输出用戶信息
                 print(f"用户{user.name}的学号为：{user.identifier}")
 
-<<<<<<< HEAD
-                # 获取学生名下的课程：把course_students表中学号能匹配上的所有记录中的课程id找出来
-                course_students = Course_Students.query.filter_by(student_number=user.identifier
-=======
+
+
                 # 获取学生名下的课程：把course_students表中学号匹配上的所有记录中的课程id找出来
                 course_students = Course_Students.query.filter_by(student_number=user.identifier,
->>>>>>> 1888cb527f3688c64b04d75383d931267a222a4b
+
                                                                   ).all()
                 print(
                     f"用户{user.name}的课程有：{course_students}")
