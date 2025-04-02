@@ -39,7 +39,7 @@ import xie.chat as c
 # from flask_migrate import Migrate
 
 from threading import Thread
-
+import wang.tools.studentTool as studentTool
 import wang.tools.studentTool
 import xie.chat as c
 from wang.models import init_db, Assignment, Submission
@@ -165,7 +165,7 @@ def create_app():
             # 根据课程信息获取用户性别
             # 获取学生名下的课程：把course_students表中学号和姓名能匹配上的所有记录中的课程id找出来
             course_students = Course_Students.query.filter_by(student_number=user.identifier,
-                                                              student_name=user.name).all()
+                                                              ).all()
             print(
                 f"用户{user.name}的课程有：{course_students}")
 
@@ -186,9 +186,11 @@ def create_app():
         print(f"openid:{openid}")
         identifier = data.get('user_identifier')
         identifier = identifier.upper()
+        identifier = identifier.replace(' ', '')
         print(f"identifier:{identifier}")
         role = data.get('user_role')
         name = data.get('user_name')
+        name = name.replace(' ', '')
         gender = data.get("gender")
         email = data.get('email')
         password = data.get('password')
@@ -333,8 +335,10 @@ def create_app():
                 identifier = request.form.get('identifier')  # 学号
                 # 将学号统一转成大写
                 identifier = identifier.upper()
+                identifier = identifier.replace(' ', '')
                 role = request.form.get('role')
                 name = request.form.get('name')
+                name = name.replace(' ', '')
                 gender = request.form.get('gender')
                 email = request.form.get('email')
                 password = request.form.get('password')
@@ -432,8 +436,13 @@ def create_app():
                 # 输出用戶信息
                 print(f"用户{user.name}的学号为：{user.identifier}")
 
+<<<<<<< HEAD
                 # 获取学生名下的课程：把course_students表中学号能匹配上的所有记录中的课程id找出来
                 course_students = Course_Students.query.filter_by(student_number=user.identifier
+=======
+                # 获取学生名下的课程：把course_students表中学号匹配上的所有记录中的课程id找出来
+                course_students = Course_Students.query.filter_by(student_number=user.identifier,
+>>>>>>> 1888cb527f3688c64b04d75383d931267a222a4b
                                                                   ).all()
                 print(
                     f"用户{user.name}的课程有：{course_students}")
@@ -526,7 +535,7 @@ def create_app():
         if user:
             # 返回学生的课程列表
             course_students = Course_Students.query.filter_by(student_number=user.identifier,
-                                                              student_name=user.name).all()
+                                                              ).all()
             courses = []
             for course_student in course_students:
                 course = Course.query.get(course_student.course_id)
@@ -563,15 +572,28 @@ def create_app():
         return loginHandle()
 
     # 学生课程详情页面
-    @app.route('/course_detail/<int:course_id>')
+    @app.route('/course_detail/<int:course_id>', methods=['GET', 'POST'])
     def course_detail(course_id):
         course = Course.query.get(course_id)
+        print(f"课程详情页面中的课程为：{course}")
+        xuehao = session.get('user_identifier')
         user_name = session.get('user_name')
         print(f"用户{user_name}正在查看课程{course.name}的详情！")
-        # 更新final_score=平时分+作业分数
-        import wang.tools.studentTool as studentTool
-        FinallyScore = studentTool.updateFinallyScore(session.get('user_id'), db)
-        return render_template('wang/course_detail.html', course=course, user_name=user_name)
+        # 获取学生本门课的学生
+        course_students = course.course_students
+        # 获取学生的分数
+        for student in course_students:
+            if student.score==None:
+                student.score = 0
+        # 提交到数据库
+        db.session.commit()
+        if request.method == 'POST':
+            # 更新final_score=平时分+作业分数
+            # 查找所有学生
+            students = User.query.filter_by(role="student").all()
+            for student in students:  # 每次学生点击都会更新所有人的分数，吃点性能，后期可以优化
+                studentTool.updateFinallyScore_byUserID(student.id, db)  # 更新本门课所有人分数即可，不必传值
+        return render_template('wang/course_detail.html', course=course, user_name=user_name,xuehao=xuehao)
 
 
     # 学生作业列表页面
@@ -581,7 +603,7 @@ def create_app():
         student = User.query.get(student_id)
         # 获取学生名下的课程
         course_students = Course_Students.query.filter_by(student_number=student.identifier,
-                                                          student_name=student.name).all()
+                                                          ).all()
         courses = []
         for course_student in course_students:
             course = Course.query.get(course_student.course_id)
@@ -652,7 +674,7 @@ def create_app():
                 print(f"student.student_name:{student.student_name}")
                 # 更新final_score=平时分+作业分数（每个作业1分，更改在updateFinallyScore）
                 import wang.tools.studentTool as studentTool
-                FinallyScore = studentTool.updateFinallyScore(user.id, db)
+                FinallyScore = studentTool.updateFinallyScore_byUserID(user.id, db)
                 print(f"FinallyScore:{FinallyScore}")
                 score = student.finally_score
                 print(f"score:{student.finally_score}")
@@ -876,10 +898,22 @@ def create_app():
                                enrolled_students_count=enrolled_students_count)
 
     # 课程管理页面：显示该课程下的选课情况：显示应选人数、已选人数、未选人数等信息
-    @app.route('/course_students/<int:course_id>')
+    @app.route('/course_students/<int:course_id>',methods=['GET','POST'])
     def course_students(course_id):
         course = Course.query.get(course_id)
         course_students = course.course_students
+        # 更新本门课学生的注册状态
+        if request.method == 'POST':
+            print(f"{session['user_name']}正在刷新学生注册状态")
+            # 将course_students表的学生与students用户中的学生进行比对，如果有，则将course_students表中的学生状态改为enrolled，没有则改为not_enrolled
+            for course_student in course_students:
+                student = User.query.filter_by(identifier=course_student.student_number).first()
+                if student:
+                    course_student.course_status = 'enrolled'
+                    db.session.commit()
+                else:
+                    course_student.course_status = 'not_enrolled'
+                    db.session.commit()
         # 选课的学生名单
         enrolled_students = [student for student in course.course_students if student.course_status == 'enrolled']
         enrolled_students_count = len(
@@ -921,7 +955,24 @@ def create_app():
             return redirect(url_for('add_score', course_id=course.id))
         print(f"用户{course.name}正在为学生加分！")
         return render_template('wang/add_score.html', course=course, course_students=course_students)
-
+    # 显示学生排名
+    @app.route('/course/ranking/<int:course_id>',methods=['GET', 'POST'])
+    def ranking(course_id):
+        course = Course.query.get(course_id)
+        course_students = course.course_students
+        if request.method == 'POST':
+            #刷新排名
+            import wang.tools.studentTool as studentTool
+            # 查找所有学生
+            students = User.query.filter_by(role="student").all()
+            for student in students:  # 每次学生点击都会更新所有人的分数，吃点性能，后期可以优化
+                studentTool.updateFinallyScore_byUserID(student.id, db)
+            print(f"用户{course.name}正在刷新课程{course.name}的排名！")
+        # 对学生进行排序，按分数从高到低排序
+        course_students.sort(key=lambda x: x.finally_score, reverse=True)
+        print(f"用户{course.name}正在查看课程{course.name}的排名！")
+        from datetime import datetime
+        return render_template('wang/ranking.html', course=course, course_students=course_students, now=datetime.now)
     # 课程管理页面：作业布置
     @app.route('/course/assignments/<int:course_id>', methods=['GET', 'POST'])
     def assignments(course_id):
@@ -1148,6 +1199,7 @@ if __name__ == '__main__':
     app = create_app()  # 创建 app
     # 输出app启动时间
     from datetime import datetime
+
     print(f"应用程序启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     if environment == 'production':
         print('正在启动生产服务器...')

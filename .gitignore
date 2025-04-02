@@ -1,4 +1,9 @@
 .idea
 .venv
 .pycache
+<<<<<<< HEAD
 instance
+=======
+instance
+__pycache__
+>>>>>>> 1888cb527f3688c64b04d75383d931267a222a4b
