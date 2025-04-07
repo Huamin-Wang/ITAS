@@ -1,11 +1,17 @@
 from tkinter.font import names
 from zipfile import error
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
+
+from django.core.management import templates
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file
 
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
 from openai import OpenAI
 from werkzeug.security import generate_password_hash
 from threading import Thread
+
+from werkzeug.utils import secure_filename
+
 import wang.tools.studentTool as studentTool
 import wang.tools.studentTool
 import xie.chat as c
@@ -28,7 +34,6 @@ environment = os.getenv('FLASK_ENV', 'development')
 if "production" in environment:
     environment = 'production'
 
-
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
@@ -37,7 +42,6 @@ def create_app():
     app = Flask(__name__)
 
     CORS(app, supports_credentials=True)  # 启用CORS支持
-
     # 配置数据库
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -53,6 +57,13 @@ def create_app():
     APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
     app.register_blueprint(ai_bp)  # 注册你的 Blueprint
 
+    class File(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(255), nullable=False)
+        data = db.Column(db.LargeBinary, nullable=False)
+        mimetype = db.Column(db.String(255), nullable=False)
+    with app.app_context():
+        db.create_all()
     # 学生中心右下角的聊天框
     @app.route('/chat_apis', methods=['GET', 'POST'])
     def chat_apis():
@@ -1050,12 +1061,46 @@ def create_app():
             'message': 'OpenID successfully unbound'
         })
 
-    # 上传文件
-    @app.route('/upload', methods=['GET', 'POST'])
-    def upload():
-        if request.method == 'GET':
-            return render_template('xie/upload.html')
+    @app.route('/')
+    def home():
+        return redirect(url_for('upload_file'))
 
+    @app.route('/upload', methods=['GET', 'POST'])
+    def upload_file():
+        if request.method == 'POST':
+            if 'file' not in request.files:
+                flash('没有选择文件')
+                return redirect(request.url)
+            file = request.files['file']
+            if file.filename == '':
+                flash('没有选择文件')
+                return redirect(request.url)
+            if file:
+                filename = secure_filename(file.filename)
+                file_data = file.read()
+                new_file = File(name=filename, data=file_data, mimetype=file.mimetype)
+                db.session.add(new_file)
+                db.session.commit()
+                flash('文件上传成功')
+                return redirect(url_for('list_files'))
+        return render_template('xie/upload.html')
+
+    @app.route('/download/')
+    def list_files():
+        files = File.query.all()
+        return render_template('xie/download.html', files=files)
+
+    @app.route('/download/<int:file_id>')
+    def download_file(file_id):
+        file = File.query.get(file_id)
+        if file is None:
+            abort(404)
+        return send_file(
+            io.BytesIO(file.data),
+            mimetype=file.mimetype,
+            as_attachment=True,
+            download_name=file.name
+        )
     # 返回app
     return app
     # ---迁移数据代码-----

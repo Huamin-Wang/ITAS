@@ -45,5 +45,6 @@
     <a href="{{ url_for('teacher_profile' if session.user_role == 'teacher' else 'student_profile') }}">
         <button>返回个人中心</button>
     </a>
+    <a href="{{ url_for('list_files') }}" class="button">查看历史上传文件</a>
 </body>
 </html>
