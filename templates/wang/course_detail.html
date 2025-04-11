@@ -114,7 +114,7 @@
             <p><strong>描述：</strong>{{ course.description }}</p>
         </div>
         <a href="/student_profile" class="back-button">返回</a>
-
+        <a href="/download/" class="back-button">下载文件</a>
         <button class="toggle-button" onclick="toggleRankingTable()">查看所有学生平时成绩排名</button>
         <form action="/course_detail/{{ course.id }}" method="post">
             <button type="submit" class="toggle-button">刷新成绩</button>
