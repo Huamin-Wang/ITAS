@@ -4,4 +4,8 @@
 instance/
 pycache__/
 __pycache__/
+<<<<<<< HEAD
 *.pyc
+=======
+*.pyc
+>>>>>>> 022558ee2f8f44726e3c2950453c8aa0fbecb140

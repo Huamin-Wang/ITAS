@@ -48,6 +48,7 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上传文件大小为16MB
     # 初始化数据库
     db = init_db(app)
+<<<<<<< HEAD
     def get_answers(question: str):
         try:
             client = OpenAI(
@@ -76,11 +77,25 @@ def create_app():
             answer = get_answers(question)
             show_dialog = True
         return render_template('wang/student_profile.html', answer=answer, question=question, show_dialog=show_dialog)
+=======
+>>>>>>> 022558ee2f8f44726e3c2950453c8aa0fbecb140
     # -----微信小程序的appid和secret---------
     APP_ID = 'wx3dd32842e9e24690'
     APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
-
     app.register_blueprint(ai_bp)  # 注册你的 Blueprint
+
+    # 学生中心右下角的聊天框
+    @app.route('/chat_apis', methods=['GET', 'POST'])
+    def chat_apis():
+        answer = None
+        question = None
+        show_dialog = False
+        if request.method == 'POST':
+            from wang.DouBaoAPI import API
+            question = request.form.get('question')
+            answer = API.get_answer(question)
+            show_dialog = True
+        return render_template('wang/student_profile.html', answer=answer, question=question, show_dialog=show_dialog)
 
     @app.route('/getOpenId', methods=['GET', 'POST'])
     def get_openid():
