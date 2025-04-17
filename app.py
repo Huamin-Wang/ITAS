@@ -1,11 +1,17 @@
 from tkinter.font import names
 from zipfile import error
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify
+
+from django.core.management import templates
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file
 
 from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
 from openai import OpenAI
 from werkzeug.security import generate_password_hash
 from threading import Thread
+
+from werkzeug.utils import secure_filename
+
 import wang.tools.studentTool as studentTool
 import wang.tools.studentTool
 import xie.chat as c
@@ -28,7 +34,6 @@ environment = os.getenv('FLASK_ENV', 'development')
 if "production" in environment:
     environment = 'production'
 
-
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
 # ！！！！！！！！大家注意：这个页面只允许处理route的请求，其他无关代码请放到自己文件夹（包）进行调用！！！！！！！！！！
@@ -37,7 +42,6 @@ def create_app():
     app = Flask(__name__)
 
     CORS(app, supports_credentials=True)  # 启用CORS支持
-
     # 配置数据库
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -48,39 +52,30 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上传文件大小为16MB
     # 初始化数据库
     db = init_db(app)
-    def get_answers(question: str):
-        try:
-            client = OpenAI(
-                base_url="https://ark.cn-beijing.volces.com/api/v3",
-                api_key="e864c037-480f-4533-bb04-df290365997f",
-            )
-            completion = client.chat.completions.create(
-                model="doubao-lite-4k-character-240828",
-                messages=[
-                    {"role": "system", "content": "你是教学小助手"},
-                    {"role": "user", "content": question},
-                ],
-            )
-            return completion.choices[0].message.content
-        except Exception as e:
-            print(f"大模型调用出错: {e}")
-            return "抱歉，大模型调用出错，请稍后再试。"
+    # -----微信小程序的appid和secret---------
+    APP_ID = 'wx3dd32842e9e24690'
+    APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
+    app.register_blueprint(ai_bp)  # 注册你的 Blueprint
 
+    class File(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(255), nullable=False)
+        data = db.Column(db.LargeBinary, nullable=False)
+        mimetype = db.Column(db.String(255), nullable=False)
+    with app.app_context():
+        db.create_all()
+    # 学生中心右下角的聊天框
     @app.route('/chat_apis', methods=['GET', 'POST'])
     def chat_apis():
         answer = None
         question = None
         show_dialog = False
         if request.method == 'POST':
+            from wang.DouBaoAPI import API
             question = request.form.get('question')
-            answer = get_answers(question)
+            answer = API.get_answer(question)
             show_dialog = True
         return render_template('wang/student_profile.html', answer=answer, question=question, show_dialog=show_dialog)
-    # -----微信小程序的appid和secret---------
-    APP_ID = 'wx3dd32842e9e24690'
-    APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
-
-    app.register_blueprint(ai_bp)  # 注册你的 Blueprint
 
     @app.route('/getOpenId', methods=['GET', 'POST'])
     def get_openid():
@@ -1066,12 +1061,46 @@ def create_app():
             'message': 'OpenID successfully unbound'
         })
 
-    # 上传文件
-    @app.route('/upload', methods=['GET', 'POST'])
-    def upload():
-        if request.method == 'GET':
-            return render_template('xie/upload.html')
+    @app.route('/')
+    def home():
+        return redirect(url_for('upload_file'))
 
+    @app.route('/upload', methods=['GET', 'POST'])
+    def upload_file():
+        if request.method == 'POST':
+            if 'file' not in request.files:
+                flash('没有选择文件')
+                return redirect(request.url)
+            file = request.files['file']
+            if file.filename == '':
+                flash('没有选择文件')
+                return redirect(request.url)
+            if file:
+                filename = secure_filename(file.filename)
+                file_data = file.read()
+                new_file = File(name=filename, data=file_data, mimetype=file.mimetype)
+                db.session.add(new_file)
+                db.session.commit()
+                flash('文件上传成功')
+                return redirect(url_for('list_files'))
+        return render_template('xie/upload.html')
+
+    @app.route('/download/')
+    def list_files():
+        files = File.query.all()
+        return render_template('xie/download.html', files=files)
+
+    @app.route('/download/<int:file_id>')
+    def download_file(file_id):
+        file = File.query.get(file_id)
+        if file is None:
+            abort(404)
+        return send_file(
+            io.BytesIO(file.data),
+            mimetype=file.mimetype,
+            as_attachment=True,
+            download_name=file.name
+        )
     # 返回app
     return app
     # ---迁移数据代码-----
