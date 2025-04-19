@@ -19,6 +19,7 @@ from wang.models import init_db, Assignment, Submission
 from wang.models.course import Course
 from wang.models.course_students import Course_Students
 from wang.models.user import User
+from wang.models.file import File
 
 from datetime import timedelta
 import os
@@ -57,11 +58,6 @@ def create_app():
     APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
     app.register_blueprint(ai_bp)  # 注册你的 Blueprint
 
-    class File(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        name = db.Column(db.String(255), nullable=False)
-        data = db.Column(db.LargeBinary, nullable=False)
-        mimetype = db.Column(db.String(255), nullable=False)
     with app.app_context():
         db.create_all()
     # 学生中心右下角的聊天框
