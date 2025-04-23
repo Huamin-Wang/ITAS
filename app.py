@@ -56,6 +56,7 @@ def create_app():
     # -----微信小程序的appid和secret---------
     APP_ID = 'wx3dd32842e9e24690'
     APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
+
     app.register_blueprint(ai_bp)  # 注册你的 Blueprint
 
     with app.app_context():
