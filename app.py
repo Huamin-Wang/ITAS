@@ -536,13 +536,21 @@ def create_app():
                 student.score = 0
         # 提交到数据库
         db.session.commit()
+        # 查找本门课的作业
+        # 根据学生user_name获取学生所有课程下的作业
+        student = User.query.get(user_name)
+        Allassignments = []
+        # 根据courses获取所有的作业
+        assignments = Assignment.query.filter_by(course_id=course.id).all()
+        for assignment in assignments:
+            Allassignments.append(assignment)
         if request.method == 'POST':
             # 更新final_score=平时分+作业分数
             # 查找所有学生
             students = User.query.filter_by(role="student").all()
             for student in students:  # 每次学生点击都会更新所有人的分数，吃点性能，后期可以优化
                 studentTool.updateFinallyScore_byUserID(student.id, db)  # 更新本门课所有人分数即可，不必传值
-        return render_template('wang/course_detail.html', course=course, user_name=user_name,xuehao=xuehao)
+        return render_template('wang/course_detail.html', course=course, user_name=user_name,xuehao=xuehao,assignments=assignments)
 
     # 学生作业列表页面
     @app.route('/submissions/<int:student_id>', methods=['GET', 'POST'])

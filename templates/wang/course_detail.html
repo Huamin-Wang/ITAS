@@ -259,6 +259,9 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
         }
+           .hidden {
+        display: none;
+    }
     </style>
 
 </head>
@@ -358,39 +361,31 @@
     <div class="sidebar">
         <div class="content">
             <!-- 作业区域 -->
-            <div class="homework-section">
-                <h3>作业</h3>
 
-                <div class="homework-card">
-                    <h4>第一次作业
-                        <span class="homework-status status-submitted">已提交</span>
-                    </h4>
-                    <div class="homework-date">截止日期：2024-05-01</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 100%"></div>
-                    </div>
-                </div>
 
-                <div class="homework-card">
-                    <h4>第二次作业
-                        <span class="homework-status status-pending">待提交</span>
-                    </h4>
-                    <div class="homework-date">截止日期：2024-05-15</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 30%"></div>
-                    </div>
-                </div>
+                <div class="homework-section">
+                    <h3>作业</h3>
 
-                <div class="homework-card">
-                    <h4>第三次作业
-                        <span class="homework-status status-overdue">已逾期</span>
-                    </h4>
-                    <div class="homework-date">截止日期：2024-04-20</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
+{% for assignment in assignments %}
+<div class="homework-card {% if loop.index > 3 %}hidden{% endif %}">
+    <h4><a href="/submission_detail/{{ assignment.id }}">{{ assignment.title }}</a>
+        <span class="homework-status
+            {% if assignment.status == 'submitted' %}status-submitted
+            {% elif assignment.status == 'pending' %}status-pending
+            {% elif assignment.status == 'overdue' %}status-overdue
+            {% endif %}">
+            {{ assignment.status_display }}
+        </span>
+    </h4>
+    <div class="homework-date">截止日期：{{ assignment.due_date }}</div>
+<!--    <div class="progress-bar">-->
+<!--        <div class="progress-fill" style="width: {{ assignment.progress }}%"></div>-->
+<!--    </div>-->
+</div>
+{% endfor %}
+<button id="showMoreBtn" class="btn" onclick="showMore()">显示更多</button>
+
+
 
             <!-- 推荐资料 -->
             <div class="recommend-section">
@@ -402,10 +397,15 @@
                 </ul>
             </div>
         </div>
-    </div>
+
 </div>
 
 <script>
+       function showMore() {
+        const hiddenCards = document.querySelectorAll('.homework-card.hidden');
+        hiddenCards.forEach(card => card.classList.remove('hidden'));
+        document.getElementById('showMoreBtn').style.display = 'none';
+    }
 // 成绩图表渲染
 const ctx = document.getElementById('scoreChart').getContext('2d');
 const studentNames = [
