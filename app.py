@@ -347,13 +347,13 @@ def create_app():
         else:
             flash('您已登录！', 'success')
             return loginHandle()
-
+    #课程管理：抢答
     @app.route('/course/quiz/<int:course_id>', methods=['GET', 'POST'])
     def quiz(course_id):
         if request.method == 'GET':
-            # 渲染小测页面模板
-            session["currentCourse"] = course_id
-            return render_template('qiu/quiz.html', title=course_id)
+            # 找到对应课程
+            course = Course.query.get(course_id)
+            return render_template('qiu/quiz.html', course=course)
         elif request.method == 'POST':
             # 处理 POST 请求，假设这里接收一个名为 'answer' 的表单数据
             answer = request.form.get('answer')
@@ -361,6 +361,12 @@ def create_app():
                 return render_template('result.html', answer=answer)
             else:
                 return "未接收到答案，请重新提交。"
+    # 课程管理：智能生成课程总体学习分析报告
+    @app.route('/course/course_analysis/<int:course_id>', methods=['GET', 'POST'])
+    def analysis(course_id):
+        course= Course.query.get(course_id)
+        return  render_template("wang/course_analysis.html",course=course)
+
 
     # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
     @app.route('/loginHandle', methods=['POST'])
@@ -1069,8 +1075,9 @@ def create_app():
     def home():
         return redirect(url_for('upload_file'))
 
-    @app.route('/upload', methods=['GET', 'POST'])
-    def upload_file():
+    @app.route('/upload/<int:course_id>', methods=['GET', 'POST'])
+    def upload_file(course_id):
+        course=Course.query.get(course_id)
         if request.method == 'POST':
             if 'file' not in request.files:
                 flash('没有选择文件')
@@ -1087,7 +1094,7 @@ def create_app():
                 db.session.commit()
                 flash('文件上传成功')
                 return redirect(url_for('list_files'))
-        return render_template('xie/upload.html')
+        return render_template('xie/upload.html', course=course)
 
     @app.route('/download/')
     def list_files():

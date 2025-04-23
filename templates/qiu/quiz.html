@@ -98,11 +98,11 @@
 </head>
 
 <body>
-    <a href="/course_manage/{{ course_id }}" class="back-home">返回课程</a>
-    <h1>问题发布</h1>
+    <a href="/course_manage/{{ course.id }}" class="back-home">返回课程</a>
+    <h1>{{course.name}}---问题发布</h1>
     <form action="/stuedent/quiz" method="post">
         <!-- 问题标题 -->
-        <label for="question_title">课程id：{{title}}问题标题</label>
+        <label for="question_title">问题：</label>
         <input type="text" id="question_title" name="question_title" placeholder="请输入问题标题" required>
 
         <!-- 问题描述 -->
