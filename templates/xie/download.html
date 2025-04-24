@@ -1,338 +1,434 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文件下载 - 智能教学辅助系统</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #1890ff;
-            --primary-dark: #096dd9;
-            --secondary-color: #f0f2f5;
-            --text-color: #333;
-            --light-text: #666;
-            --border-color: #e8e8e8;
-            --card-bg: #ffffff;
-            --header-bg: linear-gradient(135deg, #1890ff, #096dd9);
-            --footer-bg: #001529;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --border-radius: 12px;
-            --transition: all 0.3s ease;
-        }
+            <html lang="zh-CN">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>文件下载 - 智能教学辅助系统</title>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                <style>
+                    :root {
+                        --primary-color: #1890ff;
+                        --primary-dark: #096dd9;
+                        --secondary-color: #f5f7fa;
+                        --text-color: #333;
+                        --light-text: #666;
+                        --border-color: #e8e8e8;
+                        --card-bg: #ffffff;
+                        --header-bg: linear-gradient(135deg, #1890ff, #096dd9);
+                        --footer-bg: #001529;
+                        --shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+                        --border-radius: 12px;
+                        --transition: all 0.3s ease;
+                    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+                    * {
+                        margin: 0;
+                        padding: 0;
+                        box-sizing: border-box;
+                    }
 
-        body {
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            line-height: 1.6;
-        }
+                    body {
+                        font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+                        background-color: var(--secondary-color);
+                        color: var(--text-color);
+                        min-height: 100vh;
+                        display: flex;
+                        flex-direction: column;
+                        line-height: 1.6;
+                    }
 
-        /* Header Styles */
-        header {
-            background: var(--header-bg);
-            color: white;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            position: relative;
-        }
+                    /* Header Styles */
+                    header {
+                        background: var(--header-bg);
+                        color: white;
+                        padding: 30px;
+                        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+                        position: relative;
+                    }
 
-        header h1 {
-            font-size: 2.2rem;
-            font-weight: 600;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+                    header h1 {
+                        font-size: 2.2rem;
+                        font-weight: 600;
+                        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                        margin-top: 10px;
+                    }
 
-        header p {
-            margin-top: 5px;
-            font-size: 1rem;
-            opacity: 0.9;
-        }
+                    header p {
+                        margin-top: 8px;
+                        font-size: 1.1rem;
+                        opacity: 0.9;
+                        max-width: 600px;
+                    }
 
-        .back-to-home {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            text-decoration: none;
-            font-size: 1em;
-            display: flex;
-            align-items: center;
-            transition: var(--transition);
-        }
+                    .back-to-home {
+                        position: absolute;
+                        top: 20px;
+                        left: 20px;
+                        color: white;
+                        text-decoration: none;
+                        font-size: 1em;
+                        display: flex;
+                        align-items: center;
+                        transition: var(--transition);
+                        padding: 8px 16px;
+                        background-color: rgba(255, 255, 255, 0.1);
+                        border-radius: 30px;
+                    }
 
-        .back-to-home:hover {
-            opacity: 0.8;
-        }
+                    .back-to-home:hover {
+                        background-color: rgba(255, 255, 255, 0.2);
+                        transform: translateX(-3px);
+                    }
 
-        .back-to-home i {
-            margin-right: 8px;
-        }
+                    .back-to-home i {
+                        margin-right: 8px;
+                    }
 
-        /* Main Container */
-        .container {
-            flex: 1;
-            width: 90%;
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 30px;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-        }
+                    /* Main Container */
+                    .container {
+                        flex: 1;
+                        width: 92%;
+                        max-width: 1200px;
+                        margin: 40px auto;
+                        padding: 35px;
+                        background: var(--card-bg);
+                        border-radius: var(--border-radius);
+                        box-shadow: var(--shadow);
+                    }
 
-        /* Section Headers */
-        h3 {
-            margin: 25px 0 20px;
-            color: var(--primary-color);
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-        }
+                    /* Section Headers */
+                    h3 {
+                        margin: 25px 0 25px;
+                        color: var(--primary-color);
+                        font-weight: 600;
+                        display: flex;
+                        align-items: center;
+                        font-size: 1.3rem;
+                    }
 
-        h3 i {
-            margin-right: 10px;
-            font-size: 1.3em;
-        }
+                    h3 i {
+                        margin-right: 12px;
+                        font-size: 1.3em;
+                        background-color: rgba(24, 144, 255, 0.1);
+                        padding: 10px;
+                        border-radius: 50%;
+                    }
 
-        /* File List */
-        .file-list {
-            list-style-type: none;
-            margin-bottom: 30px;
-        }
+                    /* File List */
+                    .file-list {
+                        list-style-type: none;
+                        margin-bottom: 35px;
+                    }
 
-        .file-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 18px;
-            margin-bottom: 12px;
-            background-color: #fff;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            transition: var(--transition);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-        }
+                    .file-item {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        padding: 20px;
+                        margin-bottom: 15px;
+                        background-color: #fff;
+                        border: 1px solid var(--border-color);
+                        border-radius: 10px;
+                        transition: var(--transition);
+                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+                    }
 
-        .file-item:hover {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-            transform: translateY(-2px);
-        }
+                    .file-item:hover {
+                        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.07);
+                        transform: translateY(-3px);
+                        border-color: rgba(24, 144, 255, 0.3);
+                    }
 
-        .file-info {
-            display: flex;
-            align-items: center;
-            flex: 1;
-        }
+                    .file-info {
+                        display: flex;
+                        align-items: center;
+                        flex: 1;
+                    }
 
-        .file-icon {
-            margin-right: 15px;
-            font-size: 1.5em;
-            color: var(--primary-color);
-        }
+                    .file-icon {
+                        margin-right: 18px;
+                        font-size: 1.6em;
+                        color: var(--primary-color);
+                        width: 45px;
+                        height: 45px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background-color: rgba(24, 144, 255, 0.1);
+                        border-radius: 8px;
+                    }
 
-        .file-name-info {
-            flex: 1;
-        }
+                    .file-name-info {
+                        flex: 1;
+                    }
 
-        .file-name-info h4 {
-            margin: 0;
-            font-weight: 500;
-        }
+                    .file-name-info h4 {
+                        margin: 0;
+                        font-weight: 500;
+                        font-size: 1.1rem;
+                    }
 
-        .file-meta {
-            font-size: 0.85rem;
-            color: var(--light-text);
-            margin-top: 4px;
-        }
+                    .file-meta {
+                        font-size: 0.9rem;
+                        color: var(--light-text);
+                        margin-top: 6px;
+                    }
 
-        .download-btn {
-            padding: 8px 16px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-        }
+                    .download-btn {
+                        padding: 10px 20px;
+                        background-color: var(--primary-color);
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 0.95rem;
+                        transition: var(--transition);
+                        display: flex;
+                        align-items: center;
+                        text-decoration: none;
+                    }
 
-        .download-btn:hover {
-            background-color: var(--primary-dark);
-        }
+                    .download-btn:hover {
+                        background-color: var(--primary-dark);
+                        transform: translateY(-2px);
+                        box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+                    }
 
-        .download-btn i {
-            margin-right: 6px;
-        }
+                    .download-btn:active {
+                        transform: translateY(0);
+                    }
 
-        /* Navigation Buttons */
-        .nav-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
+                    .download-btn i {
+                        margin-right: 8px;
+                        font-size: 1.1em;
+                    }
 
-        .nav-buttons .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            transition: var(--transition);
-        }
+                    /* Navigation Buttons */
+                    .nav-buttons {
+                        display: flex;
+                        gap: 15px;
+                        margin-top: 30px;
+                    }
 
-        .nav-buttons .btn i {
-            margin-right: 8px;
-        }
+                    .nav-buttons .btn {
+                        padding: 12px 24px;
+                        border: none;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 1rem;
+                        display: flex;
+                        align-items: center;
+                        transition: var(--transition);
+                        text-decoration: none;
+                    }
 
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
+                    .nav-buttons .btn i {
+                        margin-right: 10px;
+                    }
 
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-        }
+                    .btn-primary {
+                        background-color: var(--primary-color);
+                        color: white;
+                    }
 
-        .btn-outline {
-            background-color: transparent;
-            color: var(--primary-color);
-            border: 1px solid var(--primary-color);
-        }
+                    .btn-primary:hover {
+                        background-color: var(--primary-dark);
+                        box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+                    }
 
-        .btn-outline:hover {
-            background-color: rgba(24, 144, 255, 0.1);
-        }
+                    .btn-outline {
+                        background-color: transparent;
+                        color: var(--primary-color);
+                        border: 1px solid var(--primary-color);
+                    }
 
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--light-text);
-        }
+                    .btn-outline:hover {
+                        background-color: rgba(24, 144, 255, 0.1);
+                        transform: translateY(-2px);
+                    }
 
-        .empty-state i {
-            font-size: 3em;
-            margin-bottom: 15px;
-            opacity: 0.3;
-        }
+                    /* Empty State */
+                    .empty-state {
+                        text-align: center;
+                        padding: 60px 20px;
+                        color: var(--light-text);
+                        background-color: rgba(245, 247, 250, 0.7);
+                        border-radius: 12px;
+                        border: 1px dashed var(--border-color);
+                    }
 
-        .empty-state p {
-            font-size: 1.1em;
-            margin-bottom: 10px;
-        }
+                    .empty-state i {
+                        font-size: 4em;
+                        margin-bottom: 20px;
+                        opacity: 0.3;
+                        color: var(--primary-color);
+                    }
 
-        /* Footer */
-        footer {
-            background-color: var(--footer-bg);
-            color: rgba(255, 255, 255, 0.8);
-            text-align: center;
-            padding: 20px 0;
-            margin-top: auto;
-        }
+                    .empty-state p {
+                        font-size: 1.2em;
+                        margin-bottom: 10px;
+                    }
 
-        footer p {
-            margin: 0;
-            font-size: 0.9rem;
-        }
+                    .empty-state .file-meta {
+                        font-size: 1rem;
+                    }
 
-        /* Responsive Styles */
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 1.8rem;
-            }
+                    /* Footer */
+                    footer {
+                        background-color: var(--footer-bg);
+                        color: rgba(255, 255, 255, 0.8);
+                        text-align: center;
+                        padding: 24px 0;
+                        margin-top: auto;
+                    }
 
-            .container {
-                width: 95%;
-                padding: 20px;
-            }
+                    footer p {
+                        margin: 0;
+                        font-size: 0.95rem;
+                    }
 
-            .file-item {
-                flex-direction: column;
-                align-items: flex-start;
-            }
+                    /* Responsive Styles */
+                    @media (max-width: 768px) {
+                        header {
+                            padding: 25px 15px 25px;
+                        }
 
-            .file-info {
-                width: 100%;
-                margin-bottom: 10px;
-            }
+                        header h1 {
+                            font-size: 1.8rem;
+                            margin-top: 15px;
+                        }
 
-            .download-btn {
-                width: 100%;
-                justify-content: center;
-            }
+                        .back-to-home {
+                            top: 15px;
+                            left: 15px;
+                        }
 
-            .nav-buttons {
-                flex-direction: column;
-            }
-        }
-    </style>
-</head>
-<body>
+                        .container {
+                            width: 95%;
+                            padding: 20px;
+                            margin: 25px auto;
+                        }
 
-<header>
-    <a href="{{ url_for('teacher_profile' if session.user_role == 'teacher' else 'student_profile') }}" class="back-to-home">
-        <i class="fas fa-arrow-left"></i> 返回个人中心
-    </a>
-    <h1><i class="fas fa-download"></i> 文件下载</h1>
-    <p>以下是本课程的可下载资源。</p>
-</header>
+                        .file-item {
+                            padding: 15px;
+                        }
 
-<div class="container">
-    <h3><i class="fas fa-list"></i> 可下载文件列表</h3>
+                        .file-info {
+                            margin-bottom: 15px;
+                        }
 
-    {% if files %}
-        <ul class="file-list">
-        {% for file in files %}
-            <li class="file-item">
-                <div class="file-info">
-                    <div class="file-icon">
-                        <i class="fas fa-file-alt"></i>
-                    </div>
-                    <div class="file-name-info">
-                        <h4>{{ file.name }}</h4>
-                        <div class="file-meta">
-                            上传时间: {{ file.upload_time }} | 大小: {{ file.size }}
-                        </div>
-                    </div>
-                </div>
-                <a href="{{ url_for('download_file', file_id=file.id) }}" class="download-btn">
-                    <i class="fas fa-download"></i> 下载
+                        h3 {
+                            margin: 15px 0 20px;
+                        }
+
+                        .file-item {
+                            flex-direction: column;
+                            align-items: flex-start;
+                        }
+
+                        .download-btn {
+                            width: 100%;
+                            justify-content: center;
+                            padding: 12px;
+                        }
+
+                        .nav-buttons {
+                            flex-direction: column;
+                        }
+
+                        .nav-buttons .btn {
+                            justify-content: center;
+                        }
+                    }
+
+                    @media (max-width: 480px) {
+                        header h1 {
+                            font-size: 1.6rem;
+                        }
+
+                        .container {
+                            padding: 15px;
+                        }
+
+                        .file-icon {
+                            width: 35px;
+                            height: 35px;
+                            font-size: 1.3em;
+                            margin-right: 12px;
+                        }
+
+                        .file-name-info h4 {
+                            font-size: 1rem;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+
+            <header>
+                <a href="{{ url_for('teacher_profile' if session.user_role == 'teacher' else 'student_profile') }}" class="back-to-home">
+                    <i class="fas fa-arrow-left"></i> 返回个人中心
                 </a>
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <div class="empty-state">
-            <i class="fas fa-file-import"></i>
-            <p>暂无可下载文件</p>
-            <p class="file-meta">请上传文件以开始管理</p>
-        </div>
-    {% endif %}
+                <h1><i class="fas fa-download"></i> 文件下载</h1>
+                <p>以下是本课程的可下载资源。</p>
+            </header>
 
-    <div class="nav-buttons">
-        <a href="{{ url_for('teacher_profile' if session.user_role == 'teacher' else 'student_profile') }}" class="btn btn-outline">
-            <i class="fas fa-user-circle"></i> 返回个人中心
-        </a>
-    </div>
-</div>
+            <div class="container">
+                <h3><i class="fas fa-list"></i> 可下载文件列表</h3>
 
-<footer>
-    <p><i class="fas fa-copyright"></i> 2024 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
-</footer>
+                {% if files %}
+                    <ul class="file-list">
+                    {% for file in files %}
+                        <li class="file-item">
+                            <div class="file-info">
+                                <div class="file-icon">
+                                    {% if file.name.endswith('.pdf') %}
+                                        <i class="fas fa-file-pdf"></i>
+                                    {% elif file.name.endswith(('.doc', '.docx')) %}
+                                        <i class="fas fa-file-word"></i>
+                                    {% elif file.name.endswith(('.xls', '.xlsx')) %}
+                                        <i class="fas fa-file-excel"></i>
+                                    {% elif file.name.endswith(('.ppt', '.pptx')) %}
+                                        <i class="fas fa-file-powerpoint"></i>
+                                    {% elif file.name.endswith(('.jpg', '.jpeg', '.png', '.gif')) %}
+                                        <i class="fas fa-file-image"></i>
+                                    {% elif file.name.endswith(('.zip', '.rar')) %}
+                                        <i class="fas fa-file-archive"></i>
+                                    {% else %}
+                                        <i class="fas fa-file-alt"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="file-name-info">
+                                    <h4>{{ file.name }}</h4>
+                                    <div class="file-meta">
+                                        上传时间: {{ file.upload_time }} | 大小: {{ file.size }}
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="{{ url_for('download_file', file_id=file.id) }}" class="download-btn">
+                                <i class="fas fa-download"></i> 下载
+                            </a>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-file-import"></i>
+                        <p>暂无可下载文件</p>
+                        <p class="file-meta">教师会在适当的时候上传学习资料，请稍后查看</p>
+                    </div>
+                {% endif %}
 
-</body>
-</html>
+                <div class="nav-buttons">
+                    <a href="{{ url_for('teacher_profile' if session.user_role == 'teacher' else 'student_profile') }}" class="btn btn-outline">
+                        <i class="fas fa-user-circle"></i> 返回个人中心
+                    </a>
+                </div>
+            </div>
+
+            <footer>
+                <p><i class="fas fa-copyright"></i> 2024 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
+            </footer>
+
+            </body>
+            </html>
