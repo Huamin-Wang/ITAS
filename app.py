@@ -56,6 +56,7 @@ def create_app():
     # -----微信小程序的appid和secret---------
     APP_ID = 'wx3dd32842e9e24690'
     APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
+
     app.register_blueprint(ai_bp)  # 注册你的 Blueprint
 
     with app.app_context():
@@ -366,9 +367,11 @@ def create_app():
     def analysis(course_id):
         course= Course.query.get(course_id)
         return  render_template("wang/course_analysis.html",course=course)
-
-
-    # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
+    #课程管理：考勤
+    @app.route('/course/attendance/<int:course_id>', methods=['GET', 'POST'])
+    def attendance(course_id):
+        course= Course.query.get(course_id)
+        return render_template('wang/attendance.html', course=course, qrcode_url=url_for('static', filename='qrcode_sign_id=abc123.png'))
     @app.route('/loginHandle', methods=['POST'])
     def loginHandle():
         # 如果session中登录状态为false，说明是第一次登录，从表单中获取学号和密码
