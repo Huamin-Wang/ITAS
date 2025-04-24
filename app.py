@@ -19,6 +19,7 @@ from wang.models import init_db, Assignment, Submission
 from wang.models.course import Course
 from wang.models.course_students import Course_Students
 from wang.models.user import User
+from wang.models.file import File
 
 from datetime import timedelta
 import os
@@ -55,13 +56,9 @@ def create_app():
     # -----微信小程序的appid和secret---------
     APP_ID = 'wx3dd32842e9e24690'
     APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
+
     app.register_blueprint(ai_bp)  # 注册你的 Blueprint
 
-    class File(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
-        name = db.Column(db.String(255), nullable=False)
-        data = db.Column(db.LargeBinary, nullable=False)
-        mimetype = db.Column(db.String(255), nullable=False)
     with app.app_context():
         db.create_all()
     # 学生中心右下角的聊天框
@@ -351,13 +348,13 @@ def create_app():
         else:
             flash('您已登录！', 'success')
             return loginHandle()
-
+    #课程管理：抢答
     @app.route('/course/quiz/<int:course_id>', methods=['GET', 'POST'])
     def quiz(course_id):
         if request.method == 'GET':
-            # 渲染小测页面模板
-            session["currentCourse"] = course_id
-            return render_template('qiu/quiz.html', title=course_id)
+            # 找到对应课程
+            course = Course.query.get(course_id)
+            return render_template('qiu/quiz.html', course=course)
         elif request.method == 'POST':
             # 处理 POST 请求，假设这里接收一个名为 'answer' 的表单数据
             answer = request.form.get('answer')
@@ -365,6 +362,12 @@ def create_app():
                 return render_template('result.html', answer=answer)
             else:
                 return "未接收到答案，请重新提交。"
+    # 课程管理：智能生成课程总体学习分析报告
+    @app.route('/course/course_analysis/<int:course_id>', methods=['GET', 'POST'])
+    def analysis(course_id):
+        course= Course.query.get(course_id)
+        return  render_template("wang/course_analysis.html",course=course)
+
 
     # 登录处理，包括浏览器中后退操作处理（将网页中显示的东西显示完全）
     @app.route('/loginHandle', methods=['POST'])
@@ -540,13 +543,21 @@ def create_app():
                 student.score = 0
         # 提交到数据库
         db.session.commit()
+        # 查找本门课的作业
+        # 根据学生user_name获取学生所有课程下的作业
+        student = User.query.get(user_name)
+        Allassignments = []
+        # 根据courses获取所有的作业
+        assignments = Assignment.query.filter_by(course_id=course.id).all()
+        for assignment in assignments:
+            Allassignments.append(assignment)
         if request.method == 'POST':
             # 更新final_score=平时分+作业分数
             # 查找所有学生
             students = User.query.filter_by(role="student").all()
             for student in students:  # 每次学生点击都会更新所有人的分数，吃点性能，后期可以优化
                 studentTool.updateFinallyScore_byUserID(student.id, db)  # 更新本门课所有人分数即可，不必传值
-        return render_template('wang/course_detail.html', course=course, user_name=user_name,xuehao=xuehao)
+        return render_template('wang/course_detail.html', course=course, user_name=user_name,xuehao=xuehao,assignments=assignments)
 
     # 学生作业列表页面
     @app.route('/submissions/<int:student_id>', methods=['GET', 'POST'])
@@ -1065,8 +1076,9 @@ def create_app():
     def home():
         return redirect(url_for('upload_file'))
 
-    @app.route('/upload', methods=['GET', 'POST'])
-    def upload_file():
+    @app.route('/upload/<int:course_id>', methods=['GET', 'POST'])
+    def upload_file(course_id):
+        course=Course.query.get(course_id)
         if request.method == 'POST':
             if 'file' not in request.files:
                 flash('没有选择文件')
@@ -1083,7 +1095,7 @@ def create_app():
                 db.session.commit()
                 flash('文件上传成功')
                 return redirect(url_for('list_files'))
-        return render_template('xie/upload.html')
+        return render_template('xie/upload.html', course=course)
 
     @app.route('/download/')
     def list_files():

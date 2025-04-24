@@ -1,312 +1,462 @@
 <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>课程详情</title>
-                <style>
-                    :root {
-                        --primary-color: #1890ff;
-                        --primary-dark: #0056b3;
-                        --gray-light: #f4f4f4;
-                        --gray-medium: #eee;
-                        --text-dark: #333;
-                        --success: #52c41a;
-                        --white: #fff;
-                        --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                    }
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程详情</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #1890ff;
+            --primary-dark: #0056b3;
+            --gray-light: #f4f4f4;
+            --gray-medium: #eee;
+            --text-dark: #333;
+            --success: #52c41a;
+            --white: #fff;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --header-text-align: center;
+        }
 
-                    * {
-                        margin: 0;
-                        padding: 0;
-                        box-sizing: border-box;
-                    }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-                    body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        background-color: var(--gray-light);
-                        color: var(--text-dark);
-                        line-height: 1.6;
-                    }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gray-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
 
-                    .container {
-                        width: 90%;
-                        max-width: 1000px;
-                        margin: 2rem auto;
-                        background-color: var(--white);
-                        box-shadow: var(--shadow);
-                        border-radius: 12px;
-                        overflow: hidden;
-                    }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
 
-                    .header {
-                        background-color: var(--primary-color);
-                        color: var(--white);
-                        padding: 2rem;
-                        position: relative;
-                    }
+        .main-content,
+        .sidebar {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            border-radius: 12px;
+            overflow: hidden;
+        }
 
-                    .header h1 {
-                        font-size: 2.2rem;
-                        margin-bottom: 0.5rem;
-                    }
+        .header {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 2rem;
+            grid-column: 1 / -1;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            text-align: var(--header-text-align);
+        }
 
-                    .content {
-                        padding: 2rem;
-                    }
+        .header h1 {
+            font-size: 2.2rem;
+        }
 
-                    .grade-summary {
-                        background-color: rgba(24, 144, 255, 0.05);
-                        border-left: 4px solid var(--primary-color);
-                        padding: 1rem;
-                        margin-bottom: 2rem;
-                        border-radius: 0 8px 8px 0;
-                    }
+        .content {
+            padding: 2rem;
+        }
 
-                    .grade-item {
-                        display: flex;
-                        align-items: center;
-                        margin: 0.5rem 0;
-                    }
+        .grade-summary,
+        .course-info,
+        .learning-suggestion,
+        .recommend-section,
+        .homework-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            background-color: rgba(24, 144, 255, 0.05);
+        }
 
-                    .grade-item strong {
-                        min-width: 180px;
-                        color: var(--text-dark);
-                    }
+        .homework-card {
+            background: var(--white);
+            border: 1px solid var(--gray-medium);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
 
-                    .course-info {
-                        background-color: var(--white);
-                        margin-bottom: 2rem;
-                        border-radius: 8px;
-                        padding: 1rem;
-                        border: 1px solid var(--gray-medium);
-                    }
+        .homework-status {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
 
-                    .course-info h2 {
-                        margin-bottom: 1rem;
-                        color: var(--primary-color);
-                        font-size: 1.5rem;
-                    }
+        .status-pending {
+            background-color: #ffd666;
+            color: #874d00;
+        }
 
-                    .info-item {
-                        display: flex;
-                        margin: 0.8rem 0;
-                        align-items: baseline;
-                    }
+        .status-submitted {
+            background-color: #b7eb8f;
+            color: #135200;
+        }
 
-                    .info-item strong {
-                        min-width: 100px;
-                        color: var(--text-dark);
-                    }
+        .status-overdue {
+            background-color: #ffccc7;
+            color: #820014;
+        }
 
-                    .action-buttons {
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 1rem;
-                        margin: 1.5rem 0;
-                    }
+        .homework-date {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
 
-                    .btn {
-                        padding: 0.8rem 1.2rem;
-                        background-color: var(--primary-color);
-                        color: var(--white);
-                        text-decoration: none;
-                        border-radius: 6px;
-                        transition: all 0.3s ease;
-                        font-weight: 500;
-                        border: none;
-                        cursor: pointer;
-                        display: inline-flex;
-                        align-items: center;
-                        justify-content: center;
-                        min-width: 120px;
-                    }
+        .grade-item,
+        .info-item {
+            margin: 0.8rem 0;
+            display: flex;
+            align-items: center;
+        }
 
-                    .btn:hover {
-                        background-color: var(--primary-dark);
-                        transform: translateY(-2px);
-                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                    }
+        .info-item strong {
+            min-width: 120px;
+        }
 
-                    .btn:active {
-                        transform: translateY(0);
-                    }
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
 
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin: 1.5rem 0;
-                        border-radius: 8px;
-                        overflow: hidden;
-                        box-shadow: var(--shadow);
-                    }
+        .btn {
+            padding: 0.8rem 1.2rem;
+            background-color: var(--primary-color);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            min-width: 120px;
+            transition: 0.3s;
+        }
 
-                    th, td {
-                        padding: 1rem;
-                        text-align: left;
-                    }
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
 
-                    th {
-                        background-color: rgba(24, 144, 255, 0.1);
-                        font-weight: 600;
-                        color: var(--primary-dark);
-                    }
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-right: 10px;
+            color: #fff;
+        }
 
-                    tr:nth-child(even) {
-                        background-color: rgba(0, 0, 0, 0.02);
-                    }
+        .rank-1 {
+            background-color: gold;
+            color: #333;
+        }
 
-                    tr:hover {
-                        background-color: rgba(24, 144, 255, 0.05);
-                    }
+        .rank-2 {
+            background-color: silver;
+            color: #333;
+        }
 
-                    .highlight-row {
-                        background-color: rgba(82, 196, 26, 0.1) !important;
-                        font-weight: 500;
-                    }
+        .rank-3 {
+            background-color: #cd7f32;
+        }
 
-                    .hidden {
-                        display: none;
-                    }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: var(--gray-medium);
+            border-radius: 4px;
+            margin-top: 0.5rem;
+        }
 
-                    .fade-in {
-                        animation: fadeIn 0.5s ease-in;
-                    }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--success);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
 
-                    @keyframes fadeIn {
-                        from { opacity: 0; }
-                        to { opacity: 1; }
-                    }
+        @media screen and (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                width: 95%;
+            }
+        }
 
-                    .rank-badge {
-                        display: inline-block;
-                        width: 30px;
-                        height: 30px;
-                        line-height: 30px;
-                        text-align: center;
-                        border-radius: 50%;
-                        background-color: var(--primary-color);
-                        color: var(--white);
-                        font-weight: bold;
-                        margin-right: 10px;
-                    }
+        @media screen and (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+            }
 
-                    .rank-1 { background-color: gold; color: #333; }
-                    .rank-2 { background-color: silver; color: #333; }
-                    .rank-3 { background-color: #cd7f32; color: white; }
+            .btn {
+                width: 100%;
+            }
 
-                    @media screen and (max-width: 768px) {
-                        .container {
-                            width: 95%;
-                        }
+            .content {
+                padding: 1rem;
+            }
+        }
 
-                        .action-buttons {
-                            flex-direction: column;
-                            gap: 0.5rem;
-                        }
+        /* Add this to the existing styles */
+        .score-display {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-left: 1rem;
+            font-weight: bold;
+        }
 
-                        .btn {
-                            width: 100%;
-                        }
+        .refresh-form {
+            margin-top: 1rem;
+        }
 
-                        th, td {
-                            padding: 0.6rem;
-                            font-size: 0.9rem;
-                        }
-                    }
-                </style>
-            </head>
+        .refresh-btn {
+            background-color: var(--success);
+            color: var(--white);
+            font-size: 0.5rem;
+            padding: 0.2rem 0.8rem;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
 
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h1>{{ course.name }}</h1>
-                    </div>
+        .refresh-btn:hover {
+            background-color: #3da914;
+            transform: translateY(-2px);
+        }
+                    .back-home {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            padding: 0.4rem 1rem;
+            background-color: #4299e1;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 200;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.1);
+            z-index: 1000;
+        }
 
-                    <div class="content">
-                        <div class="grade-summary">
-                            {% for student in course.course_students %}
-                                {% if student.student_number == xuehao %}
-                                    <div class="grade-item">
-                                        <strong>您目前的课程评分成绩：</strong>
-                                        <span>{{ student.finally_score }}</span>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
+        .back-home:hover {
+            background-color: #2acb11;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
+        }
+           .hidden {
+        display: none;
+    }
+    </style>
 
-                            {% for student in course.course_students|sort(attribute='score', reverse=True) %}
-                                {% if student.student_number == xuehao %}
-                                    <div class="grade-item">
-                                        <strong>您目前的课程评分成绩排名：</strong>
-                                        <span class="rank-badge {% if loop.index <= 3 %}rank-{{ loop.index }}{% endif %}">{{ loop.index }}</span>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
+</head>
+<body>
+   <a href="/student_profile" class="back-home">返回</a>
+<div class="header">
+    <h1>{{ course.name }}</h1>
+    <p>课程代码：{{ course.code }}</p>
+    <p>教师：{{ course.teacher.name }}</p>
+    <p>学期：{{ course.semester }}</p>
+</div>
 
-                        <div class="course-info">
-                            <h2>课程信息</h2>
-                            <div class="info-item">
-                                <strong>课程代码：</strong>
-                                <span>{{ course.code }}</span>
-                            </div>
-                            <div class="info-item">
-                                <strong>教师：</strong>
-                                <span>{{ course.teacher.name }}</span>
-                            </div>
-                            <div class="info-item">
-                                <strong>学期：</strong>
-                                <span>{{ course.semester }}</span>
-                            </div>
-                            <div class="info-item">
-                                <strong>描述：</strong>
-                                <span>{{ course.description }}</span>
-                            </div>
-                        </div>
-
-                        <div class="action-buttons">
-                            <a href="/student_profile" class="btn">返回</a>
-                            <a href="/download/" class="btn">下载文件</a>
-                            <button class="btn" onclick="toggleRankingTable()">查看成绩排名</button>
-                            <form action="/course_detail/{{ course.id }}" method="post">
-                                <button type="submit" class="btn">刷新成绩</button>
-                            </form>
-                        </div>
-
-                        <table id="ranking-table" class="hidden">
-                            <thead>
-                                <tr>
-                                    <th>排名</th>
-                                    <th>学生姓名</th>
-                                    <th>成绩</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for student in course.course_students|sort(attribute='score', reverse=True) %}
-                                    <tr class="{% if student.student_number == xuehao %}highlight-row{% endif %}">
-                                        <td>
-                                            <span class="rank-badge {% if loop.index <= 3 %}rank-{{ loop.index }}{% endif %}">{{ loop.index }}</span>
-                                        </td>
-                                        <td>{{ student.student_name }}</td>
-                                        <td>{{ student.finally_score }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+<div class="container">
+    <div class="main-content">
+        <div class="content">
+            <!-- 成绩信息 -->
+            <div class="grade-summary">
+                <h3>成绩概览</h3>（只显示已注册学生的成绩）
+                {% for student in course.course_students %}
+                {% if student.student_number == xuehao %}
+                <div class="grade-item">
+                    <strong>总评分：</strong>
+                    <span class="score-display">
+                                    {{ student.finally_score }}
+                                </span>
+                    <form action="/course_detail/{{ course.id }}" method="post" class="refresh-form">
+                        <button type="submit" class="btn refresh-btn">刷新成绩</button>
+                    </form>
                 </div>
+                {% endif %}
+                {% endfor %}
 
-                <script>
-                    function toggleRankingTable() {
-                        const table = document.getElementById('ranking-table');
-                        if (table.classList.contains('hidden')) {
-                            table.classList.remove('hidden');
-                            table.classList.add('fade-in');
-                        } else {
-                            table.classList.add('hidden');
-                            table.classList.remove('fade-in');
-                        }
+                {% for student in course.course_students|sort(attribute='score', reverse=True) %}
+                {% if student.student_number == xuehao %}
+                <div class="grade-item">
+                    <strong>当前排名：</strong>
+                    <span class="rank-badge {% if loop.index <= 3 %}rank-{{ loop.index }}{% endif %}">
+                                    {{ loop.index }}
+                                </span>
+                    <span>/ {{ course.course_students|length }}</span>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- 成绩图表 -->
+            <canvas id="scoreChart" height="100"></canvas>
+
+            <!-- 学习建议 -->
+            <div class="learning-suggestion">
+                <h3>学习建议</h3>
+                {% for student in course.course_students %}
+                {% if student.student_number == xuehao %}
+                {% if student.finally_score < 60 %}
+                <p>您的当前成绩偏低，建议您：</p>
+                <ul>
+                    <li>认真复习</li>
+                    <li>完成所有作业并及时提交</li>
+                </ul>
+                {% elif student.finally_score < 80 %}
+                <p>您的成绩良好，建议您：</p>
+                <ul>
+                    <li>巩固基础知识点</li>
+                    <li>尝试挑战高阶内容</li>
+                    <li>保持学习积极性</li>
+                </ul>
+                {% else %}
+                <p>您的成绩优秀，建议您：</p>
+                <ul>
+                    <li>参与课程扩展项目</li>
+                    <li>协助同学答疑解惑</li>
+                    <li>尝试更具挑战性的任务</li>
+                </ul>
+                {% endif %}
+                {% endif %}
+                {% endfor %}
+            </div>
+
+<!--            &lt;!&ndash; 课程信息 &ndash;&gt;-->
+<!--            <div class="course-info">-->
+<!--                <h3>课程信息</h3>-->
+<!--                <div class="info-item"><strong>课程代码：</strong>{{ course.code }}</div>-->
+<!--                <div class="info-item"><strong>教师：</strong>{{ course.teacher.name }}</div>-->
+<!--                <div class="info-item"><strong>学期：</strong>{{ course.semester }}</div>-->
+<!--                <div class="info-item"><strong>描述：</strong>{{ course.description }}</div>-->
+<!--            </div>-->
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+
+                <a href="/download/" class="btn">下载课程资料</a>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="content">
+            <!-- 作业区域 -->
+
+
+                <div class="homework-section">
+                    <h3>作业</h3>
+
+{% for assignment in assignments %}
+<div class="homework-card {% if loop.index > 3 %}hidden{% endif %}">
+    <h4><a href="/submission_detail/{{ assignment.id }}">{{ assignment.title }}</a>
+        <span class="homework-status
+            {% if assignment.status == 'submitted' %}status-submitted
+            {% elif assignment.status == 'pending' %}status-pending
+            {% elif assignment.status == 'overdue' %}status-overdue
+            {% endif %}">
+            {{ assignment.status_display }}
+        </span>
+    </h4>
+    <div class="homework-date">截止日期：{{ assignment.due_date }}</div>
+<!--    <div class="progress-bar">-->
+<!--        <div class="progress-fill" style="width: {{ assignment.progress }}%"></div>-->
+<!--    </div>-->
+</div>
+{% endfor %}
+<button id="showMoreBtn" class="btn" onclick="showMore()">显示更多</button>
+
+
+
+            <!-- 推荐资料 -->
+            <div class="recommend-section">
+                <h3>推荐学习资源</h3>
+                <ul>
+                    <li><a href="/download/" target="_blank">课程课件下载</a></li>
+                    <li><a href="https://www.icourse163.org/" target="_blank">慕课平台提升</a></li>
+                    <li><a href="/chat" target="_blank">智能问答助手</a></li>
+                </ul>
+            </div>
+        </div>
+
+</div>
+
+<script>
+       function showMore() {
+        const hiddenCards = document.querySelectorAll('.homework-card.hidden');
+        hiddenCards.forEach(card => card.classList.remove('hidden'));
+        document.getElementById('showMoreBtn').style.display = 'none';
+    }
+// 成绩图表渲染
+const ctx = document.getElementById('scoreChart').getContext('2d');
+const studentNames = [
+    {% for student in course.course_students|sort(attribute='score', reverse=True) %}
+    "{{ student.student_name }}",
+    {% endfor %}
+];
+
+const studentScores = [
+    {% for student in course.course_students|sort(attribute='score', reverse=True) %}
+    {{ student.finally_score }},
+    {% endfor %}
+];
+
+const currentStudent = "{{ xuehao }}";
+
+const backgroundColors = [
+    {% for student in course.course_students|sort(attribute='score', reverse=True) %}
+    "{{ student.student_number == xuehao and 'rgba(24,144,255,0.9)' or 'rgba(0,0,0,0.1)' }}",
+    {% endfor %}
+];
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: studentNames,
+            datasets: [{
+                label: '课程成绩',
+                data: studentScores,
+                backgroundColor: backgroundColors,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {display: false},
+                tooltip: {
+                    callbacks: {
+                        label: ctx => '成绩: ' + ctx.raw
                     }
-                </script>
-            </body>
-            </html>
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {display: true, text: '成绩'}
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>
