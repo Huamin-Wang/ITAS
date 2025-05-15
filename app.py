@@ -2,7 +2,7 @@ from tkinter.font import names
 from zipfile import error
 
 from django.core.management import templates
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file, send_from_directory
 
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -74,6 +74,10 @@ def create_app():
             show_dialog = True
         return render_template('wang/student_profile.html', answer=answer, question=question, show_dialog=show_dialog)
 
+    @app.route('/.well-known/acme-challenge/<filename>',methods=['GET'])
+    def letsencrypt_challenge(filename):
+        print("请求了/.well-known/acme-challenge")
+        return send_from_directory('.well-known/acme-challenge', filename)
     @app.route('/getOpenId', methods=['GET', 'POST'])
     def get_openid():
         print("登录小程序")
@@ -218,12 +222,37 @@ def create_app():
                         "user_identifier": user.identifier, "openid": openid, "email": email, "gender": gender})
 
     # ！！！ ----------以下为电脑端项目中的路由处理函数
-
     @app.before_request
     def before_request():
-        # ----HTTP 请求转发到 HTTPS（服务器代码）------
-        # production 环境下，如果请求不是 HTTPS 请求，则重定向到 HTTPS 请求
+        # 生产环境才启用
         if environment == 'production':
+            # 先检查 Host 是否是裸域（不带 www）
+            host = request.host
+            # 注意 host 可能带端口，比如 '001ai.top:5000'
+            if host.startswith("001ai.top") and not host.startswith("www."):
+                # 构造带 www 的 URL
+                # 保持 HTTPS（因为要跳转到 HTTPS 的www域名）
+                url = request.url
+                # 如果是 HTTP，先转 HTTPS
+                if url.startswith("http://"):
+                    url = url.replace("http://", "https://")
+                # 再替换裸域为 www 域名（注意要排除端口部分）
+                # 处理端口的情况
+                if ':' in host:
+                    domain, port = host.split(':', 1)
+                    new_host = f"www.{domain}:{port}"
+                else:
+                    new_host = "www." + host
+
+                # 替换url中的host部分为带www的host
+                from urllib.parse import urlparse, urlunparse
+
+                parsed_url = urlparse(url)
+                new_url = urlunparse(parsed_url._replace(netloc=new_host))
+
+                return redirect(new_url, code=301)
+
+            # 然后再做 HTTP -> HTTPS 重定向
             if not request.is_secure:
                 print("请求不是HTTPS请求，重定向到HTTPS")
                 return redirect(request.url.replace("http://", "https://"), code=301)
@@ -249,7 +278,7 @@ def create_app():
             if 'user_name' in session:
                 print(f'''用户{session["user_name"]}在微信小程序端操作ing''')
         else:
-            if 'user_id' not in session and request.endpoint not in ["chatHandle", "chat", "forum", "getCourseById",
+            if 'user_id' not in session and request.endpoint not in ["chatHandle","redirect_to_www", "letsencrypt_challenge","chat", "forum", "getCourseById",
                                                                      "getStudentCourses", "minilogin", "index",
                                                                      'loginHandle', 'register', 'login', 'get_openid',
                                                                      'main'] and not request.path.startswith(
