@@ -1,17 +1,13 @@
 from tkinter.font import names
 from zipfile import error
-
 from django.core.management import templates
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file, send_from_directory
-
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from openai import OpenAI
 from werkzeug.security import generate_password_hash
 from threading import Thread
-
 from werkzeug.utils import secure_filename
-
 import wang.tools.studentTool as studentTool
 import wang.tools.studentTool
 import xie.chat as c
