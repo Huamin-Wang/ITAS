@@ -53,40 +53,6 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 限制上传文件大小为16MB
     # 初始化数据库
     db = init_db(app)
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-    def get_answers(question: str):
-        try:
-            client = OpenAI(
-                base_url="https://ark.cn-beijing.volces.com/api/v3",
-                api_key="e864c037-480f-4533-bb04-df290365997f",
-            )
-            completion = client.chat.completions.create(
-                model="doubao-lite-4k-character-240828",
-                messages=[
-                    {"role": "system", "content": "你是教学小助手"},
-                    {"role": "user", "content": question},
-                ],
-            )
-            return completion.choices[0].message.content
-        except Exception as e:
-            print(f"大模型调用出错: {e}")
-            return "抱歉，大模型调用出错，请稍后再试。"
-
-    @app.route('/chat_apis', methods=['GET', 'POST'])
-    def chat_apis():
-        answer = None
-        question = None
-        show_dialog = False
-        if request.method == 'POST':
-            question = request.form.get('question')
-            answer = get_answers(question)
-            show_dialog = True
-        return render_template('wang/student_profile.html', answer=answer, question=question, show_dialog=show_dialog)
-=======
->>>>>>> 022558ee2f8f44726e3c2950453c8aa0fbecb140
->>>>>>> ba911ee8f75488efba80e97eedadf1aa0d6d9dde
     # -----微信小程序的appid和secret---------
     APP_ID = 'wx3dd32842e9e24690'
     APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
@@ -256,12 +222,37 @@ def create_app():
                         "user_identifier": user.identifier, "openid": openid, "email": email, "gender": gender})
 
     # ！！！ ----------以下为电脑端项目中的路由处理函数
-
     @app.before_request
     def before_request():
-        # ----HTTP 请求转发到 HTTPS（服务器代码）------
-        # production 环境下，如果请求不是 HTTPS 请求，则重定向到 HTTPS 请求
+        # 生产环境才启用
         if environment == 'production':
+            # 先检查 Host 是否是裸域（不带 www）
+            host = request.host
+            # 注意 host 可能带端口，比如 '001ai.top:5000'
+            if host.startswith("001ai.top") and not host.startswith("www."):
+                # 构造带 www 的 URL
+                # 保持 HTTPS（因为要跳转到 HTTPS 的www域名）
+                url = request.url
+                # 如果是 HTTP，先转 HTTPS
+                if url.startswith("http://"):
+                    url = url.replace("http://", "https://")
+                # 再替换裸域为 www 域名（注意要排除端口部分）
+                # 处理端口的情况
+                if ':' in host:
+                    domain, port = host.split(':', 1)
+                    new_host = f"www.{domain}:{port}"
+                else:
+                    new_host = "www." + host
+
+                # 替换url中的host部分为带www的host
+                from urllib.parse import urlparse, urlunparse
+
+                parsed_url = urlparse(url)
+                new_url = urlunparse(parsed_url._replace(netloc=new_host))
+
+                return redirect(new_url, code=301)
+
+            # 然后再做 HTTP -> HTTPS 重定向
             if not request.is_secure:
                 print("请求不是HTTPS请求，重定向到HTTPS")
                 return redirect(request.url.replace("http://", "https://"), code=301)
@@ -287,7 +278,7 @@ def create_app():
             if 'user_name' in session:
                 print(f'''用户{session["user_name"]}在微信小程序端操作ing''')
         else:
-            if 'user_id' not in session and request.endpoint not in ["chatHandle", "letsencrypt_challenge","chat", "forum", "getCourseById",
+            if 'user_id' not in session and request.endpoint not in ["chatHandle","redirect_to_www", "letsencrypt_challenge","chat", "forum", "getCourseById",
                                                                      "getStudentCourses", "minilogin", "index",
                                                                      'loginHandle', 'register', 'login', 'get_openid',
                                                                      'main'] and not request.path.startswith(
