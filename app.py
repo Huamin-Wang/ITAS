@@ -217,7 +217,7 @@ def create_app():
         return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,
                         "user_identifier": user.identifier, "openid": openid, "email": email, "gender": gender})
 
-    # ！！！ ----------以下为电脑端项目中的路由处理函数
+    # ！！！ ----------以下为电脑端项目中的路由处理函数----------------
     @app.before_request
     def before_request():
         # 生产环境才启用
@@ -373,6 +373,11 @@ def create_app():
         else:
             flash('您已登录！', 'success')
             return loginHandle()
+    #个人信息编辑页面
+    @app.route('/edit_profile', methods=['GET', 'POST'])
+    def edit_profile():
+        print(session.get("user_name")+"正在编辑个人资料")
+        return render_template("wang/personInfo.html")
     #课程管理：抢答
     @app.route('/course/quiz/<int:course_id>', methods=['GET', 'POST'])
     def quiz(course_id):

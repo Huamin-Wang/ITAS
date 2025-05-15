@@ -193,14 +193,14 @@
     <h1>基于大模型的智能教学辅助系统</h1>
     <p>学生中心 - 提升学习效率，增强学习体验</p>
     <div class="login-status">
-        <span>欢迎, {{ session['user_name'] }}同学!</span>
+        <span>欢迎, <a href="/edit_profile">{{ session['user_name'] }}</a>同学!</span>
         <span> <a href="/logout" onclick="return confirm('确定要退出吗？')" style="font-size: 0.5em;">退出</a></span>
     </div>
 </header>
 
 <div class="container">
     <div class="welcome-section">
-        <h2>欢迎, {{ session['user_name'] }}同学!</h2>
+        <h2>欢迎, <a href="/edit_profile" style="color: #1890ff; text-decoration: underline;">{{ session['user_name'] }}</a>同学!</h2>
         <div style="text-align: center;">
             <h3>关注微信公众号，进入AI教学助手，体验更完整功能！</h3>
             <img src="/static/weixinQR.jpg" alt="微信公众号二维码" style="width: 50px; height: 50px; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">

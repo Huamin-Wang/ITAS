@@ -274,14 +274,14 @@
     <h1>基于大模型的智能教学辅助系统</h1>
     <p>教师中心 - 提升教学效率，优化教学管理</p>
     <div class="login-status">
-        <span>欢迎, {{ session['user_name'] }}老师!</span>
+        <span>欢迎, <a href="/edit_profile">{{ session['user_name'] }}</a>老师!</span>
         <span><a href="/logout" onclick="return confirm('确定要退出吗？')">退出</a></span>
     </div>
 </header>
 
 <div class="container">
     <div class="welcome-section">
-        <h2>欢迎, {{ session['user_name'] }}老师!</h2>
+         <h2>欢迎, <a href="/edit_profile" style="color: #1890ff; text-decoration: underline;">{{ session['user_name'] }}</a>老师!</h2>
         <p>以下是您教授的课程列表，点击课程进入管理页面。</p>
     </div>
 

@@ -282,16 +282,16 @@
                 {% endif %}
                 {% endwith %}
                 <a href="/teacher_profile" class="back-to-home">返回课程列表</a>
-                <h1><a href='/update_course/{{ course.id }}' style="color: white; text-decoration: none;">{{ course.name }}</a></h1>
+                <h1><a href='/update_course/{{ course.id }}' style="color: white; text-decoration: none; text-decoration: underline; cursor: pointer;">{{ course.name }}</a></h1>
                 <p>课程代码：{{ course.code }}</p>
                 <p>课程简介：{% if course.description %}{{ course.description }}{% else %}暂无课程简介{% endif %}</p>
 
                 <div class="course-stats">
                     <div class="stat-item">
-                        应修学生：<strong><a href="/course_students/{{ course.id }}">{{ course.course_students|length }}</a></strong> 人
+                        应修学生：<strong><a href="/course_students/{{ course.id }}" style="text-decoration: underline;">{{ course.course_students|length }}</a></strong> 人
                     </div>
                     <div class="stat-item">
-                        已加入学生：<strong><a href="/course_students/{{ course.id }}">{{ enrolled_students_count }}</a></strong> 人
+                        已加入学生：<strong><a href="/course_students/{{ course.id }}" style="text-decoration: underline;">{{ enrolled_students_count }}</a></strong> 人
                     </div>
                 </div>
 

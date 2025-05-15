@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>课程详情</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!--    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>-->
     <style>
         :root {
             --primary-color: #1890ff;
@@ -238,7 +238,8 @@
             background-color: #3da914;
             transform: translateY(-2px);
         }
-                    .back-home {
+
+        .back-home {
             position: fixed;
             top: 10px;
             left: 10px;
@@ -259,14 +260,15 @@
             transform: translateY(-1px);
             box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
         }
-           .hidden {
-        display: none;
-    }
+
+        .hidden {
+            display: none;
+        }
     </style>
 
 </head>
 <body>
-   <a href="/student_profile" class="back-home">返回</a>
+<a href="/student_profile" class="back-home">返回</a>
 <div class="header">
     <h1>{{ course.name }}</h1>
     <p>课程代码：{{ course.code }}</p>
@@ -340,14 +342,14 @@
                 {% endfor %}
             </div>
 
-<!--            &lt;!&ndash; 课程信息 &ndash;&gt;-->
-<!--            <div class="course-info">-->
-<!--                <h3>课程信息</h3>-->
-<!--                <div class="info-item"><strong>课程代码：</strong>{{ course.code }}</div>-->
-<!--                <div class="info-item"><strong>教师：</strong>{{ course.teacher.name }}</div>-->
-<!--                <div class="info-item"><strong>学期：</strong>{{ course.semester }}</div>-->
-<!--                <div class="info-item"><strong>描述：</strong>{{ course.description }}</div>-->
-<!--            </div>-->
+            <!--            &lt;!&ndash; 课程信息 &ndash;&gt;-->
+            <!--            <div class="course-info">-->
+            <!--                <h3>课程信息</h3>-->
+            <!--                <div class="info-item"><strong>课程代码：</strong>{{ course.code }}</div>-->
+            <!--                <div class="info-item"><strong>教师：</strong>{{ course.teacher.name }}</div>-->
+            <!--                <div class="info-item"><strong>学期：</strong>{{ course.semester }}</div>-->
+            <!--                <div class="info-item"><strong>描述：</strong>{{ course.description }}</div>-->
+            <!--            </div>-->
 
             <!-- 操作按钮 -->
             <div class="action-buttons">
@@ -363,100 +365,115 @@
             <!-- 作业区域 -->
 
 
-                <div class="homework-section">
-                    <h3>作业</h3>
+            <div class="homework-section">
+                <h3>作业</h3>
 
-{% for assignment in assignments %}
-<div class="homework-card {% if loop.index > 3 %}hidden{% endif %}">
-    <h4><a href="/submission_detail/{{ assignment.id }}">{{ assignment.title }}</a>
-        <span class="homework-status
+                {% for assignment in assignments %}
+                <div class="homework-card {% if loop.index > 3 %}hidden{% endif %}">
+                    <h4><a href="/submission_detail/{{ assignment.id }}">{{ assignment.title }}</a>
+                        <span class="homework-status
             {% if assignment.status == 'submitted' %}status-submitted
             {% elif assignment.status == 'pending' %}status-pending
             {% elif assignment.status == 'overdue' %}status-overdue
             {% endif %}">
             {{ assignment.status_display }}
         </span>
-    </h4>
-    <div class="homework-date">截止日期：{{ assignment.due_date }}</div>
-<!--    <div class="progress-bar">-->
-<!--        <div class="progress-fill" style="width: {{ assignment.progress }}%"></div>-->
-<!--    </div>-->
-</div>
-{% endfor %}
-<button id="showMoreBtn" class="btn" onclick="showMore()">显示更多</button>
+                    </h4>
+                    <div class="homework-date">截止日期：{{ assignment.due_date }}</div>
+                    <!--    <div class="progress-bar">-->
+                    <!--        <div class="progress-fill" style="width: {{ assignment.progress }}%"></div>-->
+                    <!--    </div>-->
+                </div>
+                {% endfor %}
+                <button id="showMoreBtn" class="btn" onclick="showMore()">显示更多</button>
 
 
-
-            <!-- 推荐资料 -->
-            <div class="recommend-section">
-                <h3>推荐学习资源</h3>
-                <ul>
-                    <li><a href="/download/" target="_blank">课程课件下载</a></li>
-                    <li><a href="https://www.icourse163.org/" target="_blank">慕课平台提升</a></li>
-                    <li><a href="/chat" target="_blank">智能问答助手</a></li>
-                </ul>
+                <!-- 推荐资料 -->
+                <div class="recommend-section">
+                    <h3>推荐学习资源</h3>
+                    <ul>
+                        <li><a href="/download/" target="_blank">课程课件下载</a></li>
+                        <li><a href="https://www.icourse163.org/" target="_blank">慕课平台提升</a></li>
+                        <li><a href="/chat" target="_blank">智能问答助手</a></li>
+                    </ul>
+                </div>
             </div>
+
         </div>
 
-</div>
+        <script>
+            function showMore() {
+                const hiddenCards = document.querySelectorAll('.homework-card.hidden');
+                hiddenCards.forEach(card => card.classList.remove('hidden'));
+                document.getElementById('showMoreBtn').style.display = 'none';
+            }
 
-<script>
-       function showMore() {
-        const hiddenCards = document.querySelectorAll('.homework-card.hidden');
-        hiddenCards.forEach(card => card.classList.remove('hidden'));
-        document.getElementById('showMoreBtn').style.display = 'none';
-    }
-// 成绩图表渲染
-const ctx = document.getElementById('scoreChart').getContext('2d');
-const studentNames = [
-    {% for student in course.course_students|sort(attribute='score', reverse=True) %}
-    "{{ student.student_name }}",
-    {% endfor %}
-];
+            // 成绩图表渲染
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            const studentNames = [
+                { %
+            for student in course.course_students | sort(attribute = 'score', reverse = True) %}
+            "{{ student.student_name }}",
+            { % endfor %
+            }
+            ]
+            ;
 
-const studentScores = [
-    {% for student in course.course_students|sort(attribute='score', reverse=True) %}
-    {{ student.finally_score }},
-    {% endfor %}
-];
-
-const currentStudent = "{{ xuehao }}";
-
-const backgroundColors = [
-    {% for student in course.course_students|sort(attribute='score', reverse=True) %}
-    "{{ student.student_number == xuehao and 'rgba(24,144,255,0.9)' or 'rgba(0,0,0,0.1)' }}",
-    {% endfor %}
-];
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: studentNames,
-            datasets: [{
-                label: '课程成绩',
-                data: studentScores,
-                backgroundColor: backgroundColors,
-                borderRadius: 5
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {display: false},
-                tooltip: {
-                    callbacks: {
-                        label: ctx => '成绩: ' + ctx.raw
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    title: {display: true, text: '成绩'}
+            const studentScores = [
+                { %
+            for student in course.course_students | sort(attribute = 'score', reverse = True) %}
+            {
+                {
+                    student.finally_score
                 }
             }
-        }
-    });
-</script>
+            ,
+            {%
+                endfor %
+            }
+            ]
+            ;
+
+            const currentStudent = "{{ xuehao }}";
+
+            const backgroundColors = [
+                { %
+            for student in course.course_students | sort(attribute = 'score', reverse = True) %}
+            "{{ student.student_number == xuehao and 'rgba(24,144,255,0.9)' or 'rgba(0,0,0,0.1)' }}",
+            { % endfor %
+            }
+            ]
+            ;
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: studentNames,
+                    datasets: [{
+                        label: '课程成绩',
+                        data: studentScores,
+                        backgroundColor: backgroundColors,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {display: false},
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => '成绩: ' + ctx.raw
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {display: true, text: '成绩'}
+                        }
+                    }
+                }
+            });
+        </script>
 </body>
 </html>
