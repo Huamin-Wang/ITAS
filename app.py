@@ -2,7 +2,7 @@ from tkinter.font import names
 from zipfile import error
 
 from django.core.management import templates
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file, send_from_directory
 
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -74,6 +74,10 @@ def create_app():
             show_dialog = True
         return render_template('wang/student_profile.html', answer=answer, question=question, show_dialog=show_dialog)
 
+    @app.route('/.well-known/acme-challenge/<filename>',methods=['GET'])
+    def letsencrypt_challenge(filename):
+        print("请求了/.well-known/acme-challenge")
+        return send_from_directory('.well-known/acme-challenge', filename)
     @app.route('/getOpenId', methods=['GET', 'POST'])
     def get_openid():
         print("登录小程序")
@@ -249,7 +253,7 @@ def create_app():
             if 'user_name' in session:
                 print(f'''用户{session["user_name"]}在微信小程序端操作ing''')
         else:
-            if 'user_id' not in session and request.endpoint not in ["chatHandle", "chat", "forum", "getCourseById",
+            if 'user_id' not in session and request.endpoint not in ["chatHandle", "letsencrypt_challenge","chat", "forum", "getCourseById",
                                                                      "getStudentCourses", "minilogin", "index",
                                                                      'loginHandle', 'register', 'login', 'get_openid',
                                                                      'main'] and not request.path.startswith(
