@@ -1187,8 +1187,8 @@ if __name__ == '__main__':
         print('正在启动生产服务器...')
 
         # 配置 SSL 证书路径
-        certfile = 'C:/Certbot/live/001ai.top/fullchain.pem'
-        keyfile = 'C:/Certbot/live/001ai.top/privkey.pem'
+        certfile = 'C:/Certbot/live/www.001ai.top/fullchain.pem'
+        keyfile = 'C:/Certbot/live/www.001ai.top/privkey.pem'
 
         try:
             # 使用 CherryPy 的 WSGI 服务器作为更可靠的SSL解决方案
