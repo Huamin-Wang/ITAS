@@ -1,6 +1,4 @@
-from tkinter.font import names
 from zipfile import error
-from django.core.management import templates
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -71,11 +69,11 @@ def create_app():
         return render_template('wang/student_profile.html', answer=answer, question=question, show_dialog=show_dialog)
 
     @app.route('/.well-known/acme-challenge/<filename>',methods=['GET'])
-    def letsencrypt_challenge(filename):
+    def letsencrypt_challenge_unlocked(filename):
         print("请求了/.well-known/acme-challenge")
         return send_from_directory('.well-known/acme-challenge', filename)
     @app.route('/getOpenId', methods=['GET', 'POST'])
-    def get_openid():
+    def get_openid_unlocked():
         print("登录小程序")
         data = request.json
         code = data.get('code')
@@ -102,7 +100,7 @@ def create_app():
                 {'success': True, 'user_id': -1, 'user_name': "未登录过小程序,退出重新登录", 'user_role': "游客",
                  "openid": openid})
 
-    # -----微信小程序登录页面---------
+    # -----微信小程序相关代码---------
     @app.route('/minilogin', methods=['GET', 'POST'])
     def minilogin():
         print("验证小程序登录")
@@ -216,260 +214,9 @@ def create_app():
         session["logged_in"] = True
         return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,
                         "user_identifier": user.identifier, "openid": openid, "email": email, "gender": gender})
+        # 微信小程序：获取学生的作业列表
 
-    # ！！！ ----------以下为电脑端项目中的路由处理函数----------------
-    @app.before_request
-    def before_request():
-        # 生产环境才启用
-        if environment == 'production':
-            # 先检查 Host 是否是裸域（不带 www）
-            host = request.host
-            # 注意 host 可能带端口，比如 '001ai.top:5000'
-            if host.startswith("001ai.top") and not host.startswith("www."):
-                # 构造带 www 的 URL
-                # 保持 HTTPS（因为要跳转到 HTTPS 的www域名）
-                url = request.url
-                # 如果是 HTTP，先转 HTTPS
-                if url.startswith("http://"):
-                    url = url.replace("http://", "https://")
-                # 再替换裸域为 www 域名（注意要排除端口部分）
-                # 处理端口的情况
-                if ':' in host:
-                    domain, port = host.split(':', 1)
-                    new_host = f"www.{domain}:{port}"
-                else:
-                    new_host = "www." + host
-
-                # 替换url中的host部分为带www的host
-                from urllib.parse import urlparse, urlunparse
-
-                parsed_url = urlparse(url)
-                new_url = urlunparse(parsed_url._replace(netloc=new_host))
-
-                return redirect(new_url, code=301)
-
-            # 然后再做 HTTP -> HTTPS 重定向
-            if not request.is_secure:
-                print("请求不是HTTPS请求，重定向到HTTPS")
-                return redirect(request.url.replace("http://", "https://"), code=301)
-        # 超时自动清空session
-        # 设置 session 超时时间
-        session.permanent = True
-        app.permanent_session_lifetime = timedelta(minutes=90)  # 设置 session 有效时间为 90 分钟
-
-        # 如果请求路径是恶意路径，则阻止访问
-        if request.path.startswith(('/wordpress', '/wp-admin')):
-            abort(403)  # 返回 403 Forbidden
-
-        # 登录状态检查，排除登录和注册页面
-        # 如果openid不为空，则允许
-        if request.method == 'GET':
-            openid = request.args.get('openid')
-            if openid == None and 'user_name' in session:
-                print(f'''用户{session["user_name"]}在电脑端操作ing''')
-        else:
-            data = request.get_json() if request.is_json else {}
-            openid = data.get('openid')
-        if openid:
-            if 'user_name' in session:
-                print(f'''用户{session["user_name"]}在微信小程序端操作ing''')
-        else:
-            if 'user_id' not in session and request.endpoint not in ["chatHandle","redirect_to_www", "letsencrypt_challenge","chat", "forum", "getCourseById",
-                                                                     "getStudentCourses", "minilogin", "index",
-                                                                     'loginHandle', 'register', 'login', 'get_openid',
-                                                                     'main'] and not request.path.startswith(
-                '/getCourseById/'):  # 禁止重定向加的是方法名，不是路由名
-                # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
-                return redirect(url_for('index'))
-
-    # 错误处理
-    @app.errorhandler(500)
-    def internal_server_error(e):
-        print("500错误")
-        return render_template('wang/500.html'), 500
-
-        # 405错误处理
-
-    @app.errorhandler(405)
-    def method_not_allowed(e):
-        print("405")
-        return render_template('wang/500.html'), 500
-
-    @app.errorhandler(404)
-    def page_not_found(e):
-        print("404")
-        return render_template('wang/404.html'), 404
-
-    # 首页
-    @app.route('/')
-    def hello_world():
-        # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，返回登录页面
-        if "logged_in" not in session or session["logged_in"] == False:
-            return render_template('index.html')
-        else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
-            return loginHandle()
-
-    @app.route('/index')
-    def index():
-        return hello_world()
-
-    # 注册页面
-    @app.route('/register', methods=['GET', 'POST'])
-    def register():
-        # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，才能注册
-        if "logged_in" not in session or session["logged_in"] == False:
-            if request.method == 'POST':
-                identifier = request.form.get('identifier')  # 学号
-                # 将学号统一转成大写
-                identifier = identifier.upper()
-                identifier = identifier.replace(' ', '')
-                role = request.form.get('role')
-                name = request.form.get('name')
-                name = name.replace(' ', '')
-                gender = request.form.get('gender')
-                email = request.form.get('email')
-                password = request.form.get('password')
-                confirm_password = request.form.get('confirm_password')
-                # 检查密码是否一致
-                if password != confirm_password:
-                    flash('密码不一致！', 'danger')
-                    return redirect(url_for('register'))
-                # 检查邮箱是否已存在
-                existing_user = User.query.filter_by(email=email).first()
-                if existing_user:
-                    flash('邮箱已存在！', 'danger')
-                    return redirect(url_for('register'))  # 重定向到注册页面
-                # 检查学号是否已存在
-                existing_user = User.query.filter_by(identifier=identifier).first()
-                if existing_user:
-                    flash('学号已存在！', 'danger')
-                    return redirect(url_for('register'))
-
-                password_hash = generate_password_hash(password)
-                user = User(gender=gender, identifier=identifier, role=role, name=name, email=email,
-                            password=password_hash)
-                db.session.add(user)
-                db.session.commit()
-                # 注册成功后cookie保存用户信息
-                session['user_id'] = user.id
-                session['user_name'] = user.name
-                session['user_role'] = user.role
-                session['user_identifier'] = user.identifier
-                # 在session中保存登录状态，已供全局使用
-                session["logged_in"] = True
-                print("注册成功！")
-                flash('注册成功，您已登录！', 'success')
-                return render_template('index.html')
-            return render_template('wang/register.html')
-        else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
-            # 提示已经注册过了
-            flash('您已注册过了！如需重新注册，请先退出！', 'registerError')
-            return loginHandle()
-
-    @app.route('/login', methods=['GET', 'POST'])
-    def login():
-        if "logged_in" not in session or session["logged_in"] == False:
-            return render_template('wang/login.html')
-        else:
-            flash('您已登录！', 'success')
-            return loginHandle()
-    #个人信息编辑页面
-    @app.route('/edit_profile', methods=['GET', 'POST'])
-    def edit_profile():
-        print(session.get("user_name")+"正在编辑个人资料")
-        return render_template("wang/personInfo.html")
-    #课程管理：抢答
-    @app.route('/course/quiz/<int:course_id>', methods=['GET', 'POST'])
-    def quiz(course_id):
-        if request.method == 'GET':
-            # 找到对应课程
-            course = Course.query.get(course_id)
-            return render_template('qiu/quiz.html', course=course)
-        elif request.method == 'POST':
-            # 处理 POST 请求，假设这里接收一个名为 'answer' 的表单数据
-            answer = request.form.get('answer')
-            if answer:
-                return render_template('result.html', answer=answer)
-            else:
-                return "未接收到答案，请重新提交。"
-    # 课程管理：智能生成课程总体学习分析报告
-    @app.route('/course/course_analysis/<int:course_id>', methods=['GET', 'POST'])
-    def analysis(course_id):
-        course= Course.query.get(course_id)
-        return  render_template("wang/course_analysis.html",course=course)
-    #课程管理：考勤
-    @app.route('/course/attendance/<int:course_id>', methods=['GET', 'POST'])
-    def attendance(course_id):
-        course= Course.query.get(course_id)
-        return render_template('wang/attendance.html', course=course, qrcode_url=url_for('static', filename='qrcode_sign_id=abc123.png'))
-    @app.route('/loginHandle', methods=['POST'])
-    def loginHandle():
-        # 如果session中登录状态为false，说明是第一次登录，从表单中获取学号和密码
-        if "logged_in" not in session or session["logged_in"] == False:
-            xuehao = request.form.get('xuehao')
-            # 学号统一转大写
-            xuehao = xuehao.upper()
-            print(f"用户输入的学号为：{xuehao}")
-            password = request.form.get('password')
-            # 从数据库中查找用户，与用户输入的密码进行比对
-            user = User.query.filter_by(identifier=xuehao).first()
-            if user and user.check_password(password):
-                # 在session中保存登录状态，已供全局使用
-                session["logged_in"] = True
-                session['user_id'] = user.id
-                session['user_name'] = user.name
-                session['user_role'] = user.role
-                session['user_identifier'] = user.identifier
-                flash('登录成功！', 'success')
-                print(f'{user.name}登录成功！')
-            else:
-                print("用户名或密码错误！")
-                return render_template('wang/login.html', error='用户名或密码错误！')
-        # 登录成功后才会执行到这里
-        # 从数据库中查找用户，与用户输入的密码进行比对
-        user = User.query.filter_by(identifier=session['user_identifier']).first()
-        if user:
-            if user.role == "student":
-                # 输出用戶信息
-                print(f"用户{user.name}的学号为：{user.identifier}")
-
-                # 获取学生名下的课程：把course_students表中学号匹配上的所有记录中的课程id找出来
-                course_students = Course_Students.query.filter_by(student_number=user.identifier,
-                                                                  ).all()
-                print(
-                    f"用户{user.name}的课程有：{course_students}")
-
-                print(f"course_students:{course_students}")
-                # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
-                for course_student in course_students:
-                    course_student.course_status = 'enrolled'
-                    db.session.commit()  # 提交事务
-                courses = []
-                for course_student in course_students:
-                    course = Course.query.get(course_student.course_id)
-                    courses.append(course)
-                print(f"用户{user.name}正在查看自己的课程！")
-                print(courses)
-                # 获取学生所有课程的作业,待做作业
-                Allassignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
-                print(f"assignments_to_do:{assignments_to_do}")
-                return render_template('wang/student_profile.html', courses=courses,
-                                       assignments_to_do=assignments_to_do)
-            elif user.role == "teacher":
-                # 获取教师名下的课程
-                courses = Course.query.filter_by(teacher_id=user.id).all()
-                # 将course_students的所有学生的学号进行比对user表中的所有用户，如果有，已经注册为user用户的学生状态改为enrolled
-                course_students = Course_Students.query.all()
-                for course_student in course_students:
-                    student = User.query.filter_by(identifier=course_student.student_number).first()
-                    if student:
-                        course_student.course_status = 'enrolled'
-                        db.session.commit()
-                return render_template('wang/teacher_profile.html', courses=courses)
-            # 返回首页
-        return render_template("index.html")
-
-    # 微信小程序：获取学生的作业列表
+    # 微信小程序获取作业列表
     @app.route('/getStudentAssignments', methods=['GET', 'POST'])
     def getStudentAssignments():
         # 从数据库中查找用户，与用户输入的密码进行比对
@@ -540,13 +287,264 @@ def create_app():
         print("用户不存在！")
         return jsonify({'success': False, 'message': '用户不存在！'})
 
+    # ！！！ ----------以下为电脑端项目中的路由处理函数----------------
+    @app.before_request
+    def before_request():
+        # 生产环境才启用
+        if environment == 'production':
+            # 先检查 Host 是否是裸域（不带 www）
+            host = request.host
+            # 注意 host 可能带端口，比如 '001ai.top:5000'
+            if host.startswith("001ai.top") and not host.startswith("www."):
+                # 构造带 www 的 URL
+                # 保持 HTTPS（因为要跳转到 HTTPS 的www域名）
+                url = request.url
+                # 如果是 HTTP，先转 HTTPS
+                if url.startswith("http://"):
+                    url = url.replace("http://", "https://")
+                # 再替换裸域为 www 域名（注意要排除端口部分）
+                # 处理端口的情况
+                if ':' in host:
+                    domain, port = host.split(':', 1)
+                    new_host = f"www.{domain}:{port}"
+                else:
+                    new_host = "www." + host
+
+                # 替换url中的host部分为带www的host
+                from urllib.parse import urlparse, urlunparse
+
+                parsed_url = urlparse(url)
+                new_url = urlunparse(parsed_url._replace(netloc=new_host))
+
+                return redirect(new_url, code=301)
+
+            # 然后再做 HTTP -> HTTPS 重定向
+            if not request.is_secure:
+                print("请求不是HTTPS请求，重定向到HTTPS")
+                return redirect(request.url.replace("http://", "https://"), code=301)
+        # 超时自动清空session
+        # 设置 session 超时时间
+        session.permanent = True
+        app.permanent_session_lifetime = timedelta(minutes=90)  # 设置 session 有效时间为 90 分钟
+
+        # 如果请求路径是恶意路径，则阻止访问
+        if request.path.startswith(('/wordpress', '/wp-admin')):
+            abort(403)  # 返回 403 Forbidden
+
+        # 登录状态检查，排除登录和注册页面
+        # 如果openid不为空，则允许
+        if request.method == 'GET':
+            openid = request.args.get('openid')
+            if openid == None and 'user_name' in session:
+                print(f'''用户{session["user_name"]}在电脑端操作ing''')
+        else:
+            data = request.get_json() if request.is_json else {}
+            openid = data.get('openid')
+        if openid:
+            if 'user_name' in session:
+                print(f'''用户{session["user_name"]}在微信小程序端操作ing''')
+        else:
+
+            # 视图函数我如果允许直接通过函数末尾会加_unlocked，这里判断函数有没有unlocked后缀，如果没有，则进行登录状态检查
+            if 'user_id' not in session and (request.endpoint is None or "_unlocked" not in request.endpoint):
+                return redirect(url_for('index_unlocked'))
+
+
+    # 错误处理
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        print("500错误")
+        return render_template('wang/500.html'), 500
+
+        # 405错误处理
+
+    @app.errorhandler(405)
+    def method_not_allowed(e):
+        print("405")
+        return render_template('wang/500.html'), 500
+
+    @app.errorhandler(404)
+    def page_not_found(e):
+        print("404")
+        return render_template('wang/404.html'), 404
+
+    # 首页
+    @app.route('/')
+    def hello_world_unlocked():
+        # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，返回登录页面
+        if "logged_in" not in session or session["logged_in"] == False:
+            return render_template('index.html')
+        else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
+            return loginHandle_unlocked()
+
+    @app.route('/index')
+    def index_unlocked():
+        return hello_world_unlocked()
+
+    # 注册页面
+    @app.route('/register', methods=['GET', 'POST'])
+    def register_unlocked():
+        # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，才能注册
+        if "logged_in" not in session or session["logged_in"] == False:
+            if request.method == 'POST':
+                identifier = request.form.get('identifier')  # 学号
+                # 将学号统一转成大写
+                identifier = identifier.upper()
+                identifier = identifier.replace(' ', '')
+                role = request.form.get('role')
+                name = request.form.get('name')
+                name = name.replace(' ', '')
+                gender = request.form.get('gender')
+                email = request.form.get('email')
+                password = request.form.get('password')
+                confirm_password = request.form.get('confirm_password')
+                # 检查密码是否一致
+                if password != confirm_password:
+                    flash('密码不一致！', 'danger')
+                    return redirect(url_for('register'))
+                # 检查邮箱是否已存在
+                existing_user = User.query.filter_by(email=email).first()
+                if existing_user:
+                    flash('邮箱已存在！', 'danger')
+                    return redirect(url_for('register'))  # 重定向到注册页面
+                # 检查学号是否已存在
+                existing_user = User.query.filter_by(identifier=identifier).first()
+                if existing_user:
+                    flash('学号已存在！', 'danger')
+                    return redirect(url_for('register'))
+
+                password_hash = generate_password_hash(password)
+                user = User(gender=gender, identifier=identifier, role=role, name=name, email=email,
+                            password=password_hash)
+                db.session.add(user)
+                db.session.commit()
+                # 注册成功后cookie保存用户信息
+                session['user_id'] = user.id
+                session['user_name'] = user.name
+                session['user_role'] = user.role
+                session['user_identifier'] = user.identifier
+                # 在session中保存登录状态，已供全局使用
+                session["logged_in"] = True
+                print("注册成功！")
+                flash('注册成功，您已登录！', 'success')
+                return render_template('index.html')
+            return render_template('wang/register.html')
+        else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
+            # 提示已经注册过了
+            flash('您已注册过了！如需重新注册，请先退出！', 'registerError')
+            return loginHandle_unlocked()
+
+    @app.route('/login', methods=['GET', 'POST'])
+    def login_unlocked():
+        if "logged_in" not in session or session["logged_in"] == False:
+            return render_template('wang/login.html')
+        else:
+            flash('您已登录！', 'success')
+            return loginHandle_unlocked()
+    #个人信息编辑页面
+    @app.route('/edit_profile', methods=['GET', 'POST'])
+    def edit_profile():
+        print(session.get("user_name")+"正在编辑个人资料")
+        return render_template("wang/personInfo.html")
+    #课程管理：抢答
+    @app.route('/course/quiz/<int:course_id>', methods=['GET', 'POST'])
+    def quiz(course_id):
+        if request.method == 'GET':
+            # 找到对应课程
+            course = Course.query.get(course_id)
+            return render_template('qiu/quiz.html', course=course)
+        elif request.method == 'POST':
+            # 处理 POST 请求，假设这里接收一个名为 'answer' 的表单数据
+            answer = request.form.get('answer')
+            if answer:
+                return render_template('result.html', answer=answer)
+            else:
+                return "未接收到答案，请重新提交。"
+    # 课程管理：智能生成课程总体学习分析报告
+    @app.route('/course/course_analysis/<int:course_id>', methods=['GET', 'POST'])
+    def analysis(course_id):
+        course= Course.query.get(course_id)
+        return  render_template("wang/course_analysis.html",course=course)
+    #课程管理：考勤
+    @app.route('/course/attendance/<int:course_id>', methods=['GET', 'POST'])
+    def attendance(course_id):
+        course= Course.query.get(course_id)
+        return render_template('wang/attendance.html', course=course, qrcode_url=url_for('static', filename='qrcode_sign_id=abc123.png'))
+    @app.route('/loginHandle', methods=['POST'])
+    def loginHandle_unlocked():
+        # 如果session中登录状态为false，说明是第一次登录，从表单中获取学号和密码
+        if "logged_in" not in session or session["logged_in"] == False:
+            xuehao = request.form.get('xuehao')
+            # 学号统一转大写
+            xuehao = xuehao.upper()
+            print(f"用户输入的学号为：{xuehao}")
+            password = request.form.get('password')
+            # 从数据库中查找用户，与用户输入的密码进行比对
+            user = User.query.filter_by(identifier=xuehao).first()
+            if user and user.check_password(password):
+                # 在session中保存登录状态，已供全局使用
+                session["logged_in"] = True
+                session['user_id'] = user.id
+                session['user_name'] = user.name
+                session['user_role'] = user.role
+                session['user_identifier'] = user.identifier
+                flash('登录成功！', 'success')
+                print(f'{user.name}登录成功！')
+            else:
+                print("用户名或密码错误！")
+                return render_template('wang/login.html', error='用户名或密码错误！')
+        # 登录成功后才会执行到这里
+        # 从数据库中查找用户，与用户输入的密码进行比对
+        user = User.query.filter_by(identifier=session['user_identifier']).first()
+        if user:
+            if user.role == "student":
+                # 输出用戶信息
+                print(f"用户{user.name}的学号为：{user.identifier}")
+
+                # 获取学生名下的课程：把course_students表中学号匹配上的所有记录中的课程id找出来
+                course_students = Course_Students.query.filter_by(student_number=user.identifier,
+                                                                  ).all()
+                print(
+                    f"用户{user.name}的课程有：{course_students}")
+
+                print(f"course_students:{course_students}")
+                # 将course_students表中自己的名字和学号对应的记录中的状态改为enrolled
+                for course_student in course_students:
+                    course_student.course_status = 'enrolled'
+                    db.session.commit()  # 提交事务
+                courses = []
+                for course_student in course_students:
+                    course = Course.query.get(course_student.course_id)
+                    courses.append(course)
+                print(f"用户{user.name}正在查看自己的课程！")
+                print(courses)
+                # 获取学生所有课程的作业,待做作业
+                Allassignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
+                print(f"assignments_to_do:{assignments_to_do}")
+                return render_template('wang/student_profile.html', courses=courses,
+                                       assignments_to_do=assignments_to_do)
+            elif user.role == "teacher":
+                # 获取教师名下的课程
+                courses = Course.query.filter_by(teacher_id=user.id).all()
+                # 将course_students的所有学生的学号进行比对user表中的所有用户，如果有，已经注册为user用户的学生状态改为enrolled
+                course_students = Course_Students.query.all()
+                for course_student in course_students:
+                    student = User.query.filter_by(identifier=course_student.student_number).first()
+                    if student:
+                        course_student.course_status = 'enrolled'
+                        db.session.commit()
+                return render_template('wang/teacher_profile.html', courses=courses)
+            # 返回首页
+        return render_template("index.html")
+
+
     # 处理智能聊天请求
     @app.route('/chat')
-    def chat():
+    def chat_unlocked():
         return render_template('xie/chat.html', conversation=c.conversation_history)
 
     @app.route('/chatHandle', methods=['POST'])
-    def chatHandle():
+    def chatHandle_unlocked():
         response = c.chat()
         return response
 
@@ -557,7 +555,7 @@ def create_app():
 
     @app.route('/student_profile')
     def student_profile():
-        return loginHandle()
+        return loginHandle_unlocked()
 
     # 学生课程详情页面
     @app.route('/course_detail/<int:course_id>', methods=['GET', 'POST'])
@@ -648,7 +646,36 @@ def create_app():
             submission.feedback = 评语
             db.session.commit()
         return render_template('wang/submission_detail.html', assignment=assignment, user=user, submission=submission, )
-
+    # 微信小程序：返回学生的作业详情信息
+    @app.route('/getAssignmentById/<int:assignment_id>', methods=['GET', 'POST'])
+    def getAssignmentById(assignment_id):
+        print("小程序：获取单个作业详情！")
+        assignment = Assignment.query.get(assignment_id)
+        openid = request.args.get('openid')
+        print(f"详情中的用户openid:{openid}")
+        # 获取用户数据
+        user = User.query.filter_by(openid=openid).first()
+        print(f"用户{user.name}正在查看作业{assignment.title}的详情！")
+        # 获取作业提交记录
+        submission = Submission.query.filter_by(assignment_id=assignment_id, student_id=user.id).first()
+        # 作业详情序列化
+        assignmentInfo = {
+            'id': assignment.id,
+            'course_id': assignment.course_id,
+            'title': assignment.title,
+            'description': assignment.description,
+            'due_date': assignment.due_date
+        }
+        if submission:
+            # 提交记录序列化
+            submission = {
+                'id': submission.id,
+                'data': submission.data,
+                'grade': submission.grade,
+                'feedback': submission.feedback
+            }
+        print(f"返回作业{assignment.title}的详情！")
+        return jsonify({'success': True, 'assignmentInfo': assignmentInfo,"submission": submission if submission else None})
     # 微信小程序：返回单个课程详情
     @app.route('/getCourseById/<int:course_id>', methods=['GET', 'POST'])
     def getCourseById(course_id):
@@ -780,7 +807,7 @@ def create_app():
 
     # 匿名论坛
     @app.route('/forum')
-    def forum():
+    def forum_unlocked():
         print(f"用户{session.get('user_name')}正在查看论坛！")
         # 重定向到http://116.205.170.203:81/forum.html
         return redirect("http://116.205.170.203:81/forum.html", code=302)
@@ -1025,12 +1052,6 @@ def create_app():
             flash('作业编辑成功！', 'success')
             print(f"用户{session.get('user_name')}编辑了课程{course.name}的作业！")
             return redirect(url_for('assignments', assignment_id=assignment_id, course_id=course.id))
-
-    # 列出我们还需要实现的的功能
-    @app.route('/fuctions')
-    def fuctions():
-        # 跳转论坛
-        return url_for('forum')
 
     # 超级管理员账户
     @app.route('/admin', methods=['GET', 'POST'])
