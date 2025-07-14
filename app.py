@@ -1,6 +1,4 @@
-from tkinter.font import names
 from zipfile import error
-from django.core.management import templates
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -71,11 +69,11 @@ def create_app():
         return render_template('wang/student_profile.html', answer=answer, question=question, show_dialog=show_dialog)
 
     @app.route('/.well-known/acme-challenge/<filename>',methods=['GET'])
-    def letsencrypt_challenge(filename):
+    def letsencrypt_challenge_unlocked(filename):
         print("请求了/.well-known/acme-challenge")
         return send_from_directory('.well-known/acme-challenge', filename)
     @app.route('/getOpenId', methods=['GET', 'POST'])
-    def get_openid():
+    def get_openid_unlocked():
         print("登录小程序")
         data = request.json
         code = data.get('code')
@@ -274,13 +272,11 @@ def create_app():
             if 'user_name' in session:
                 print(f'''用户{session["user_name"]}在微信小程序端操作ing''')
         else:
-            if 'user_id' not in session and request.endpoint not in ["chatHandle","redirect_to_www", "letsencrypt_challenge","chat", "forum", "getCourseById",
-                                                                     "getStudentCourses", "minilogin", "index",
-                                                                     'loginHandle', 'register', 'login', 'get_openid',
-                                                                     'main'] and not request.path.startswith(
-                '/getCourseById/'):  # 禁止重定向加的是方法名，不是路由名
-                # 如果用户未登录且请求的不是登录或注册页面，重定向到登录页面
-                return redirect(url_for('index'))
+
+            # 视图函数我如果允许直接通过函数末尾会加_unlocked，这里判断函数有没有unlocked后缀，如果没有，则进行登录状态检查
+            if 'user_id' not in session and (request.endpoint is None or "_unlocked" not in request.endpoint):
+                return redirect(url_for('index_unlocked'))
+
 
     # 错误处理
     @app.errorhandler(500)
@@ -302,20 +298,20 @@ def create_app():
 
     # 首页
     @app.route('/')
-    def hello_world():
+    def hello_world_unlocked():
         # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，返回登录页面
         if "logged_in" not in session or session["logged_in"] == False:
             return render_template('index.html')
         else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
-            return loginHandle()
+            return loginHandle_unlocked()
 
     @app.route('/index')
-    def index():
-        return hello_world()
+    def index_unlocked():
+        return hello_world_unlocked()
 
     # 注册页面
     @app.route('/register', methods=['GET', 'POST'])
-    def register():
+    def register_unlocked():
         # 如果session中登录状态为false或者没有保存登录状态信息，说明是第一次登录，才能注册
         if "logged_in" not in session or session["logged_in"] == False:
             if request.method == 'POST':
@@ -364,15 +360,15 @@ def create_app():
         else:  # 如果session中登录状态为true，说明是已经登录过了，返回loginHandle函数处理
             # 提示已经注册过了
             flash('您已注册过了！如需重新注册，请先退出！', 'registerError')
-            return loginHandle()
+            return loginHandle_unlocked()
 
     @app.route('/login', methods=['GET', 'POST'])
-    def login():
+    def login_unlocked():
         if "logged_in" not in session or session["logged_in"] == False:
             return render_template('wang/login.html')
         else:
             flash('您已登录！', 'success')
-            return loginHandle()
+            return loginHandle_unlocked()
     #个人信息编辑页面
     @app.route('/edit_profile', methods=['GET', 'POST'])
     def edit_profile():
@@ -403,7 +399,7 @@ def create_app():
         course= Course.query.get(course_id)
         return render_template('wang/attendance.html', course=course, qrcode_url=url_for('static', filename='qrcode_sign_id=abc123.png'))
     @app.route('/loginHandle', methods=['POST'])
-    def loginHandle():
+    def loginHandle_unlocked():
         # 如果session中登录状态为false，说明是第一次登录，从表单中获取学号和密码
         if "logged_in" not in session or session["logged_in"] == False:
             xuehao = request.form.get('xuehao')
@@ -542,11 +538,11 @@ def create_app():
 
     # 处理智能聊天请求
     @app.route('/chat')
-    def chat():
+    def chat_unlocked():
         return render_template('xie/chat.html', conversation=c.conversation_history)
 
     @app.route('/chatHandle', methods=['POST'])
-    def chatHandle():
+    def chatHandle_unlocked():
         response = c.chat()
         return response
 
@@ -557,7 +553,7 @@ def create_app():
 
     @app.route('/student_profile')
     def student_profile():
-        return loginHandle()
+        return loginHandle_unlocked()
 
     # 学生课程详情页面
     @app.route('/course_detail/<int:course_id>', methods=['GET', 'POST'])
@@ -780,7 +776,7 @@ def create_app():
 
     # 匿名论坛
     @app.route('/forum')
-    def forum():
+    def forum_unlocked():
         print(f"用户{session.get('user_name')}正在查看论坛！")
         # 重定向到http://116.205.170.203:81/forum.html
         return redirect("http://116.205.170.203:81/forum.html", code=302)
