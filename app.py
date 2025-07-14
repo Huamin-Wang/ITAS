@@ -100,7 +100,7 @@ def create_app():
                 {'success': True, 'user_id': -1, 'user_name': "未登录过小程序,退出重新登录", 'user_role': "游客",
                  "openid": openid})
 
-    # -----微信小程序登录页面---------
+    # -----微信小程序相关代码---------
     @app.route('/minilogin', methods=['GET', 'POST'])
     def minilogin():
         print("验证小程序登录")
@@ -214,6 +214,78 @@ def create_app():
         session["logged_in"] = True
         return jsonify({'success': True, 'user_id': user.id, 'user_name': user.name, 'user_role': user.role,
                         "user_identifier": user.identifier, "openid": openid, "email": email, "gender": gender})
+        # 微信小程序：获取学生的作业列表
+
+    # 微信小程序获取作业列表
+    @app.route('/getStudentAssignments', methods=['GET', 'POST'])
+    def getStudentAssignments():
+        # 从数据库中查找用户，与用户输入的密码进行比对
+        openid = request.args.get('openid')
+        print(f"getStudentAssignments：openid:{openid}")
+        user = User.query.filter_by(openid=openid).first()
+        if user:
+            print(f"{user.name}在微信小程序获取作业列表中！")
+        print(session)
+        allAssignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
+        if user:
+            # 返回学生的所有作业列表
+            assignmentsJson = []
+            for assignment in allAssignments:
+                # 作业序列化
+                assignmentsJson.append({
+                    'assignment_id': assignment.id,
+                    'course_id': assignment.course_id,
+                    'title': assignment.title,
+                    'description': assignment.description,
+                    'deadline': assignment.due_date,
+                })
+            print("所有作业列表获取成功！")
+            # 返回待完成作业列表
+            assignments_to_doJson = []
+            for assignment in assignments_to_do:
+                # 作业序列化
+                assignments_to_doJson.append({
+                    'assignment_id': assignment.id,
+                    'course_id': assignment.course_id,
+                    'title': assignment.title,
+                    'description': assignment.description,
+                    'deadline': assignment.due_date,
+                })
+            print("待完成作业列表获取成功！")
+            print(f"assignments_to_do:{assignments_to_doJson}")
+            # 返回作业列表
+            return jsonify(
+                {'success': True, 'assignments': assignmentsJson, 'assignments_to_do': assignments_to_doJson})
+
+    # 微信小程序：返回学生的课程列表
+    @app.route('/getStudentCourses', methods=['GET', 'POST'])
+    def getStudentCourses():
+        # 从数据库中查找用户，与用户输入的密码进行比对
+        openid = request.args.get('openid')
+        print(f"openid:{openid}")
+        user = User.query.filter_by(openid=openid).first()
+        if user:
+            print(f"{user.name}在微信小程序获取课程列表中！")
+        print(session)
+        if user:
+            # 返回学生的课程列表
+            course_students = Course_Students.query.filter_by(student_number=user.identifier,
+                                                              ).all()
+            courses = []
+            for course_student in course_students:
+                course = Course.query.get(course_student.course_id)
+                # 课程序列化
+                courses.append({
+                    'course_id': course.id,
+                    'course_name': course.name,
+                    'semester': course.semester,
+                    'description': course.description,
+                    "teacher": course.teacher.name
+                })
+            print("课程列表获取成功！")
+            return jsonify({'success': True, 'courses': courses})
+        print("用户不存在！")
+        return jsonify({'success': False, 'message': '用户不存在！'})
 
     # ！！！ ----------以下为电脑端项目中的路由处理函数----------------
     @app.before_request
@@ -465,76 +537,6 @@ def create_app():
             # 返回首页
         return render_template("index.html")
 
-    # 微信小程序：获取学生的作业列表
-    @app.route('/getStudentAssignments', methods=['GET', 'POST'])
-    def getStudentAssignments():
-        # 从数据库中查找用户，与用户输入的密码进行比对
-        openid = request.args.get('openid')
-        print(f"getStudentAssignments：openid:{openid}")
-        user = User.query.filter_by(openid=openid).first()
-        if user:
-            print(f"{user.name}在微信小程序获取作业列表中！")
-        print(session)
-        allAssignments, assignments_to_do = wang.tools.studentTool.assignments(user.id, db)
-        if user:
-            # 返回学生的所有作业列表
-            assignmentsJson = []
-            for assignment in allAssignments:
-                # 作业序列化
-                assignmentsJson.append({
-                    'assignment_id': assignment.id,
-                    'course_id': assignment.course_id,
-                    'title': assignment.title,
-                    'description': assignment.description,
-                    'deadline': assignment.due_date,
-                })
-            print("所有作业列表获取成功！")
-            # 返回待完成作业列表
-            assignments_to_doJson = []
-            for assignment in assignments_to_do:
-                # 作业序列化
-                assignments_to_doJson.append({
-                    'assignment_id': assignment.id,
-                    'course_id': assignment.course_id,
-                    'title': assignment.title,
-                    'description': assignment.description,
-                    'deadline': assignment.due_date,
-                })
-            print("待完成作业列表获取成功！")
-            print(f"assignments_to_do:{assignments_to_doJson}")
-            # 返回作业列表
-            return jsonify(
-                {'success': True, 'assignments': assignmentsJson, 'assignments_to_do': assignments_to_doJson})
-
-    # 微信小程序：返回学生的课程列表
-    @app.route('/getStudentCourses', methods=['GET', 'POST'])
-    def getStudentCourses():
-        # 从数据库中查找用户，与用户输入的密码进行比对
-        openid = request.args.get('openid')
-        print(f"openid:{openid}")
-        user = User.query.filter_by(openid=openid).first()
-        if user:
-            print(f"{user.name}在微信小程序获取课程列表中！")
-        print(session)
-        if user:
-            # 返回学生的课程列表
-            course_students = Course_Students.query.filter_by(student_number=user.identifier,
-                                                              ).all()
-            courses = []
-            for course_student in course_students:
-                course = Course.query.get(course_student.course_id)
-                # 课程序列化
-                courses.append({
-                    'course_id': course.id,
-                    'course_name': course.name,
-                    'semester': course.semester,
-                    'description': course.description,
-                    "teacher": course.teacher.name
-                })
-            print("课程列表获取成功！")
-            return jsonify({'success': True, 'courses': courses})
-        print("用户不存在！")
-        return jsonify({'success': False, 'message': '用户不存在！'})
 
     # 处理智能聊天请求
     @app.route('/chat')
@@ -644,7 +646,36 @@ def create_app():
             submission.feedback = 评语
             db.session.commit()
         return render_template('wang/submission_detail.html', assignment=assignment, user=user, submission=submission, )
-
+    # 微信小程序：返回学生的作业详情信息
+    @app.route('/getAssignmentById/<int:assignment_id>', methods=['GET', 'POST'])
+    def getAssignmentById(assignment_id):
+        print("小程序：获取单个作业详情！")
+        assignment = Assignment.query.get(assignment_id)
+        openid = request.args.get('openid')
+        print(f"详情中的用户openid:{openid}")
+        # 获取用户数据
+        user = User.query.filter_by(openid=openid).first()
+        print(f"用户{user.name}正在查看作业{assignment.title}的详情！")
+        # 获取作业提交记录
+        submission = Submission.query.filter_by(assignment_id=assignment_id, student_id=user.id).first()
+        # 作业详情序列化
+        assignmentInfo = {
+            'id': assignment.id,
+            'course_id': assignment.course_id,
+            'title': assignment.title,
+            'description': assignment.description,
+            'due_date': assignment.due_date
+        }
+        if submission:
+            # 提交记录序列化
+            submission = {
+                'id': submission.id,
+                'data': submission.data,
+                'grade': submission.grade,
+                'feedback': submission.feedback
+            }
+        print(f"返回作业{assignment.title}的详情！")
+        return jsonify({'success': True, 'assignmentInfo': assignmentInfo,"submission": submission if submission else None})
     # 微信小程序：返回单个课程详情
     @app.route('/getCourseById/<int:course_id>', methods=['GET', 'POST'])
     def getCourseById(course_id):
@@ -1021,12 +1052,6 @@ def create_app():
             flash('作业编辑成功！', 'success')
             print(f"用户{session.get('user_name')}编辑了课程{course.name}的作业！")
             return redirect(url_for('assignments', assignment_id=assignment_id, course_id=course.id))
-
-    # 列出我们还需要实现的的功能
-    @app.route('/fuctions')
-    def fuctions():
-        # 跳转论坛
-        return url_for('forum')
 
     # 超级管理员账户
     @app.route('/admin', methods=['GET', 'POST'])
