@@ -38,7 +38,7 @@ def create_app():
 
     CORS(app, supports_credentials=True)  # 启用CORS支持
     # 配置数据库
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db'  # ！！！配置数据库，提交到git之前改回来test1.db
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test1.db' if environment == 'development' else 'sqlite:///prod.db'  # 根据环境切换数据库
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = 'your_secret_key_here'  # 配置密钥
     UPLOAD_FOLDER = 'xie/uploads'  # 确保路径正确
