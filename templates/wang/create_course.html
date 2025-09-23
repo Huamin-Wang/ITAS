@@ -216,13 +216,15 @@
 
             <!-- 开课学生名单 -->
             <div class="form-group">
-                <label for="student_list">开课学生名单:</label>
+                <label for="student_list">开课学生名单（非考核考勤表）:</label>
                 <div class="file-upload">
                     <input type="file" id="student_list" name="student_list" accept=".csv,.xlsx" required>
                     <span>点击上传</span>
                 </div>
-                <div class="hint">请从教务系统下载学生名单并上传（支持 .csv格式）。</div>
-                <a href="/static/example_student_list.csv" class="example-file">下载示例文件</a>
+               <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                    <div class="hint">请从教务系统下载学生名单并上传，路径：我的课程 &rarr; 课程班信息 &rarr; 学生名单（查看） &rarr; 导出名单（支持 .csv 格式）。</div>
+                    <a href="/static/example_student_list.csv" class="example-file">下载示例文件</a>
+                </div>
             </div>
 
             <!-- 课程介绍 -->
