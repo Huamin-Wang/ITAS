@@ -1,0 +1,154 @@
+<template>
+    <div class="container">
+        <div class="card">
+            <h2>登录</h2>
+            <form>
+                <div class="form-group">
+                    <label for="xuehao">学号</label>
+                    <input type="text" id="xuehao" name="xuehao" placeholder="请输入学号/教工号" required v-model="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" name="password" placeholder="请输入密码" required v-model="password">
+                </div>
+                <button type="button" class="btn-primary" @click="login()">登录</button>
+            </form>
+            <div class="text-center mt-3">
+                <a href="/register">没有账号？注册</a>
+            </div>
+            <div class="text-center mt-3">
+                <a href="/" class="btn-primary">返回首页</a>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+import {login} from '../http/api.js'
+export default {
+    data() {
+        return {
+            username:"",
+            password:""
+        }
+    },
+    methods: {
+        login(){
+            const data = {
+                username : this.username,
+                password : this.password
+            }
+            login(data).then((res) =>{
+                const token = res.data.access_token;
+                sessionStorage.setItem('token', token);
+            })
+        }
+    },
+}
+</script>
+<style scoped>
+/* 全局样式 */
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        /* 容器样式 */
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* 标题样式 */
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        /* 表单组样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-group input:focus {
+            border-color: #6a11cb;
+            box-shadow: 0 0 8px rgba(106, 17, 203, 0.3);
+            outline: none;
+        }
+
+        /* 按钮样式 */
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #2575fc, #6a11cb);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* 注册链接样式 */
+        .text-center {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .text-center a {
+            color: #2acb11;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .text-center a:hover {
+            color: #54fc25;
+            text-decoration: underline;
+        }
+</style>
