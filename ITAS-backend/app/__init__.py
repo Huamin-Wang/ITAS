@@ -2,7 +2,7 @@ from flask import Flask,request,jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS  # 导入CORS
 from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt
-from app.interceptors.jwtInterceptor import AuthInterceptor
+from .interceptors.jwtInterceptor import AuthInterceptor
 db = SQLAlchemy()
 
 # 在 __init__.py 中修改 CORS 配置
@@ -10,7 +10,7 @@ def create_app(config_name='default'):
     app = Flask(__name__)
 
     # 配置
-    from app.config import config
+    from .config import config
     app.config.from_object(config[config_name])
     # 初始化JWT扩展
     jwt = JWTManager(app)
