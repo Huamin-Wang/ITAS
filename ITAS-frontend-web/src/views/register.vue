@@ -1,5 +1,6 @@
 <template>
-   <div class="register-form">
+   <div class="register-page">
+    <div class="register-form">
     <h2>用户注册</h2>
 
             <div class="flash-messages">
@@ -12,12 +13,12 @@
     <form>
         <div class="form-group">
             <label for="identifier">学号/教工号</label>
-            <input type="text" id="identifier" name="identifier" required v-model="username">
+            <input type="text" id="identifier" name="identifier" required v-model="identifier">
         </div>
 
         <div class="form-group">
             <label for="role">身份</label>
-            <select id="role" name="role" required v-model="category">
+            <select id="role" name="role" required v-model="role">
                 <option value="student">学生</option>
                 <option value="teacher">教师</option>
             </select>
@@ -25,11 +26,11 @@
 
         <div class="form-group">
             <label for="name">姓名</label>
-            <input type="text" id="name" name="name">
+            <input type="text" id="name" name="name" v-model="name">
         </div>
        <div class="form-group">
            <label for="gender">性别</label>
-           <select id="gender" name="gender">
+           <select id="gender" name="gender" v-model="gender">
                <option value="男">男</option>
                <option value="女">女</option>
            </select>
@@ -37,7 +38,7 @@
 
         <div class="form-group">
             <label for="email">邮箱</label>
-            <input type="text" id="email" name="email">
+            <input type="text" id="email" name="email" v-model="email">
         </div>
 
         <div class="form-group">
@@ -47,7 +48,7 @@
 
         <div class="form-group">
             <label for="confirm_password">确认密码</label>
-            <input type="password" id="confirm_password" name="confirm_password" required>
+            <input type="password" id="confirm_password" name="confirm_password" required v-model="confirm_password">
         </div>
 
         <button type="button" @click="register()">注册</button>
@@ -56,42 +57,63 @@
         <a href="/" class="btn-primary">返回首页</a>
     </div>
 </div>
+   </div>
 </template>
 <script>
 import {register} from '../http/api.js'
 export default {
     data() {
         return {
-            username:"",
-            category:"学生",
-            password:""
+            identifier: "",
+            role: "student",
+            name: "",
+            gender: "男",
+            email: "",
+            password: "",
+            confirm_password: ""
         }
     },
+
     methods: {
         register(){
+            // 构建与后端一致的请求体
             const data = {
-                username : this.username,
-                account_category : this.category,
-                password : this.password
+                identifier: this.identifier,
+                role: this.role,
+                name: this.name,
+                gender: this.gender,
+                email: this.email,
+                password: this.password,
+                confirm_password: this.confirm_password
             }
             register(data).then((res) =>{
-                console.log(res);
+                if (res) {
+                    if (res.access_token) {
+                        sessionStorage.setItem('token', res.access_token)
+                    }
+                    if (res.name) {
+                        sessionStorage.setItem('user_name', res.name)
+                    }
+                }
+                console.log('注册成功，返回：', res);
+            }).catch(err => {
+                console.error(err)
             })
         }
     },
 }
 </script>
-<style scoped>
-body {
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
 
+<style scoped>
+.register-page {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
         .register-form {
             background-color: white;
             padding: 20px;

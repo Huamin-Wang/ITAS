@@ -1,5 +1,4 @@
 # 导入所有模型，方便在其他地方导入
-from .Account import Account
 from .Result import Result
 from .attendance import Attendance
 from .report import Report

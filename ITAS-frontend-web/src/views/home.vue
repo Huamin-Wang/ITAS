@@ -1,5 +1,6 @@
 <template>
   <div class="home-page">
+    <div class="home-page">
     <header>
       <h1>基于大模型的智能教学辅助系统</h1>
       <p>提升课堂教学效率，增强学生学习体验</p>
@@ -59,6 +60,7 @@
       </p>
     </footer>
   </div>
+  </div>
 </template>
 
 <script>
@@ -104,9 +106,11 @@ export default {
     };
   },
   mounted() {
-    // 组件挂载时检查用户登录状态
-    this.checkLoginStatus();
-  },
+        document.body.classList.add('home-page');
+    },
+    beforeUnmount() {
+        document.body.classList.remove('home-page');
+    },
   methods: {
     async checkLoginStatus() {
       // 这里应该调用API检查用户登录状态
@@ -142,7 +146,7 @@ export default {
 </script>
 
 <style scoped>
-body {
+.home-page {
   font-family: "Microsoft YaHei", sans-serif;
   background-color: #f0f2f5;
   margin: 0;
@@ -151,11 +155,6 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-}
-.home-page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
 header {

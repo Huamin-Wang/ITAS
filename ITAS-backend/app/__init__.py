@@ -3,7 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS  # 导入CORS
 from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt
 from .interceptors.jwtInterceptor import AuthInterceptor
-db = SQLAlchemy()
+# 给 db 添加类型注解，方便静态分析器（如 Pylance）识别 db.Column 等属性
+db: SQLAlchemy = SQLAlchemy()
 
 # 在 __init__.py 中修改 CORS 配置
 def create_app(config_name='default'):
@@ -12,6 +13,16 @@ def create_app(config_name='default'):
     # 配置
     from .config import config
     app.config.from_object(config[config_name])
+    # 确保 instance 目录存在，避免 sqlite 无法打开文件
+    try:
+        import os
+        instance_dir = app.config.get('SQLALCHEMY_DATABASE_URI')
+        # 如果使用相对 sqlite 路径，Flask 的 instance_path 可用于存放数据库文件
+        # 但我们先确保 app.instance_path 存在
+        os.makedirs(app.instance_path, exist_ok=True)
+    except Exception:
+        # 忽略创建 instance 目录时的异常，但保留运行时日志
+        pass
     # 初始化JWT扩展
     jwt = JWTManager(app)
     # 配置令牌吊销检查
@@ -68,8 +79,7 @@ def create_app(config_name='default'):
         return None
     # 注册蓝图
     from app.controllers.studentController import bp as students_bp
-    from app.controllers.accountController import bp as account_bp
-    app.register_blueprint(account_bp)
+    from app.controllers.userController import bp as user_bp
     app.register_blueprint(students_bp)
-
+    app.register_blueprint(user_bp)
     return app

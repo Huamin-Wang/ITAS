@@ -25,17 +25,25 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
     response => {
-
-        if (response.status === 200) {
-            return Promise.resolve(response.data);
-        } else {
-            return Promise.reject(response);
-        }
+        return response.data
     },
     error => {
-        console.log('Response Error:', error);
-        return Promise.reject(error);
+        if (error.response) {
+            return Promise.resolve(error.response.data)
+        } else if (error.request) {
+            return Promise.resolve({
+                success: false,
+                message: '网络错误，请检查网络连接',
+                code: 0
+            })
+        } else {
+            return Promise.resolve({
+                success: false,
+                message: '请求配置错误',
+                code: 0
+            })
+        }
     }
-);
+)
 
 export default service
