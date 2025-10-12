@@ -23,7 +23,6 @@ class UserService:
     def login(data: Dict[str, Any]) -> Result:
         """用户登录方法"""
         try:
-            print(f"登录数据: {data}")
             identifier = data.get('identifier') or data.get('xuehao')
             password = data.get('password')
             
