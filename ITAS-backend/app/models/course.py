@@ -1,6 +1,5 @@
 from app import db
 
-
 class Course(db.Model):
     __tablename__ = 'course'
 
@@ -19,3 +18,14 @@ class Course(db.Model):
 
     def __repr__(self):
         return f'<Course {self.id} - {self.name}>'
+    
+    def to_dict(self):
+        """将课程对象转换为字典"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'teacher_id': self.teacher_id,
+            'semester': self.semester,
+            'description': self.description,
+            'code': self.code
+        }

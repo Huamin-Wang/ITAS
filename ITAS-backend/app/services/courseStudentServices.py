@@ -10,19 +10,24 @@ from typing import Any
 
 class CourseStudentService:
     #教师获取对应课程
+#教师获取对应课程
     @staticmethod
     def get_all_course_by_teacher_id(teacher_id: int) -> Result:
-        
-        course = Course.query.get(teacher_id)
-        if not course:
+        # 使用 filter_by 按教师ID查询所有课程
+        courses = Course.query.filter_by(teacher_id=teacher_id).all()
+    
+        if not courses:
             return Result.not_found('暂无课程')
-        return Result.success(data=course.to_dict())
+    
+        # 将所有课程转换为字典列表
+        courses_data = [course.to_dict() for course in courses]
+        return Result.success(data=courses_data)
     
     #创建课程
     @staticmethod
     def create_course(data: dict[str, Any], student_file) -> Result:
         try:
-            required_fields = ['course_name', 'semester', 'course_code','user_id']
+            required_fields = ['course_name', 'semester', 'course_code','teacher_id']
             for field in required_fields:
              if not data.get(field):
                 return Result.bad_request(f'缺少必填字段: {field}')
@@ -31,7 +36,7 @@ class CourseStudentService:
             semester = data.get('semester')
             course_description = data.get('course_description')
             code = data.get('course_code')
-            teacher_id = data.get('user_id')
+            teacher_id = data.get('teacher_id')
             course = Course(name=course_name, semester=semester, description=course_description, code=code,
                         teacher_id=teacher_id)
             db.session.add(course)
@@ -108,30 +113,47 @@ class CourseStudentService:
     def course_students(course_id):
         try:
             course = Course.query.get(course_id)
+            if not course:
+                return Result.not_found('课程不存在')
+                
             course_students = course.course_students
-            # 更新本门课学生的注册状态
+            
+            # 批量获取所有学生的注册状态
+            student_numbers = [cs.student_number for cs in course_students if cs.student_number]
+            existing_users = User.query.filter(User.identifier.in_(student_numbers)).all()
+            existing_user_identifiers = {user.identifier for user in existing_users}
+            
+            # 批量更新状态
             for course_student in course_students:
-                student = User.query.filter_by(identifier=course_student.student_number).first()
-                if student:
+                if course_student.student_number in existing_user_identifiers:
                     course_student.course_status = 'enrolled'
-                    db.session.commit()
                 else:
                     course_student.course_status = 'not_enrolled'
-                    db.session.commit()
-            # 选课的学生名单
-            enrolled_students = [student for student in course.course_students if student.course_status == 'enrolled']
-            enrolled_students_count = len(
-                [student for student in course.course_students if student.course_status == 'enrolled'])
-            # 未选课的学生名单
-            not_enrolled_students = [student for student in course.course_students if
-                                     student.course_status == 'not_enrolled']
+            
+            # 一次性提交
+            db.session.commit()
+            
+            # 使用模型的 to_dict 方法序列化数据
+            enrolled_students = [
+                student.to_dict()
+                for student in course_students if student.course_status == 'enrolled'
+            ]
+            
+            not_enrolled_students = [
+                student.to_dict()
+                for student in course_students if student.course_status == 'not_enrolled'
+            ]
+            
             data = {
-            'enrolled_students': enrolled_students,
-            'not_enrolled_students': not_enrolled_students,
-            'enrolled_students_count': enrolled_students_count,
-            }   
+                'enrolled_students': enrolled_students,
+                'not_enrolled_students': not_enrolled_students,
+                'enrolled_students_count': len(enrolled_students),
+            }
+            
             return Result.success(data=data)
+            
         except Exception as e:
+            db.session.rollback()
             return Result.internal_error(f'获取学生失败: {str(e)}')
 
     #更新课程 
@@ -232,7 +254,7 @@ class CourseStudentService:
             course = Course.query.get(course_id)
             course_students = course.course_students
             data = {
-                'course_students': course_students,
+            'course_students': [student.to_dict() for student in course_students],
             }
             return Result.success(data=data)
         except Exception as e:

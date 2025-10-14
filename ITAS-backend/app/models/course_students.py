@@ -21,6 +21,27 @@ class Course_Students(db.Model):
     # 平时表现分数
     score = db.Column(db.Float, nullable=True, server_default='0')  # 假设分数为浮点数类型
     # 总分数
-    finally_score = db.Column(db.Float, nullable=True, server_default='0')  # 假设分数为浮点数类型
+    # finally_score = db.Column(db.Float, nullable=True, server_default='0')  # 假设分数为浮点数类型
     # Relationship
     course = db.relationship('Course', back_populates='course_students')
+    def to_dict(self):
+        """将课程学生对象转换为字典"""
+        return {
+            'id': self.id,
+            'course_id': self.course_id,
+            'student_number': self.student_number,
+            'student_name': self.student_name,
+            'student_pinyin_name': self.student_pinyin_name,
+            'student_grade': self.student_grade,
+            'student_major': self.student_major,
+            'student_direction': self.student_direction,
+            'student_class': self.student_class,
+            'student_status': self.student_status,
+            'student_course_method': self.student_course_method,
+            'course_status': self.course_status,
+            'score': self.score,
+            # 'finally_score': self.finally_score
+        }
+
+    def __repr__(self):
+        return f'<Course_Students {self.id} - {self.student_name}>'

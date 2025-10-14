@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Home from '../views/home.vue'
 import Login from '../views/login.vue'
 import Register from '../views/register.vue'
+import TeacherProfile from '../views/teacher_profile.vue'
 const routes = [
   {
     path: '/',
@@ -20,6 +21,14 @@ const routes = [
     path: '/register',
     name: 'Register',
     component:Register,
+  },
+  {
+    path: '/teacher_profile',
+    name: 'TeacherProfile',
+    component:TeacherProfile,
+    meta:{
+      title: '教师中心 - 基于大模型的智能教学辅助系统'
+    }
   }
 ];
 const router = createRouter({

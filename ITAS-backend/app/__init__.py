@@ -32,12 +32,13 @@ def create_app(config_name='default'):
 
     # 更全面的 CORS 配置
     CORS(app, 
-         origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+         origins="*",
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
          allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"],
          expose_headers=["Content-Range", "X-Content-Range"],
-         supports_credentials=True,
+         supports_credentials=False, #调试阶段关闭，允许全部跨域请求
          max_age=3600)
+    
     # 全局请求拦截器
     @app.before_request
     def global_auth_interceptor():
@@ -46,7 +47,8 @@ def create_app(config_name='default'):
             '/login',      # 登录
             '/register',   # 注册
             '/',                       # 根路径
-            '/favicon.ico'            # 网站图标
+            '/favicon.ico',            # 网站图标
+            '/ranking'
         ]
         
         # 检查当前请求路径是否在白名单中
@@ -80,6 +82,8 @@ def create_app(config_name='default'):
     # 注册蓝图
     from app.controllers.studentController import bp as students_bp
     from app.controllers.userController import bp as user_bp
+    from app.controllers.courseStudentController import bp as course_student_bp
     app.register_blueprint(students_bp)
     app.register_blueprint(user_bp)
+    app.register_blueprint(course_student_bp)
     return app

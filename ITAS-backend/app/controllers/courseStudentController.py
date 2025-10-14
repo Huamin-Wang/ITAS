@@ -4,7 +4,7 @@ from app.services.courseStudentServices import CourseStudentService
 bp = Blueprint('course_student', __name__)
 
 #教师获取对应课程
-@bp.route('/get_all_course_by_teacher_id', methods=['GET'])
+@bp.route('/teacher_course', methods=['GET'])
 def get_all_course_by_teacher_id():
     try:
         teacher_id = request.args.get('teacher_id', type=int)
@@ -25,7 +25,7 @@ def create_course():
         data = request.form.to_dict()
         student_file = request.files.get('student_file')
 
-        if not all(key in data for key in ['course_name', 'semester', 'course_code', 'user_id']):
+        if not all(key in data for key in ['course_name', 'semester', 'course_code', 'teacher_id']):
             return Result.bad_request("缺少必要的字段").to_json(), 400
 
         result = CourseStudentService.create_course(data, student_file)
@@ -83,12 +83,12 @@ def get_random_select_list():
         return Result.internal_error(f'获取随机选择学生时发生错误: {str(e)}').to_json(), 500
     
 #学生加分
-@bp.route('/add_bonus', methods=['POST'])
+@bp.route('/add_score', methods=['POST'])
 def add_score():
     try:
         data = request.get_json()
         course_id = data.get('course_id')
-        list = data.get('list').to_dict()
+        list = data.get('list')
         if course_id is None or list is None:
             return Result.bad_request("缺少必要的字段").to_json(), 400
         result = CourseStudentService.add_score(list, course_id)
