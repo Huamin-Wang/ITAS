@@ -48,7 +48,7 @@ def create_app(config_name='default'):
             '/register',   # 注册
             '/',                       # 根路径
             '/favicon.ico',            # 网站图标
-            '/ranking'
+            '/update_assignment',
         ]
         
         # 检查当前请求路径是否在白名单中

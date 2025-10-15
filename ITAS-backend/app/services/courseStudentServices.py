@@ -3,6 +3,7 @@ from app.models.course_students import Course_Students
 from app.models.course import Course
 from app.models.user import User
 from app.models.Result import Result
+from app.models.assignment import Assignment
 import chardet
 import io
 import csv
@@ -334,3 +335,88 @@ class CourseStudentService:
                 except Exception:
                     pass
                 return Result.internal_error(f'获取排名失败: {str(e)}')
+
+    #查询作业
+    def get_assignments(course_id: int) -> Result:
+        try:
+            assignments = Assignment.query.filter_by(course_id=course_id).all()
+            if not assignments:
+                return Result.not_found('暂无作业')
+            assignments_data = [assignment.to_dict() for assignment in assignments]
+            return Result.success(data=assignments_data)
+        except Exception as e:
+            return Result.internal_error(f'获取作业失败: {str(e)}')
+
+    #创建作业
+    @staticmethod
+    def assignments(data: dict[str, Any]) -> Result:
+        try:
+            # 检查课程是否存在
+            course_id = data.get('course_id')
+            course = Course.query.get(course_id)
+            if not course:
+                return Result.internal_error(f'课程 {course_id} 未找到')
+
+            # 获取表单数据
+            assignment_name = data.get('title')
+            assignment_description = data.get('description')
+            assignment_deadline_str = data.get('due_date')
+            teacher_id = data.get('teacher_id')
+
+            # 验证必填字段
+            if not all([assignment_name, assignment_deadline_str]):
+                return Result.internal_error(f'作业名称和截止日期是必填的')
+
+            # 转换日期格式
+            from datetime import datetime
+            try:
+                assignment_deadline = datetime.strptime(assignment_deadline_str, '%Y-%m-%d').date()
+            except ValueError:
+                return Result.internal_error(f'截止日期格式错误，应为 YYYY-MM-DD')
+
+            # 创建作业
+            assignment = Assignment(
+                teacher_id=teacher_id, 
+                course_id=course_id,
+                title=assignment_name,
+                description=assignment_description, 
+                due_date=assignment_deadline
+            )
+
+            db.session.add(assignment)
+            db.session.commit()
+
+
+            # 返回成功响应
+            return Result.success(data=assignment.to_dict())
+
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'创建作业失败: {str(e)}')
+        
+    #编辑作业
+    @staticmethod
+    def update_assignment(data: dict[str, Any]) -> Result:
+        try:
+            assignment_id = data.get('id')
+            assignment = Assignment.query.get(assignment_id)
+            if not assignment:
+                return Result.not_found(f'作业 {assignment_id} 未找到')
+
+            # 更新作业信息
+            assignment.title = data.get('title', assignment.title)
+            assignment.description = data.get('description', assignment.description)
+            due_date_str = data.get('due_date')
+            if due_date_str:
+                from datetime import datetime
+                try:
+                    assignment.due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    return Result.internal_error(f'截止日期格式错误，应为 YYYY-MM-DD')
+
+            db.session.commit()
+            return Result.success(data=assignment.to_dict())
+
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'更新作业失败: {str(e)}')

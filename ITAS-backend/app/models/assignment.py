@@ -9,3 +9,12 @@ class Assignment(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
     # Relationship
     submissions = db.relationship('Submission', backref='assignment', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'teacher_id': self.teacher_id,
+            'title': self.title,
+            'description': self.description,
+            'due_date': self.due_date.isoformat() if self.due_date else None
+        }

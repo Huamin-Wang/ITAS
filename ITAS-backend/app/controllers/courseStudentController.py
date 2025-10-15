@@ -113,4 +113,45 @@ def ranking():
         print(f"获取课程学生排名错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'获取课程学生排名时发生错误: {str(e)}').to_json(), 500
 
+#获取作业列表
+@bp.route('/get_assignments', methods=['GET'])
+def get_assignments():
+    try:
+        course_id = request.args.get('course_id', type=int)
+        if course_id is None:
+            return Result.bad_request("课程ID是必需的").to_json(), 400
+
+        result = CourseStudentService.get_assignments(course_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取作业列表错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取作业列表时发生错误: {str(e)}').to_json(), 500
+
 # 发布作业
+@bp.route('/assignments', methods=['POST'])
+def assignments():
+    try:
+        data = request.get_json()
+        if not all(key in data for key in ['course_id', 'title', 'description', 'due_date']):
+            return Result.bad_request("缺少必要的字段").to_json(), 400
+        result = CourseStudentService.assignments(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"发布作业错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'发布作业时发生错误: {str(e)}').to_json(), 500
+    
+#编辑作业
+@bp.route('/update_assignment', methods=['POST'])
+def update_assignment():
+    try:
+        data = request.get_json()
+        if not all(key in data for key in ['id', 'title', 'description', 'due_date']):
+            return Result.bad_request("缺少必要的字段").to_json(), 400
+        result = CourseStudentService.update_assignment(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"编辑作业错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'编辑作业时发生错误: {str(e)}').to_json(), 500
