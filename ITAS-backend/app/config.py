@@ -9,6 +9,7 @@ current_file_path = os.path.abspath(__file__)
 app_dir = os.path.dirname(current_file_path)
 # 获取项目根目录的绝对路径（app文件夹的父目录）
 base_dir = os.path.dirname(app_dir)
+
 class Config:
     """基础配置"""
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-here'
@@ -27,6 +28,14 @@ class Config:
     # -----微信小程序的appid和secret---------
     APP_ID = 'wx3dd32842e9e24690'
     APP_SECRET = '09732f45784f51d2b9e5bad0902ec17a'
+    
+    # -----讯飞星火配置---------
+    SPARK_APP_ID = '39554b86'
+    SPARK_API_SECRET = 'NzIwZGRkZGIxN2Y3ZDU3MzgwZjY3ZGM5'
+    SPARK_API_KEY = 'ce8eb8ca38ffa7a3fde99f78d57980c4'
+    SPARK_DOMAIN = '4.0Ultra'
+    SPARK_URL = 'wss://spark-api.xf-yun.com/v4.0/chat'
+
 class DevelopmentConfig(Config):
     """开发环境配置"""
     DEBUG = True

@@ -1,3 +1,4 @@
 from .userServices import UserService
-
-__all__ = ['UserService']
+from .courseStudentServices import CourseStudentService
+from .sparkClientServices import SparkClient, WsParam
+__all__ = ['UserService', 'CourseStudentService', 'SparkClient', 'WsParam']

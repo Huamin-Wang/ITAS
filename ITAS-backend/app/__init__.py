@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS  # 导入CORS
 from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt
 from .interceptors.jwtInterceptor import AuthInterceptor
+
 # 给 db 添加类型注解，方便静态分析器（如 Pylance）识别 db.Column 等属性
 db: SQLAlchemy = SQLAlchemy()
 
@@ -39,6 +40,25 @@ def create_app(config_name='default'):
          supports_credentials=False, #调试阶段关闭，允许全部跨域请求
          max_age=3600)
     
+    # 初始化聊天服务
+    from .services.sparkClientServices import SparkClient
+    from .services.chatServices import ChatService
+    
+    # 创建 SparkClient 实例
+    spark_client = SparkClient(
+        app_id=app.config['SPARK_APP_ID'],
+        api_key=app.config['SPARK_API_KEY'],
+        api_secret=app.config['SPARK_API_SECRET'],
+        spark_url=app.config['SPARK_URL'],
+        domain=app.config['SPARK_DOMAIN']
+    )
+    
+    # 创建 ChatService 实例
+    chat_service = ChatService(spark_client)
+    
+    # 将聊天服务存储在 app 上下文中
+    app.chat_service = chat_service
+    
     # 全局请求拦截器
     @app.before_request
     def global_auth_interceptor():
@@ -46,9 +66,15 @@ def create_app(config_name='default'):
         excluded_paths = [
             '/login',      # 登录
             '/register',   # 注册
+            '/logout',      # 登出
             '/',                       # 根路径
             '/favicon.ico',            # 网站图标
             '/update_assignment',
+            # 聊天相关路由 - 添加到白名单
+            '/chat_handle',
+            '/chat/stats',
+            '/chat/history',
+            '/chat/history/clear',
         ]
         
         # 检查当前请求路径是否在白名单中
@@ -79,11 +105,15 @@ def create_app(config_name='default'):
         
         # Token验证通过，继续处理请求
         return None
+    
     # 注册蓝图
-    from app.controllers.studentController import bp as students_bp
     from app.controllers.userController import bp as user_bp
     from app.controllers.courseStudentController import bp as course_student_bp
-    app.register_blueprint(students_bp)
+    # 注册聊天控制器蓝图
+    from app.controllers.chatController import bp as chat_bp
+    
     app.register_blueprint(user_bp)
     app.register_blueprint(course_student_bp)
+    app.register_blueprint(chat_bp)
+    
     return app
