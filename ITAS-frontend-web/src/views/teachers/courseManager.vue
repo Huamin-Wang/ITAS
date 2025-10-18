@@ -1,0 +1,384 @@
+<template>
+    <div class="courseManager-page">
+        <header>
+            
+            <div class="alert alert-{{ category }}">
+
+            </div>
+           
+            <a href="/teacher_profile" class="back-to-home">返回课程列表</a>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 10px;">
+                <h1 style="margin: 0;">
+                    <span style="color: white;"></span>
+                </h1>
+                <a href='/update_course/{{ course.id }}'
+                    style="background: var(--primary-color); color: var(--white); padding: 8px 18px; border-radius: 5px; text-decoration: none; font-size: 1em; margin-left: 10px; transition: background 0.3s;">更新课程信息</a>
+            </div>
+            <p>课程代码：</p>
+            <p>课程简介：暂无课程简介</p>
+
+            <div class="course-stats">
+                <a href="/course_students/{{ course.id }}" class="stat-item"
+                    style="display: block; text-decoration: none; color: inherit;">
+                    应修学生：<strong style="text-decoration: underline;"></strong> 人
+                </a>
+                <a href="/course_students/{{ course.id }}" class="stat-item"
+                    style="display: block; text-decoration: none; color: inherit;">
+                    已加入学生：<strong style="text-decoration: underline;"></strong> 人
+                </a>
+            </div>
+
+            <div class="login-status">
+                <span style="color: #2acb11;font-size: 30px">欢迎老师！</span>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="welcome-section">
+                <h2>课程管理中心</h2>
+                <button onclick="location.href='/course/attendance/{{ course.id }}'"
+                    class="attendance-btn">考勤管理</button>
+                <p>使用下方功能管理您的课程教学活动</p>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>随机选择</h3>
+                    <p>随机选中一个学生回答问题，增强课堂互动性</p>
+                    <button onclick="location.href='/course/random_select/{{ course.id }}'">进入随机选管理</button>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>课堂抢答</h3>
+                    <p>发布课堂抢答活动，激发学生学习积极性</p>
+                    <button disabled style="cursor: not-allowed; opacity: 0.6;">功能开发中</button>
+                    <!--                                    <button onclick="location.href='/course/quiz/{{ course.id }}'">进入抢答管理</button>-->
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>作业管理</h3>
+                    <p>发布、批改和管理课程作业</p>
+                    <button onclick="location.href='/course/assignments/{{ course.id }}'">进入作业管理</button>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>成绩管理</h3>
+                    <p>录入和查看学生平时成绩</p>
+                    <button onclick="location.href='/course/add_score/{{course.id}}'">进入成绩管理</button>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>学生管理</h3>
+                    <p>查看和管理课程学生名单</p>
+                    <button onclick="location.href='/course_students/{{ course.id }}'">进入学生管理</button>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>教学资源</h3>
+                    <p>上传和管理课程学习资源</p>
+                    <button disabled style="cursor: not-allowed; opacity: 0.6;">功能开发中</button>
+                    <!--                                    <button onclick="location.href='/upload/{{course.id}}'">进入资源管理</button>-->
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>学习状况分析</h3>
+                    <p>智能分析学生薄弱知识点，优化教学重点</p>
+                    <button disabled style="cursor: not-allowed; opacity: 0.6;">功能开发中</button>
+                    <!--                                    <button onclick="location.href='/course/course_analysis/{{course.id}}'">进入分析</button>-->
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="/chat"
+                    style="display: inline-block; background: var(--primary-color); color: var(--white); padding: 14px 32px; border-radius: 6px; font-size: 1.15em; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: background 0.3s;">
+                    跳转到AI问答
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
+        </footer>
+    </div>
+</template>
+
+<script>
+export default {
+    name: '',
+    data() {
+        return {
+
+        }
+    },
+    methods: {
+
+    },
+    mounted() {
+
+    }
+}
+</script>
+
+<style scoped>
+:root {
+    --primary-color: #1890ff;
+    --primary-dark: #096dd9;
+    --secondary-color: #52c41a;
+    --text-color: #333;
+    --text-light: #666;
+    --background-light: #f0f2f5;
+    --white: #fff;
+    --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.2);
+    --border-radius: 8px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.courseManager-page {
+    font-family: 'Microsoft YaHei', sans-serif;
+    background-color: var(--background-light);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--white);
+    text-align: center;
+    padding: 30px 20px;
+    box-shadow: var(--shadow);
+    position: relative;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+header p {
+    margin: 8px 0;
+    font-size: 1.1em;
+    opacity: 0.9;
+}
+
+.back-to-home {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    color: var(--white);
+    text-decoration: none;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.back-to-home:before {
+    content: "←";
+    margin-right: 5px;
+}
+
+.back-to-home:hover {
+    transform: translateX(-5px);
+}
+
+.login-status {
+    margin-top: 15px;
+}
+
+.container {
+    flex: 1;
+    width: 90%;
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 30px;
+    background: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+}
+
+.welcome-section {
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.welcome-section h2 {
+    color: var(--primary-color);
+    font-size: 2em;
+    margin-bottom: 20px;
+    position: relative;
+    display: inline-block;
+}
+
+.welcome-section h2:after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background-color: var(--primary-color);
+}
+
+.welcome-section p {
+    color: var(--text-light);
+    font-size: 1.1em;
+    margin: 15px 0;
+}
+
+.attendance-btn {
+    margin: 20px 0;
+    padding: 12px 24px;
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.attendance-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.dashboard-card {
+    background: var(--white);
+    padding: 25px;
+    border-radius: var(--border-radius);
+    border: 1px solid #e8e8e8;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 200px;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+
+.dashboard-card h3 {
+    color: var(--primary-color);
+    font-size: 1.4em;
+    margin-bottom: 15px;
+}
+
+.dashboard-card p {
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.dashboard-card button {
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    width: 100%;
+    margin-top: auto;
+}
+
+.dashboard-card button:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+    background-color: #001529;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 30px;
+}
+
+.course-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 15px 0;
+}
+
+.stat-item {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+}
+
+.stat-item a {
+    color: var(--white);
+    text-decoration: none;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-success {
+    color: #3c763d;
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+}
+
+.alert-registerError {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.8em;
+    }
+
+    .container {
+        width: 95%;
+        margin: 15px auto;
+        padding: 20px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .course-stats {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+}
+</style>
