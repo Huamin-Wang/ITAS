@@ -1,11 +1,13 @@
 from typing import Dict, Any
+from flask import jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db
 from app.models.user import User
 from app.models.Result import Result
 from app.utils.jwt import JWTUtils
-
+from app.interceptors.jwtInterceptor import AuthInterceptor
+from flask_jwt_extended import decode_token
 
 class UserService:
 
@@ -144,3 +146,23 @@ class UserService:
             except Exception:
                 pass
             return Result.internal_error(f'注册时发生错误: {str(e)}')
+    @staticmethod
+    def logout():
+        """用户登出方法"""
+        try:
+            # 获取当前请求的令牌
+            token = AuthInterceptor.get_token_from_header()
+            if not token:
+                return jsonify({'error': '未找到令牌'}), 400
+            
+            # 解码令牌获取jti
+            decoded_token = decode_token(token)
+            jti = decoded_token['jti']
+            
+            # 将令牌加入黑名单
+            AuthInterceptor.revoke_token(jti)
+            
+            return jsonify({'message': '登出成功'}), 200
+            
+        except Exception as e:
+            return jsonify({'error': '登出失败', 'details': str(e)}), 500

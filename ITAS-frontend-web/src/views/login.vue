@@ -83,7 +83,7 @@ export default {
 
           sessionStorage.setItem("token", token);
           sessionStorage.setItem("userInfo", JSON.stringify(userInfo));
-
+          this.$message.success("登陆成功")
           // 跳转到首页或其他页面
           if (userInfo.role == "teacher") {
             setTimeout(() => {

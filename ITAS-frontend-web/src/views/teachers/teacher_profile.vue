@@ -1,5 +1,5 @@
 <template>
-    <div class="teacher-profile">
+<div class="teacher-profile">
         
 <header>
         <div class="alert alert-{{ category }}">            
@@ -7,14 +7,14 @@
     <h1>基于大模型的智能教学辅助系统</h1>
     <p>教师中心 - 提升教学效率，优化教学管理</p>
     <div class="login-status">
-        <span>欢迎, <a href="/edit_profile"></a>老师!</span>
-        <span><a href="/logout" onclick="return confirm('确定要退出吗？')">退出</a></span>
+        <span class="edit_profile" @click="edit_profile">欢迎,{{ userInfo.name }}老师!</span>
+        <span class="logout" @click="logout()">退出</span>
     </div>
 </header>
 
 <div class="container">
     <div class="welcome-section">
-         <h2>欢迎, <a href="/edit_profile" style="color: #1890ff; text-decoration: underline;"></a>老师!</h2>
+         <h2>欢迎, <a href="/edit_profile" style="color: #1890ff; text-decoration: underline;">{{ userInfo.name }}</a>老师!</h2>
         <p>以下是您教授的课程列表，点击课程进入管理页面。</p>
     </div>
 
@@ -24,19 +24,19 @@
 
     
 
-        <div class="semester-section">
-            <h2 class="semester-heading"></h2>
-            <div class="course-grid">
+        <div class="semester-section" v-for=" semesterCourses in this.couresList">
+            <h4 class="semester-heading"><b>{{ semesterCourses.semester }}</b></h4>
+            <div class="course-grid" v-for=" course in semesterCourses.courses">
                
                 <div class="course-card">
                     <div class="course-header">
-                        <h3></h3>
-                        <span class="course-code"></span>
+                        <h3>{{ course.name }}</h3>
+                        <span class="course-code">{{ course.code }}</span>
                     </div>
                     <div class="course-info">
-                        <p>学生人数</p>
+                        <p>学生人数：{{ course.student_count }}</p>
                     </div>
-                    <button onclick="location.href='/course_manage/{{ course.id }}'">进入课程管理</button>
+                    <button>进入课程管理</button>
                 </div>
                 
             </div>
@@ -49,8 +49,63 @@
     </div>
 </template>
 <script>
+import { teacher_course,logout } from '@/http/api.js';
 export default {
-    
+    data() {
+        return {
+            userInfo: {},
+            couresList: {},
+        }
+    },
+    mounted() {
+        this.userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
+        teacher_course({ teacher_id: this.userInfo.user_id }).then(response => {
+            this.couresList = response.data;
+            console.log(this.couresList);
+        }).catch(error => {
+            console.error("获取课程信息失败:", error);
+        });    
+    },
+    methods: {
+        async logout() {
+            const confirmLogout = await this.$confirm('确定要退出登录吗？', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).catch(() => {
+                return false;
+            });
+            if (!confirmLogout) return;
+            try {
+                const response = await logout();
+                
+                if (response.code === 200) {
+                    // 显示成功消息
+                    this.$message.success('登出成功');
+                    // 延迟跳转，让用户看到成功消息
+                    setTimeout(() => {
+                        sessionStorage.removeItem('userInfo');
+                        localStorage.removeItem('access_token'); // 确保清除token
+                        localStorage.removeItem('user_info'); // 确保清除用户信息
+                        this.$router.push("/");
+                    }, 500);
+                } else {
+                    this.$message.error('登出失败');
+                }
+            } catch (error) {
+                console.error("退出登录失败:", error);
+                // 即使后端登出失败，也要清除前端存储
+                this.$message.error('网络错误，已清除本地登录状态');
+                
+                setTimeout(() => {
+                    sessionStorage.removeItem('userInfo');
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('user_info');
+                    this.$router.push("/");
+                }, 1500);
+            }
+        },
+    },
 }
 </script>
 <style scoped>
@@ -305,5 +360,11 @@ export default {
                 height: auto;
                 min-height: 160px;
             }
+        }
+        .logout{
+            cursor: pointer;
+        }
+        .edit_profile{
+            cursor: pointer;
         }
 </style>

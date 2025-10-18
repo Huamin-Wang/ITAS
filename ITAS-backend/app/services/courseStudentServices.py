@@ -10,19 +10,101 @@ import csv
 from typing import Any
 
 class CourseStudentService:
+    
     #教师获取对应课程
-#教师获取对应课程
     @staticmethod
     def get_all_course_by_teacher_id(teacher_id: int) -> Result:
-        # 使用 filter_by 按教师ID查询所有课程
-        courses = Course.query.filter_by(teacher_id=teacher_id).all()
-    
-        if not courses:
-            return Result.not_found('暂无课程')
-    
-        # 将所有课程转换为字典列表
-        courses_data = [course.to_dict() for course in courses]
-        return Result.success(data=courses_data)
+        try:
+            # 使用 filter_by 按教师ID查询所有课程
+            courses = Course.query.filter_by(teacher_id=teacher_id).all()
+
+            if not courses:
+                return Result.not_found('暂无课程')
+
+            # 获取所有课程ID，用于批量查询学生数量
+            course_ids = [course.id for course in courses]
+
+            # 批量查询每个课程的学生数量
+            from sqlalchemy import func
+            student_counts = db.session.query(
+                Course_Students.course_id,
+                func.count(Course_Students.id).label('student_count')
+            ).filter(
+                Course_Students.course_id.in_(course_ids)
+            ).group_by(Course_Students.course_id).all()
+
+            # 将学生数量转换为字典，便于查找
+            student_count_dict = {course_id: count for course_id, count in student_counts}
+
+            # 按学期分类课程
+            courses_by_semester = {}
+            for course in courses:
+                # 转换学期格式
+                semester = course.semester
+                if semester:
+                    # 将英文季节转换为中文
+                    season_mapping = {
+                        'spring': '春季学期',
+                        'autumn': '秋季学期',
+                        'fall': '秋季学期',
+                    }
+
+                    # 处理格式如 "2024-spring" 的学期
+                    if '-' in semester:
+                        year, season = semester.split('-', 1)
+                        season = season.lower()
+                        if season in season_mapping:
+                            semester = f"{year} {season_mapping[season]}"
+                    # 处理其他可能的格式，确保返回中文
+                    else:
+                        # 如果是纯英文季节，直接转换
+                        semester_lower = semester.lower()
+                        if semester_lower in season_mapping:
+                            semester = season_mapping[semester_lower]
+
+                course_dict = course.to_dict()
+
+                # 添加学生数量信息
+                course_dict['student_count'] = student_count_dict.get(course.id, 0)
+
+                if semester not in courses_by_semester:
+                    courses_by_semester[semester] = []
+
+                courses_by_semester[semester].append(course_dict)
+
+            # 按学期排序（按年份和季节排序）
+            def semester_sort_key(semester):
+                """为学期生成排序键"""
+                if not semester or '-' not in semester:
+                    return (0, semester)
+
+                try:
+                    year_part, season_part = semester.split('-', 1)
+                    year = int(year_part) if year_part.isdigit() else 0
+
+                    # 季节排序权重
+                    season_weights = {'春季学期': 1, '秋季学期': 2}
+                    season_weight = season_weights.get(season_part, 5)
+
+                    return (year, season_weight)
+                except:
+                    return (0, semester)
+
+            sorted_semesters = sorted(courses_by_semester.keys(), key=semester_sort_key, reverse=True)
+
+            # 构建返回数据
+            result_data = []
+            for semester in sorted_semesters:
+                result_data.append({
+                    'semester': semester,
+                    'courses': courses_by_semester[semester],
+                    'course_count': len(courses_by_semester[semester])
+                })
+
+            return Result.success(data=result_data)
+
+        except Exception as e:
+            return Result.internal_error(f'获取课程失败: {str(e)}')
     
     #创建课程
     @staticmethod

@@ -64,8 +64,6 @@
 </template>
 
 <script>
-import { apiTest, getStudents } from "../http/api.js";
-
 export default {
   name: 'Home',
   data() {
@@ -135,12 +133,6 @@ export default {
         // this.$router.push('/login');
       }
     },
-    
-    test() {
-      apiTest().then((res) => {
-        console.log(res.message);
-      });
-    }
   }
 };
 </script>
