@@ -19,7 +19,6 @@ def register():
 @bp.route('/login', methods=['POST'])
 def login():
     try:
-        print("注册请求数据:", request.get_json())
         if request.is_json:
             data = request.get_json()
         else:
@@ -34,3 +33,13 @@ def login():
         import traceback
         print(f"登录错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'登录过程中发生错误: {str(e)}').to_json(), 500
+    
+@bp.route('/logout', methods=['POST'])
+def logout():
+    try:
+        UserService.logout()
+        return Result.success(message='登出成功').to_json(), 200
+    except Exception as e:
+        import traceback
+        print(f"登出错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'登出过程中发生错误: {str(e)}').to_json(), 500
