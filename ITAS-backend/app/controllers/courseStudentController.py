@@ -18,6 +18,22 @@ def get_all_course_by_teacher_id():
         print(f"获取课程错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'获取课程时发生错误: {str(e)}').to_json(), 500
 
+#课程id获取课程
+@bp.route('/course_by_id', methods=['GET'])
+def get_course_by_id():
+    try:
+        course_id = request.args.get('course_id', type=int)
+        print(f"Received course_id: {course_id}")
+        if course_id is None:
+            return Result.bad_request("课程ID是必需的").to_json(), 400
+
+        result = CourseStudentService.get_course_by_id(course_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取课程错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取课程时发生错误: {str(e)}').to_json(), 500
+
 #创建课程
 @bp.route('/create_course', methods=['POST'])
 def create_course():
@@ -51,6 +67,35 @@ def update_course():
         import traceback
         print(f"更新课程错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'更新课程时发生错误: {str(e)}').to_json(), 500
+
+#更新学生注册状态
+@bp.route('/update_registration_status', methods=['GET'])
+def update_registration_status():
+    try:
+        course_id = request.args.get('course_id', type=int)
+        if course_id is None:
+            return Result.bad_request("课程ID是必需的").to_json(), 400
+        result = CourseStudentService.update_registration_status(course_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"更新学生注册状态错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'更新学生注册状态时发生错误: {str(e)}').to_json(), 500
+
+#获取课程学生数
+@bp.route('/course_student_count', methods=['GET'])
+def get_course_student_count():
+    try:
+        course_id = request.args.get('course_id', type=int)
+        if course_id is None:
+            return Result.bad_request("课程ID是必需的").to_json(), 400
+
+        result = CourseStudentService.get_course_student_count(course_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取课程学生数错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取课程学生数时发生错误: {str(e)}').to_json(), 500
 
 #获取课程学生
 @bp.route('/course_students', methods=['GET'])
@@ -132,8 +177,8 @@ def get_assignments():
 @bp.route('/assignments', methods=['POST'])
 def assignments():
     try:
-        data = request.get_json()
-        if not all(key in data for key in ['course_id', 'title', 'description', 'due_date']):
+        data = request.form.to_dict()
+        if not all(key in data for key in ['course_id', 'title', 'description', 'due_date','teacher_id']):
             return Result.bad_request("缺少必要的字段").to_json(), 400
         result = CourseStudentService.assignments(data)
         return result.to_json(), result.code

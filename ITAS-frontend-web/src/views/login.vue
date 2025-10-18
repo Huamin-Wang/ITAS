@@ -69,7 +69,7 @@ export default {
         };
 
         const response = await login(data);
-        
+
         if (response.code == 200) {
           // 保存 token 和用户信息到 sessionStorage
           const token = response.data.access_token;
@@ -83,7 +83,7 @@ export default {
 
           sessionStorage.setItem("token", token);
           sessionStorage.setItem("userInfo", JSON.stringify(userInfo));
-          this.$message.success("登陆成功")
+          this.$message.success("登陆成功");
           // 跳转到首页或其他页面
           if (userInfo.role == "teacher") {
             setTimeout(() => {
