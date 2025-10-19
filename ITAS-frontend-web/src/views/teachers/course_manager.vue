@@ -122,9 +122,7 @@
         <div class="dashboard-card">
           <h3>成绩管理</h3>
           <p>录入和查看学生平时成绩</p>
-          <button onclick="location.href='/course/add_score/{{course.id}}'">
-            进入成绩管理
-          </button>
+          <button @click="go_to_add_score(this.course.id)">进入成绩管理</button>
         </div>
 
         <div class="dashboard-card">
@@ -259,6 +257,11 @@ export default {
     //转跳到课程作业页面
     go_to_course_assignments(course_id) {
       this.$router.push(`/assignments/${course_id}`);
+    },
+
+    //跳转成绩管理页面
+    go_to_add_score(course_id) {
+      this.$router.push(`/add_score/${course_id}`);
     },
   },
   mounted() {

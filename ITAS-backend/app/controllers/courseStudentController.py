@@ -127,16 +127,16 @@ def get_random_select_list():
         print(f"获取随机选择学生错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'获取随机选择学生时发生错误: {str(e)}').to_json(), 500
     
-#学生加分
-@bp.route('/add_score', methods=['POST'])
-def add_score():
+#更新学生分数
+@bp.route('/update_score', methods=['POST'])
+def update_score():
     try:
         data = request.get_json()
         course_id = data.get('course_id')
         list = data.get('list')
         if course_id is None or list is None:
             return Result.bad_request("缺少必要的字段").to_json(), 400
-        result = CourseStudentService.add_score(list, course_id)
+        result = CourseStudentService.update_score(list, course_id)
         return result.to_json(), result.code
     except Exception as e:
         import traceback
@@ -173,6 +173,22 @@ def get_assignments():
         print(f"获取作业列表错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'获取作业列表时发生错误: {str(e)}').to_json(), 500
 
+#作业id获取作业
+@bp.route('/get_assignment_by_id', methods=['GET'])
+def get_assignment_by_id():
+    try:
+        assignment_id = request.args.get('assignment_id', type=int)
+        print(f"Received course_id: {assignment_id}")
+        if assignment_id is None:
+            return Result.bad_request("作业ID是必需的").to_json(), 400
+
+        result = CourseStudentService.get_assignment_by_id(assignment_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取作业错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取作业时发生错误: {str(e)}').to_json(), 500
+
 # 发布作业
 @bp.route('/assignments', methods=['POST'])
 def assignments():
@@ -191,7 +207,7 @@ def assignments():
 @bp.route('/update_assignment', methods=['POST'])
 def update_assignment():
     try:
-        data = request.get_json()
+        data = request.form.to_dict()
         if not all(key in data for key in ['id', 'title', 'description', 'due_date']):
             return Result.bad_request("缺少必要的字段").to_json(), 400
         result = CourseStudentService.update_assignment(data)

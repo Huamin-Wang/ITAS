@@ -20,6 +20,7 @@ import course_students from '../views/teachers/course_students.vue'; // 课程�
 import courseManager from '../views/teachers/course_manager.vue'; // 课程管理
 import update_course from '../views/teachers/update_course.vue'; // 编辑课程
 import create_course from '../views/teachers/create_course.vue'; // 创建课程
+import add_score from '../views/teachers/add_score.vue'; //成绩管理
 
 
 
@@ -94,11 +95,11 @@ const routes = [
     }
   },
   {
-    path: '/assignment_detail',
+    path: '/assignment_detail/:assignmentId?',
     name: 'Assignment_detail',
     component: assignment_detail,
     meta: {
-      title: '教师端-编辑作业'
+      title: '编辑作业'
     }
   },
   {
@@ -114,7 +115,7 @@ const routes = [
     name: 'Attendance',
     component: attendance,
     meta: {
-      title: '教师端-课程签到'
+      title: '课程签到二维码'
     }
   },
   {
@@ -149,6 +150,14 @@ const routes = [
     component: update_course,
     meta: {
       title: '更新课程'
+    }
+  },
+  {
+    path: '/add_score/:courseId?',
+    name: 'add_score',
+    component: add_score,
+    meta: {
+      title: '课程成绩管理系统'
     }
   },
 ];

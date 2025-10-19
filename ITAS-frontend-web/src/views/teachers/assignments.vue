@@ -29,7 +29,11 @@
               <td>{{ assignment.description }}</td>
               <td>{{ assignment.due_date }}</td>
               <td>
-                <a href="" class="btn btn-small">编辑</a>
+                <span
+                  @click="go_to_assignment_detail(assignment.id)"
+                  class="btn btn-small"
+                  >编辑</span
+                >
               </td>
             </tr>
             <tr v-else>
@@ -172,6 +176,11 @@ export default {
         console.error("提交表单时出错:", error);
         this.$message.error("发生错误，请稍后重试。");
       }
+    },
+
+    //跳转作业编辑
+    go_to_assignment_detail(id) {
+      this.$router.push(`/assignment_detail/${id}`);
     },
   },
   mounted() {

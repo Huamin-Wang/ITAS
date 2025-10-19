@@ -399,24 +399,24 @@ class CourseStudentService:
         except Exception as e:
             return Result.internal_error(f'获取学生失败: {str(e)}')
     
-    #学生加分
+    #更新学生分数
     @staticmethod
-    def add_score(data: list[dict[str, Any]], course_id) -> Result:
+    def update_score(data: list[dict[str, Any]], course_id) -> Result:
         try:
             # 检查课程是否存在
             course = Course.query.get(course_id)
             if not course:
                 return Result.error("课程不存在")
-
+            result_data = []
             # 遍历前端传来的加分数据
             for student_data in data:
+                student_name = student_data.get('student_name')
                 student_number = student_data.get('student_number')
-                additional_score = student_data.get('additional_score', 0)
-
+                score_change = student_data.get('score_change', 0)
                 try:
-                    additional_score = float(additional_score)
+                    score_change = float(score_change)
                 except (ValueError, TypeError):
-                    additional_score = 0
+                    score_change = 0
 
                 # 直接查询该课程下对应学号的学生
                 course_student = Course_Students.query.filter_by(
@@ -425,14 +425,18 @@ class CourseStudentService:
                 ).first()
 
                 if course_student:
-                    # 直接给该学生加分
-                    course_student.score += additional_score
+                    # 直接更新该学生分数
+                    course_student.score += score_change
+                    result_data.append({
+                    'student_name': student_name,
+                    'score_change': score_change
+                })
                 else:
                     # 记录警告或跳过不存在的学生
                     print(f"警告: 课程 {course_id} 中未找到学号为 {student_number} 的学生")
 
             db.session.commit()
-            return Result.success("学生加分成功")
+            return Result.success(result_data)
 
         except Exception as e:
             try:
@@ -475,6 +479,7 @@ class CourseStudentService:
                 return Result.internal_error(f'获取排名失败: {str(e)}')
 
     #查询作业
+    @staticmethod
     def get_assignments(course_id: int) -> Result:
         try:
             assignments = Assignment.query.filter_by(course_id=course_id).all()
@@ -482,6 +487,17 @@ class CourseStudentService:
                 return Result.success('')
             assignments_data = [assignment.to_dict() for assignment in assignments]
             return Result.success(data=assignments_data)
+        except Exception as e:
+            return Result.internal_error(f'获取作业失败: {str(e)}')
+
+    #通过id查询作业
+    @staticmethod
+    def get_assignment_by_id(assignment_id: int) -> Result:
+        try:
+            assigment = Assignment.query.get(assignment_id)
+            if not assigment:
+                return Result.not_found('作业不存在')
+            return Result.success(data=assigment.to_dict())
         except Exception as e:
             return Result.internal_error(f'获取作业失败: {str(e)}')
 

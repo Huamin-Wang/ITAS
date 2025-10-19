@@ -92,10 +92,36 @@ export function get_assignments(course_id) {
     })
 }
 
+//获取作业
+export function get_assignment_by_id(assignment_id) {
+    return request({
+        url: `/get_assignment_by_id?assignment_id=${assignment_id}`,
+        method: 'get',
+    })
+}
+
 //创建作业
 export function assignments(data) {
     return request({
         url: '/assignments',
+        method: 'post',
+        data: data
+    })
+}
+
+//编辑作业
+export function update_assignment(data) {
+    return request({
+        url: '/update_assignment',
+        method: 'post',
+        data: data
+    })
+}
+
+//更新学生分数
+export function update_score(data) {
+    return request({
+        url: '/update_score',
         method: 'post',
         data: data
     })

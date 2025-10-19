@@ -14,6 +14,7 @@ class Assignment(db.Model):
         return {
             'id': self.id,
             'teacher_id': self.teacher_id,
+            'course_id':self.course_id,
             'title': self.title,
             'description': self.description,
             'due_date': self.due_date.isoformat() if self.due_date else None
