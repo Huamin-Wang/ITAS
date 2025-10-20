@@ -9,8 +9,8 @@
         <div class="header">
           <h1>{{ this.course.name }}- 问答成绩管理</h1>
           <div class="header-actions">
-            <a
-              href="/course/ranking/{{ course.id }}"
+            <span
+              @click="go_to_ranking(this.course.id)"
               class="action-btn rank-btn"
             >
               <svg
@@ -30,7 +30,7 @@
                 />
               </svg>
               查看排名
-            </a>
+            </span>
           </div>
         </div>
 
@@ -267,6 +267,11 @@ export default {
     //返回课程管理
     go_to_course_manager(courseId) {
       this.$router.push({ path: `/course_manager/${courseId}` });
+    },
+
+    //跳转学生排名
+    go_to_ranking(courseId) {
+      this.$router.push({ path: `/ranking/${courseId}` });
     },
   },
   mounted() {

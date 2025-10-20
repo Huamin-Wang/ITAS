@@ -126,3 +126,11 @@ export function update_score(data) {
         data: data
     })
 }
+
+//获取学生排行
+export function ranking(course_id) {
+    return request({
+        url: `/ranking?course_id=${course_id}`,
+        method: 'get',
+    })
+}

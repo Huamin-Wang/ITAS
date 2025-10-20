@@ -21,6 +21,7 @@ import courseManager from '../views/teachers/course_manager.vue'; // 课程管�
 import update_course from '../views/teachers/update_course.vue'; // 编辑课程
 import create_course from '../views/teachers/create_course.vue'; // 创建课程
 import add_score from '../views/teachers/add_score.vue'; //成绩管理
+import ranking from '../views/teachers/ranking.vue'; //排名
 
 
 
@@ -158,6 +159,14 @@ const routes = [
     component: add_score,
     meta: {
       title: '课程成绩管理系统'
+    }
+  },
+  {
+    path: '/ranking/:courseId?',
+    name: 'ranking',
+    component: ranking,
+    meta: {
+      title: '学生排名'
     }
   },
 ];
