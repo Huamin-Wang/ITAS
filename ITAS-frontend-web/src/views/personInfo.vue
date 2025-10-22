@@ -13,7 +13,7 @@
 
                 <div class="qr-section">
                     <h3>请扫描下方二维码，进入小程序</h3>
-                    <img src="../static/weixinQR.jpg" alt="微信小程序二维码">
+                    <img src="" alt="微信小程序二维码">
                 </div>
 
                 <div class="info-steps">

@@ -1,7 +1,10 @@
 import axios from "axios";
 
+// 生产环境使用相对路径
+const baseURL = import.meta.env.PROD ? '/api' : 'http://127.0.0.1:5000';
+
 const service = axios.create({
-    baseURL: 'http://127.0.0.1:5000',
+    baseURL: baseURL,
     timeout: 5000
 })
 
@@ -13,10 +16,8 @@ service.interceptors.request.use(
             config.headers['Authorization'] = `Bearer ${token}`;
         }
         return config;
-
     },
     error => {
-        // 请求错误处理
         console.log('Request Error:', error)
         return Promise.reject(error)
     }
