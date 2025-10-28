@@ -11,6 +11,7 @@ def chat():
     """处理聊天消息"""
     try:
         user_message = request.json.get('message', '')
+        print(user_message)
         ip_address = request.remote_addr
         
         if not user_message or not user_message.strip():
@@ -22,8 +23,10 @@ def chat():
         
         # 根据 ChatService 的返回结果构造统一的响应
         if result.get('success'):
+            print(result)
             return Result.success(data=result).to_json()
         else:
+            print(result)
             return Result.bad_request(result.get('error', '处理消息失败')).to_json()
         
     except Exception as e:

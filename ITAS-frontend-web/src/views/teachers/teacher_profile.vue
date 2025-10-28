@@ -6,8 +6,8 @@
       <h1>基于大模型的智能教学辅助系统</h1>
       <p>教师中心 - 提升教学效率，优化教学管理</p>
       <div class="login-status">
-        <span class="edit_profile" @click="edit_profile"
-          >欢迎,{{ userInfo.name }}老师!</span
+        <a class="edit_profile" href="/personInfo"
+          >欢迎,{{ userInfo.name }}老师!</a
         >
         <span class="logout" @click="logout()">退出</span>
       </div>
@@ -18,7 +18,7 @@
         <h2>
           欢迎,
           <a
-            href="/edit_profile"
+            href="/personInfo"
             style="color: #1890ff; text-decoration: underline"
             >{{ userInfo.name }}</a
           >老师!

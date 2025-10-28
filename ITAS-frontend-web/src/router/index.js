@@ -3,6 +3,8 @@ import Home from '../views/home.vue'
 import Login from '../views/login.vue'
 import Register from '../views/register.vue'
 import PersonInfo from '../views/personInfo.vue';
+import chat from '../views/chat.vue' //ai问答小助手
+
 
 // students
 import student_profile from '../views/students/student_profile.vue';  //学生中心
@@ -22,6 +24,7 @@ import update_course from '../views/teachers/update_course.vue'; // 编辑课程
 import create_course from '../views/teachers/create_course.vue'; // 创建课程
 import add_score from '../views/teachers/add_score.vue'; //成绩管理
 import ranking from '../views/teachers/ranking.vue'; //排名
+import random_select from '../views/teachers/random_select.vue'; //随机选择
 
 
 
@@ -53,7 +56,10 @@ const routes = [
   {
     path: '/personInfo',
     name: 'PersonInfo',
-    component: PersonInfo
+    component: PersonInfo,
+    meta: {
+      title: '个人信息修改提示'
+    }
   },
   {
     path: '/teacher_profile',
@@ -167,6 +173,22 @@ const routes = [
     component: ranking,
     meta: {
       title: '学生排名'
+    }
+  },
+  {
+    path: '/random_select/:courseId?',
+    name: 'random_select',
+    component: random_select,
+    meta: {
+      title: '随机选择'
+    }
+  },
+  {
+    path: '/chat/:courseId?',
+    name: 'chat',
+    component: chat,
+    meta: {
+      title: 'AI问答小助手'
     }
   },
 ];

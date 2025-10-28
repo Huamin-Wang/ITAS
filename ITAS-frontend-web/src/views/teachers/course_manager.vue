@@ -95,9 +95,7 @@
         <div class="dashboard-card">
           <h3>随机选择</h3>
           <p>随机选中一个学生回答问题，增强课堂互动性</p>
-          <button
-            onclick="location.href='/course/random_select/{{ course.id }}'"
-          >
+          <button @click="go_to_random_select(this.course.id)">
             进入随机选管理
           </button>
         </div>
@@ -152,8 +150,8 @@
         </div>
       </div>
       <div style="text-align: center; margin-top: 40px">
-        <a
-          href="/chat"
+        <span
+          @click="go_to_chat(this.course.id)"
           style="
             display: inline-block;
             background: #1890ff;
@@ -164,10 +162,11 @@
             text-decoration: none;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             transition: background 0.3s;
+            cursor: pointer;
           "
         >
           跳转到AI问答
-        </a>
+        </span>
       </div>
     </div>
 
@@ -262,6 +261,16 @@ export default {
     //跳转成绩管理页面
     go_to_add_score(course_id) {
       this.$router.push(`/add_score/${course_id}`);
+    },
+
+    //跳转随机选择页面
+    go_to_random_select(course_id) {
+      this.$router.push(`/random_select/${course_id}`);
+    },
+
+    //跳转ai小问答
+    go_to_chat(course_id) {
+      this.$router.push(`/chat/${course_id}`);
     },
   },
   mounted() {

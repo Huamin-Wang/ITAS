@@ -134,3 +134,20 @@ export function ranking(course_id) {
         method: 'get',
     })
 }
+
+//获取随机选择学生列表
+export function random_select_list(course_id) {
+    return request({
+        url: `/random_select_list?course_id=${course_id}`,
+        method: 'get',
+    })
+}
+
+//ai问答
+export function chat_handle(data) {
+    return request({
+        url: '/chat_handle',
+        method: 'post',
+        data: data
+    })
+}
