@@ -1,13 +1,15 @@
 from typing import Dict, Any
 from flask import jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import decode_token
 
 from app import db
 from app.models.user import User
 from app.models.Result import Result
 from app.utils.jwt import JWTUtils
 from app.interceptors.jwtInterceptor import AuthInterceptor
-from flask_jwt_extended import decode_token
+from app.config import Config
+import requests
 
 class UserService:
 
@@ -146,6 +148,7 @@ class UserService:
             except Exception:
                 pass
             return Result.internal_error(f'注册时发生错误: {str(e)}')
+    
     @staticmethod
     def logout():
         """用户登出方法"""
@@ -166,3 +169,118 @@ class UserService:
             
         except Exception as e:
             return jsonify({'error': '登出失败', 'details': str(e)}), 500
+    
+    #获取openid(一键登录)
+    @staticmethod
+    def get_openid_unlocked(data):
+        print("登录小程序")
+        code = data.get('code')
+        # userInfo = data.get('userInfo')
+        print(f"code:{code}")
+        # print(f"userInfo:{userInfo}")
+        if not code:
+            return jsonify({'success': False, 'message': '缺少 code'})
+        # 向微信服务器请求 openid
+        wx_url = f"https://api.weixin.qq.com/sns/jscode2session?appid={Config.APP_ID}&secret={Config.APP_SECRET}&js_code={code}&grant_type=authorization_code"
+        response = requests.get(wx_url).json()
+        openid = response['openid']
+        print(f"openid:{openid}")
+        # 如果成功获取 openid，则根据openid返回用户信息
+        user = User.query.filter_by(openid=response['openid']).first()
+        if user:
+            # 生成 JWT token
+            additional_claims = {
+                'username': user.name,
+                'account_category': user.role or 'user',
+                'identifier': user.identifier
+            }
+            access_token = JWTUtils.create_access_token(
+                identity=user.id, 
+                additional_claims=additional_claims
+            )
+            
+            user_data = {
+                'user_id': user.id,
+                'name': user.name,
+                'role': user.role,
+                "identifier": user.identifier,
+                "openid": openid,
+                "email": user.email,
+                "gender": user.gender,
+                "access_token": access_token,
+                "login_status": "success"
+            }
+            print(f"用户 {user.name} 通过openid登录成功")
+            return Result.success(user_data, '登录成功')
+        else:
+            #   返回信息提示注册登录
+            return jsonify(
+                {'success': True, 'user_id': -1, 'user_name': "未登录过小程序,退出重新登录", 'user_role': "游客",
+                 "openid": openid})
+        
+    #微信登录绑定
+    @staticmethod
+    def minilogin(data) -> Result:
+        """微信小程序登录绑定"""
+        try:
+            print("验证小程序登录")
+            openid = data.get('openid')
+            ident = data.get('identifier')  # 学号
+            password = data.get('password')
+            
+            if not all([openid, ident, password]):
+                return Result.bad_request('缺少必要参数')
+            
+            ident = ident.upper().replace(' ', '')
+            print(f"openid:{openid}")
+            print(f"ident:{ident}")
+            
+            # 从数据库中查找用户，与用户输入的密码进行比对
+            user = User.query.filter_by(identifier=ident).first()
+            if not user:
+                return Result.unauthorized('用户不存在')
+            
+            # 验证密码
+            if not UserService.check_password(user.password, password):
+                print(f"密码错误: {ident}")
+                return Result.unauthorized('密码错误')
+            
+            # 更新用户的openid
+            user.openid = openid
+            db.session.commit()
+            print(f"用户 {user.name} 绑定openid成功！")
+            
+            # 生成 JWT token
+            additional_claims = {
+                'username': user.name,
+                'account_category': user.role or 'user',
+                'identifier': user.identifier
+            }
+            access_token = JWTUtils.create_access_token(
+                identity=user.id, 
+                additional_claims=additional_claims
+            )
+            
+            # 返回登录成功数据
+            login_data = {
+                'user_id': user.id,
+                'name': user.name,
+                'identifier': user.identifier,
+                'role': user.role,
+                'email': user.email,
+                'access_token': access_token,
+                'login_status': 'success',
+                "openid": openid,
+                # "gender": user.gender
+            }
+            
+            print(f'{user.name}登录成功！')
+            return Result.success(login_data, '登录成功')
+            
+        except Exception as e:
+            try:
+                db.session.rollback()
+            except Exception:
+                pass
+            print(f"微信登录过程中发生错误: {str(e)}")
+            return Result.internal_error(f'登录失败: {str(e)}')

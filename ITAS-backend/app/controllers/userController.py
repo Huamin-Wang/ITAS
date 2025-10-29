@@ -43,3 +43,35 @@ def logout():
         import traceback
         print(f"登出错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'登出过程中发生错误: {str(e)}').to_json(), 500
+    
+@bp.route('/getOpenId', methods=['POST'])
+def get_openid():
+    """获取微信openid接口"""
+    try:
+        data = request.get_json()
+        if not data:
+            return Result.bad_request("请求数据不能为空").to_json(), 400
+        
+        result = UserService.get_openid_unlocked(data)
+        return result.to_json(), result.code
+        
+    except Exception as e:
+        import traceback
+        print(f"获取openid错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取openid过程中发生错误: {str(e)}').to_json(), 500
+
+@bp.route('/minilogin', methods=['POST'])
+def mini_login():
+    """微信小程序登录绑定接口"""
+    try:
+        data = request.get_json()
+        if not data:
+            return Result.bad_request("请求数据不能为空").to_json(), 400
+        
+        result = UserService.minilogin(data)
+        return result.to_json(), result.code
+        
+    except Exception as e:
+        import traceback
+        print(f"微信登录错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'微信登录过程中发生错误: {str(e)}').to_json(), 500

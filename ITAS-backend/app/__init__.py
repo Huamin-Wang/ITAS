@@ -66,10 +66,11 @@ def create_app(config_name='default'):
         excluded_paths = [
             '/login',      # 登录
             '/register',   # 注册
-            '/logout',      # 登出
+            '/logout',     # 登出
             '/',                       # 根路径
             '/favicon.ico',            # 网站图标
-            '/update_assignment',
+            '/get_openid_unlocked',    # 获取openid
+            '/minilogin',   #微信登录
             # 聊天相关路由 - 添加到白名单
             '/chat_handle',
             '/chat/stats',
