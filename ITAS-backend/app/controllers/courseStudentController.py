@@ -208,7 +208,7 @@ def assignments():
 def update_assignment():
     try:
         data = request.form.to_dict()
-        if not all(key in data for key in ['id', 'title', 'description', 'due_date']):
+        if 'id' not in data or not any(key in data for key in ['title', 'description', 'due_date','tags']):
             return Result.bad_request("缺少必要的字段").to_json(), 400
         result = CourseStudentService.update_assignment(data)
         return result.to_json(), result.code

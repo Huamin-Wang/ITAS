@@ -7,6 +7,7 @@ class Assignment(db.Model):
     description = db.Column(db.Text)
     due_date = db.Column(db.Date, nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    tags = db.Column(db.Text)
     # Relationship
     submissions = db.relationship('Submission', backref='assignment', lazy=True)
 
@@ -17,5 +18,6 @@ class Assignment(db.Model):
             'course_id':self.course_id,
             'title': self.title,
             'description': self.description,
-            'due_date': self.due_date.isoformat() if self.due_date else None
+            'due_date': self.due_date.isoformat() if self.due_date else None,
+            'tags':self.tags
         }

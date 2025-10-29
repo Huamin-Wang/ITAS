@@ -107,6 +107,7 @@ class CourseStudentService:
             return Result.internal_error(f'获取课程失败: {str(e)}')
     
     #课程id获取课程
+    @staticmethod
     def get_course_by_id(course_id: int) -> Result:
         try:
             course = Course.query.get(course_id)
@@ -516,7 +517,7 @@ class CourseStudentService:
             assignment_description = data.get('description')
             assignment_deadline_str = data.get('due_date')
             teacher_id = data.get('teacher_id')
-
+            tags = data.get('tags')
             # 验证必填字段
             if not all([assignment_name, assignment_deadline_str]):
                 return Result.internal_error(f'作业名称和截止日期是必填的')
@@ -534,7 +535,8 @@ class CourseStudentService:
                 course_id=course_id,
                 title=assignment_name,
                 description=assignment_description, 
-                due_date=assignment_deadline
+                due_date=assignment_deadline,
+                tags = tags
             )
 
             db.session.add(assignment)
@@ -556,10 +558,11 @@ class CourseStudentService:
             assignment = Assignment.query.get(assignment_id)
             if not assignment:
                 return Result.not_found(f'作业 {assignment_id} 未找到')
-
+            
             # 更新作业信息
             assignment.title = data.get('title', assignment.title)
             assignment.description = data.get('description', assignment.description)
+            assignment.tags = data.get('tags',assignment.tags)
             due_date_str = data.get('due_date')
             if due_date_str:
                 from datetime import datetime
@@ -574,3 +577,4 @@ class CourseStudentService:
         except Exception as e:
             db.session.rollback()
             return Result.internal_error(f'更新作业失败: {str(e)}')
+    
