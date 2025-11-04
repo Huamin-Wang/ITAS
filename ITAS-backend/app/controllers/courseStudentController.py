@@ -216,3 +216,63 @@ def update_assignment():
         import traceback
         print(f"编辑作业错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'编辑作业时发生错误: {str(e)}').to_json(), 500
+    
+#新建小测
+@bp.route('/create_quiz', methods=['POST'])
+def create_quiz():
+    try:
+        data = request.get_json()
+        if not all(key in data for key in ['teacher_id', 'title', 'course_id','create_time']):
+            return Result.bad_request("缺少必要的字段").to_json(), 400
+        result = CourseStudentService.create_quiz(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"新建小测错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'新建小测时发生错误: {str(e)}').to_json(), 500
+    
+#存储小测题目
+@bp.route('/add_quiz_questions', methods=['POST'])
+def add_quiz_questions():
+    try:
+        data = request.get_json()
+        if 'quiz_id' not in data or 'questions' not in data:
+            return Result.bad_request("缺少必要的字段").to_json(), 400
+        quiz_id = data.get('quiz_id')
+        questions = data.get('questions')
+        result = CourseStudentService.add_quiz_questions(quiz_id, questions)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"存储小测题目错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'存储小测题目时发生错误: {str(e)}').to_json(), 500
+
+#获取小测列表    
+@bp.route('/get_quizzes', methods=['GET'])
+def get_quizzes():
+    try:
+        course_id = request.args.get('course_id', type=int)
+        if course_id is None:
+            return Result.bad_request("课程ID是必需的").to_json(), 400
+
+        result = CourseStudentService.get_quizzes(course_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取小测列表错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取小测列表时发生错误: {str(e)}').to_json(), 500
+    
+#获取小测详情
+@bp.route('/get_quiz_questions', methods=['GET'])
+def get_quiz_questions():
+    try:
+        quiz_id = request.args.get('quiz_id', type=int)
+        if quiz_id is None:
+            return Result.bad_request("小测ID是必需的").to_json(), 400
+
+        result = CourseStudentService.get_quiz_questions(quiz_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取小测详情错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取小测详情时发生错误: {str(e)}').to_json(), 500

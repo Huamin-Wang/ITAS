@@ -4,9 +4,12 @@ from app.models.course import Course
 from app.models.user import User
 from app.models.Result import Result
 from app.models.assignment import Assignment
+from app.models.quiz import Quiz
+from app.models.quizQuestion import QuizQuestion
 import chardet
 import io
 import csv
+import json
 from typing import Any
 
 class CourseStudentService:
@@ -578,3 +581,113 @@ class CourseStudentService:
             db.session.rollback()
             return Result.internal_error(f'更新作业失败: {str(e)}')
     
+
+    #创建小测
+    @staticmethod
+    def create_quiz(data: dict[str, Any]) -> Result:
+        try:
+            # 检查课程是否存在
+            course_id = data.get('course_id')
+            course = Course.query.get(course_id)
+            if not course:
+                return Result.internal_error(f'课程 {course_id} 未找到')
+
+            # 获取表单数据
+            title = data.get('title')
+            teacher_id = data.get('teacher_id')
+            create_time = data.get('create_time')
+            # 验证必填字段
+            if not all([title, teacher_id]):
+                return Result.internal_error(f'小测标题和教师id是必填的')
+            # 转换日期格式
+            from datetime import datetime
+            try:
+                create_time = datetime.strptime(create_time, '%Y-%m-%d %H:%M')
+            except ValueError:
+                return Result.internal_error(f'截止日期格式错误，应为 YYYY-MM-DD HH:MM')
+            # 创建作业
+            quiz = Quiz(
+                teacher_id=teacher_id, 
+                course_id=course_id,
+                title=title,
+                create_time=create_time
+            )
+
+            db.session.add(quiz)
+            db.session.commit()
+
+
+            # 返回成功响应
+            return Result.success(data=quiz.to_dict())
+
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'创建小测失败: {str(e)}')
+        
+    #存储小测题目
+    @staticmethod
+    def add_quiz_questions(quiz_id: int, questions: list[dict[str, Any]]) -> Result:
+        try:
+            quiz = Quiz.query.get(quiz_id)
+            if not quiz:
+                return Result.not_found(f'小测 {quiz_id} 未找到')
+            quiz_questions = []
+            print(questions)
+            for question_data in questions:
+                question_text = question_data.get('question_text')
+                question_type = question_data.get('question_type')
+                options = json.dumps(question_data.get('options'))
+                correct_answer = question_data.get('correct_answer')
+                points = question_data.get('points', 1)
+                if not all([question_text, question_type, correct_answer]):
+                    return Result.bad_request('题目文本、题目类型和正确答案是必填的')
+                quiz_question = QuizQuestion(
+                    quiz_id=quiz_id,
+                    question_text=question_text,
+                    question_type=question_type,
+                    options=options,
+                    correct_answer=correct_answer,
+                    points=points
+                )
+                quiz_questions.append(quiz_question)
+            db.session.add_all(quiz_questions)
+            db.session.commit()
+            return Result.success(data={'quiz_id': quiz_id, 'added_questions': len(quiz_questions)})
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'添加小测题目失败: {str(e)}')
+    
+    #获取小测列表
+    @staticmethod
+    def get_quizzes(course_id: int) -> Result:
+        try:
+            quizzes = Quiz.query.filter_by(course_id=course_id).all()
+            if not quizzes:
+                return Result.success('')
+            quizzes_data = [quiz.to_dict() for quiz in quizzes]
+            return Result.success(data=quizzes_data)
+        except Exception as e:
+            return Result.internal_error(f'获取小测失败: {str(e)}')
+        
+    #获取小测详情
+    @staticmethod
+    def get_quiz_questions(quiz_id: int) -> Result:
+        try:
+            # 获取小测信息
+            quiz = Quiz.query.get(quiz_id)
+            if not quiz:
+                return Result.not_found('小测不存在')
+
+            # 获取题目列表
+            quiz_questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
+            questions_list = [question.to_dict() for question in quiz_questions]
+
+            # 组合数据
+            result_data = {
+                'quiz': quiz.to_dict(),
+                'questions': questions_list
+            }
+
+            return Result.success(data=result_data)
+        except Exception as e:
+            return Result.internal_error(f'获取小测详情失败: {str(e)}')
