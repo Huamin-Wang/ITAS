@@ -3,13 +3,15 @@
         <header>
 
             <div class="alert alert-{{ category }}">
-                
+
             </div>
 
             <h1>基于大模型的智能教学辅助系统</h1>
             <p>学生中心 - 提升学习效率，增强学习体验</p>
             <div class="login-status">
-                <span>欢迎, <a href="/edit_profile"></a>同学!</span>
+                <span>欢迎, <a href="/edit_profile">
+                        {{ user_name }}
+                    </a>同学!</span>
                 <span> <a href="/logout" onclick="return confirm('确定要退出吗？')" style="font-size: 0.5em;">退出</a></span>
             </div>
         </header>
@@ -17,8 +19,8 @@
         <div class="container">
             <div class="welcome-section">
                 <h2>欢迎, <a href="/edit_profile" style="color: #1890ff; text-decoration: underline;">
-
-                </a>同学!</h2>
+                        {{ user_name }}
+                    </a>同学!</h2>
                 <div style="text-align: center;">
                     <h3>关注微信公众号，进入AI教学助手，体验更完整功能！</h3>
                     <img src="" alt="微信公众号二维码"
@@ -29,13 +31,15 @@
             <!-- {#将后端传递的所有课程展示#} -->
             <div class="course-grid">
 
-                <div class="dashboard-card">
-                    <h3></h3>
-                    <p>课程代码：</p>
+                <div v-for="course in courses" :key="course.id" class="dashboard-card">
+                    <h3>{{ course.name }}</h3>
+                    <p>课程代码：{{ course.id }}</p>
                     <p>教师：</p>
 
-                    <button onclick="location.href='/course_detail/{{ course.id }}'"
-                        style="background-color: #1890ff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease;">进入课程</button>
+                    <router-link :to="`/course_detail/${course.id}`">
+                        <button>进入课程</button>
+                    </router-link>
+
                 </div>
 
             </div>
@@ -43,21 +47,18 @@
 
             <div class="dashboard-card">
                 <h3>待完成作业</h3>
+                <ul v-if="assignments && assignments.length">
 
-
-                <ul>
-
-                    <li>
-                        <a href="/submission_detail/{{ assignment.id }}">
-                            （截止日期：）
+                    <li v-for="assignment in assignments" :key="assignment.id">
+                        <a :href="`/submission_detail/${assignment.id}`">
+                            {{ assignment.course_name }} - {{ assignment.title }} （截止日期：）{{ assignment.due_date }}
                         </a>
                     </li>
 
                 </ul>
 
-                <p>你真棒，作业都做完了！</p>
+                <p v-else>你真棒，作业都做完了！</p>
 
-                <a href="/submissions/{{ session['user_id'] }}">所有作业列表</a>
             </div>
 
 
@@ -70,17 +71,70 @@
 </template>
 
 <script>
+import { getAllAssignments, getCourses, getCurrentStudent } from '@/http/api';
+
 export default {
     data() {
         return {
-
+            user_name: '',
+            userInfo: {},
+            courses: [],
+            assignments: []
         }
     },
     methods: {
+        async loaduserInfo() {
+            try {
+                const userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+                console.log(userInfo);
+                const userId = userInfo.user_id;
+                //使用接口获取用户信息而不是从sessionStorage获取
+                const response = await getCurrentStudent(userId);
+                if (response.code = 200) {
+                    this.userInfo = response.data;
+                    this.user_name = response.data.name;
+                } else {
+                    console.log('获取用户信息失败');
+                }
 
+            } catch (error) {
+                console.log('获取用户信息失败:', error);
+                this.$router.push('/login');
+            }
+        },
+
+        async fetchCourses() {
+            try {
+                const response = await getCourses();
+                // console.log('获取课程响应:', response);
+                if (response.success === true) {
+                    this.courses = response.courses;
+                } else {
+                    console.log('获取课程失败:', response.message);
+                }
+            } catch (error) {
+                console.log('获取课程信息失败:', error);
+            }
+        },
+
+        async fetchAllAssignments() {
+            try {
+                const response = await getAllAssignments();
+                if (response.code === 200) {
+                    this.assignments = response.data;
+                } else {
+                    console.log('获取作业失败:', response.message);
+                }
+            } catch (error) {
+                console.log('获取作业信息失败:', error);
+            }
+
+        }
     },
     mounted() {
-
+        this.loaduserInfo();
+        this.fetchCourses();
+        this.fetchAllAssignments();
     }
 }
 </script>

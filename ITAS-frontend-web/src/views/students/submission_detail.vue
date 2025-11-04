@@ -1,6 +1,6 @@
 <template>
     <div class="submission_detail-page">
-        <div id="loadingOverlay" class="loading-overlay">
+        <div id="loadingOverlay" class="loading-overlay" :class="{ active: isLoading }">
             <div class="spinner"></div>
         </div>
 
@@ -8,25 +8,18 @@
             <div class="card">
                 <div class="card-header">
                     <h2>作业详情</h2>
-
-                    <a href="{{ url_for('submission', student_id=user.id) }}" class="back-home">返回作业列表</a>
-
+                    <a :href="`/submissions`" class="back-home">返回作业列表</a>
                 </div>
                 <div class="card-body">
                     <div class="assignment-header">
-                        <h3 class="assignment-title"> </h3>
+                        <h3 class="assignment-title">{{ assignment.title }}</h3>
                         <div class="assignment-meta">
-                            <p class="deadline" id="deadline">
+                            <p class="deadline" :class="deadlineClass">
                                 <i class="far fa-calendar-alt"></i>
-                                截止日期:
+                                {{ deadlineText }}
                             </p>
-                            <span id="submissionStatus"
-                                class="status-badge {% if submission %}status-success{% else %}status-warning{% endif %}">
-
-                                <i class="fas fa-check-circle"></i> 已提交
-
-                                <i class="fas fa-exclamation-triangle"></i> 未提交
-
+                            <span class="status-badge" :class="submissionStatusClass">
+                                <i :class="submissionStatusIcon"></i> {{ submissionStatusText }}
                             </span>
                         </div>
                     </div>
@@ -36,70 +29,68 @@
                             <i class="fas fa-file-alt"></i> 作业说明
                         </div>
                         <div class="section-body">
-                            <p></p>
+                            <p>{{ assignment.description }}</p>
                         </div>
                     </div>
 
+                    <template v-if="submission">
+                        <div class="section">
+                            <div class="section-header">
+                                <i class="fas fa-paper-plane"></i> 提交状态
+                            </div>
+                            <div class="section-body">
+                                <div class="submission-info">
+                                    <div class="info-item">
+                                        <span class="info-label">提交时间</span>
+                                        <span class="info-value">{{ formattedSubmissionDate }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="section">
+                                    <div class="section-header">
+                                        <i class="fas fa-file-alt"></i> 提交内容
+                                    </div>
+                                    <div class="section-body">
+                                        <p>{{ submission.data }}</p>
+                                    </div>
+                                </div>
+
+                                <div v-if="submission.feedback" class="feedback-box">
+                                    <h4><i class="fas fa-robot"></i> AI评语</h4>
+                                    <p>{{ submission.feedback }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="section">
+                            <div class="section-header">
+                                <i class="fas fa-exclamation-circle"></i> 提交状态
+                            </div>
+                            <div class="section-body">
+                                <p>您尚未提交此作业，请在截止日期前完成提交。</p>
+                            </div>
+                        </div>
+                    </template>
 
                     <div class="section">
                         <div class="section-header">
-                            <i class="fas fa-paper-plane"></i> 提交状态
+                            <i class="fas fa-edit"></i> {{ submission ? '更新作业' : '提交作业' }}
                         </div>
                         <div class="section-body">
-                            <div class="submission-info">
-                                <div class="info-item">
-                                    <span class="info-label">提交时间</span>
-                                    <span class="info-value"></span>
-                                </div>
-                                <div class="info-item">
-
-                                </div>
-                            </div>
-
-                            <div class="section">
-                                <div class="section-header">
-                                    <i class="fas fa-file-alt"></i> 提交内容
-                                </div>
-                                <div class="section-body">
-                                    <p></p>
-                                </div>
-                            </div>
-
-
-                            <div class="feedback-box">
-                                <h4><i class="fas fa-robot"></i> AI评语</h4>
-                                <p></p>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div class="section">
-                        <div class="section-header">
-                            <i class="fas fa-exclamation-circle"></i> 提交状态
-                        </div>
-                        <div class="section-body">
-                            <p>您尚未提交此作业，请在截止日期前完成提交。</p>
-                        </div>
-                    </div>
-
-
-                    <div class="section">
-                        <div class="section-header">
-                            <i class="fas fa-edit"></i>
-                            <!-- {% if submission %}更新作业{% else %}提交作业{% endif %} -->
-                        </div>
-                        <div class="section-body">
-                            <form id="submissionForm"
-                                action="{{ url_for('submission_detail', assignment_id=assignment.id) }}" method="post">
+                            <form @submit.prevent="submitForm">
                                 <div class="form-group">
                                     <label class="form-label" for="content">作业内容:</label>
-                                    <textarea id="content" name="content" required></textarea>
-                                    <div id="wordCounter" class="word-counter">0个字符</div>
+                                    <textarea id="content" v-model="submissionContent" @input="updateWordCount"
+                                        required></textarea>
+                                    <div id="wordCounter" class="word-counter"
+                                        :class="{ 'character-limit-warning': isOverLimit }">
+                                        {{ wordCountText }}
+                                    </div>
                                 </div>
-                                <button type="submit" id="submitButton" class="button">
+                                <button type="submit" id="submitButton" class="button" :disabled="isSubmitting">
                                     <i class="fas fa-paper-plane"></i>
-                                    <!-- {% if submission %}更新提交{% else %}提交作业{% endif %} -->
+                                    {{ isSubmitting ? '正在提交...' : (submission ? '更新提交' : '提交作业') }}
                                 </button>
                             </form>
                         </div>
@@ -111,20 +102,166 @@
 </template>
 
 <script>
+import { getAssignmentDetail } from '@/http/api';
 export default {
     data() {
         return {
-
+            isLoading: false,
+            isSubmitting: false,
+            assignment: {},
+            submission: {},
+            user: {
+                id: 12345
+            },
+            submissionContent: '',
+            wordCount: 0,
+            MAX_CHARS: 5000,
+            typingTimer: null,
+            TYPING_INTERVAL: 2000
+        }
+    },
+    computed: {
+        submissionListUrl() {
+            // 这里应该根据实际路由生成
+            return `/submission/${this.user.id}`;
+        },
+        deadlineClass() {
+            const daysRemaining = this.daysRemaining;
+            if (daysRemaining <= 2 && daysRemaining >= 0) {
+                return 'deadline-approaching';
+            } else if (daysRemaining < 0) {
+                return 'deadline-passed';
+            } else {
+                return 'deadline-normal';
+            }
+        },
+        deadlineText() {
+            const daysRemaining = this.daysRemaining;
+            if (daysRemaining <= 2 && daysRemaining >= 0) {
+                return `截止日期: ${this.assignment.due_date} (还剩 ${daysRemaining} 天)`;
+            } else if (daysRemaining < 0) {
+                return `截止日期: ${this.assignment.due_date} (已过期)`;
+            } else {
+                return `截止日期: ${this.assignment.due_date} (还剩 ${daysRemaining} 天)`;
+            }
+        },
+        daysRemaining() {
+            const dueDate = new Date(this.assignment.due_date);
+            const now = new Date();
+            const timeDiff = dueDate - now;
+            return Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+        },
+        submissionStatusClass() {
+            return this.submission ? 'status-success' : 'status-warning';
+        },
+        submissionStatusIcon() {
+            return this.submission ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+        },
+        submissionStatusText() {
+            return this.submission ? '已提交' : '未提交';
+        },
+        formattedSubmissionDate() {
+            if (!this.submission) return '';
+            return this.submission.submission_date;
+        },
+        wordCountText() {
+            if (this.isOverLimit) {
+                return `${this.wordCount}个字符 (超出限制)`;
+            }
+            return `${this.wordCount}个字符`;
+        },
+        isOverLimit() {
+            return this.wordCount > this.MAX_CHARS;
         }
     },
     methods: {
+        async loadSubmissionDetail(){
+            const assignmentId = this.$route.params.assignmentId;
+            try{
+                const response = await getAssignmentDetail(assignmentId);
+                if(response.code === 200){
+                    this.assignment = response.data;
+                }
 
+            }catch(error){
+                console.error('加载作业详情失败:', error);
+            }
+        },
+
+        updateWordCount() {
+            this.wordCount = this.submissionContent.length;
+
+            // 自动保存草稿
+            clearTimeout(this.typingTimer);
+            this.typingTimer = setTimeout(this.saveDraft, this.TYPING_INTERVAL);
+        },
+        saveDraft() {
+            if (this.submissionContent) {
+                localStorage.setItem(`assignment_draft_${this.assignment.id}`, this.submissionContent);
+                console.log('Draft saved');
+            }
+        },
+        loadDraft() {
+            const savedDraft = localStorage.getItem(`assignment_draft_${this.assignment.id}`);
+            if (savedDraft && !this.submissionContent) {
+                this.submissionContent = savedDraft;
+                this.updateWordCount();
+            }
+        },
+        submitForm() {
+            // 验证
+            if (!this.submissionContent.trim()) {
+                alert('请输入作业内容');
+                return;
+            }
+
+            if (this.isOverLimit) {
+                alert('作业内容超出字符限制，请删减内容后重新提交');
+                return;
+            }
+
+            // 显示加载状态
+            this.isSubmitting = true;
+            this.isLoading = true;
+
+            // 模拟提交
+            setTimeout(() => {
+                // 在实际应用中，这里应该发送AJAX请求
+                console.log('提交内容:', this.submissionContent);
+
+                // 清除草稿
+                localStorage.removeItem(`assignment_draft_${this.assignment.id}`);
+
+                // 更新提交状态
+                this.submission = {
+                    submission_date: new Date().toLocaleString(),
+                    data: this.submissionContent,
+                    feedback: null
+                };
+
+                // 重置状态
+                this.isSubmitting = false;
+                this.isLoading = false;
+
+                alert('提交成功！');
+            }, 1500);
+        }
     },
     mounted() {
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css';
         document.head.appendChild(link);
+
+        // if (this.submission) {
+        //     this.submissionContent = this.submission.data;
+        //     this.updateWordCount();
+        // } else {
+        //     // 否则尝试加载草稿
+        //     this.loadDraft();
+        // }
+
+        this.loadSubmissionDetail();
     }
 }
 </script>
@@ -150,7 +287,7 @@ export default {
     box-sizing: border-box;
 }
 
-.submission_detail-page {
+body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
     color: var(--text-color);

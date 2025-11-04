@@ -6,25 +6,12 @@
         <form @submit.prevent="login">
           <div class="form-group">
             <label for="identifier">学号/教工号</label>
-            <input
-              type="text"
-              id="identifier"
-              name="identifier"
-              placeholder="请输入学号/教工号"
-              required
-              v-model="identifier"
-            />
+            <input type="text" id="identifier" name="identifier" placeholder="请输入学号/教工号" required
+              v-model="identifier" />
           </div>
           <div class="form-group">
             <label for="password">密码</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="请输入密码"
-              required
-              v-model="password"
-            />
+            <input type="password" id="password" name="password" placeholder="请输入密码" required v-model="password" />
           </div>
           <div v-if="errorMessage" class="error-message">
             {{ errorMessage }}
@@ -91,6 +78,13 @@ export default {
                 console.log("路由跳转错误:", err);
               });
             }, 1000);
+          } else if (userInfo.role == "student") {
+            setTimeout(() => {
+              this.$router.push("/student_profile").catch((err) => {
+                console.log("路由跳转错误:", err);
+              });
+            }, 1000);
+
           } else {
             setTimeout(() => {
               this.$router.push("/").catch((err) => {
@@ -128,6 +122,7 @@ export default {
   height: 100vh;
   color: #333;
 }
+
 /* 容器样式 */
 .container {
   width: 100%;

@@ -23,6 +23,7 @@
           <tbody>
             <tr
               v-for="assignment in this.assignments"
+              :key="assignment.id"
               v-if="assignments.length > 0"
             >
               <td>{{ assignment.title }}</td>

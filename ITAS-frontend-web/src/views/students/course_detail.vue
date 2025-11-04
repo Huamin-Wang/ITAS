@@ -4,10 +4,10 @@
 
         <div class="header">
             <!-- 课程名 course.name -->
-            <h1></h1>
-            <p>课程代码：</p>
+            <h1>{{ course.name }}</h1>
+            <p>课程代码：{{ course.code }}</p>
             <p>教师：</p>
-            <p>学期：</p>
+            <p>学期：{{ course.semester }}</p>
         </div>
 
         <div class="container">
@@ -19,27 +19,35 @@
                         <div class="course-overview">
                             <div class="overview-card">
                                 <h4>总作业数</h4>
-                                <div class="overview-number"></div>
+                                <div class="overview-number">
+                                    {{ assignments.length }}
+                                </div>
                             </div>
-                           
+
                         </div>
                     </div>
 
                     <!-- 作业列表 -->
                     <div class="section">
                         <h3><span class="section-icon">📝</span>作业列表</h3>
-                        
-                        <div class="homework-card {% if loop.index > 5 %}hidden{% endif %}">
-                            <h4>
-                                <a href="/submission_detail/{{ assignment.id }}"></a>
-                            </h4>
-                            <div class="homework-date">截止日期：</div>
+                        <div v-if="assignments.length">
+                            <div class="homework-card" v-for="assignment in assignments" :key="assignment.id"
+                                :class="{ hidden: index >= 5 && !showAllAssignments }">
+                                <h4>
+                                    <a :href="`/submission_detail/${assignment.id}`">{{ assignment.title }}</a>
+                                </h4>
+                                <div class="homework-date">
+                                    截止日期：{{ assignment.due_date }}
+                                </div>
+                            </div>
+
+                            <button class="btn" v-if="assignments.length > 5 && !showAllAssignments"
+                                @click="showAllAssignments = true">
+                                显示更多作业
+                            </button>
                         </div>
-                       
-                        <button id="showMoreBtn" class="btn" onclick="showMoreHomework()">显示更多作业</button>
-                        
-                        <p style="color: #666; text-align: center; padding: 2rem;">暂无作业</p>
-                        
+                        <p style="color: #666; text-align: center; padding: 2rem;" v-else>暂无作业</p>
+
                     </div>
 
                     <!-- 操作按钮 -->
@@ -106,6 +114,60 @@
 </template>
 
 <script>
+import { getCourseDetail, getAssignments } from '@/http/api';
+export default {
+    data() {
+        return {
+            course: {},
+            error: '',
+            loading: true,
+            assignments: {},
+            showAllAssignments: false
+        }
+    },
+    created() {
+
+    },
+    methods: {
+        async loadCourseDetail() {
+            const courseId = this.$route.params.courseId;
+            try {
+                const response = await getCourseDetail(courseId);
+                if (response.code === 200) {
+                    this.course = response.data;
+                } else {
+                    console.error('获取课程详情失败:', response.message);
+                    this.$router.push('/student_profile');
+                }
+            } catch (error) {
+                console.error('获取课程详情失败:', error);
+                this.$router.push('/student_profile');
+            }
+        },
+
+        //获取课程作业列表
+        async fetchAssignments() {
+            const courseId = this.$route.params.courseId;
+            if (courseId) {
+                getAssignments(courseId)
+                    .then((response) => {
+                        this.assignments = response.data;
+                    })
+                    .catch((error) => {
+                        console.error("获取课程作业列表失败:", error);
+                        this.$message.error("获取课程作业列表失败");
+                    });
+            } else {
+                this.$message.error("未提供课程ID");
+            }
+        }
+    },
+    mounted() {
+        this.loadCourseDetail();
+        this.fetchAssignments();
+    }
+}
+
 
 </script>
 
@@ -185,6 +247,10 @@
     color: var(--primary-color);
     display: flex;
     align-items: center;
+}
+
+.section a{
+    text-decoration: none;
 }
 
 .section-icon {

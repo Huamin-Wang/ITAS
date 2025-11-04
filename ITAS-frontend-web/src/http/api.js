@@ -151,3 +151,51 @@ export function chat_handle(data) {
         data: data
     })
 }
+
+//学生端 -- 获取当前用户信息
+export function getCurrentStudent(user_id) {
+    return request({
+        url: `/me?user_id=${user_id}`,
+        method: 'get'
+    })
+}
+
+//学生端 -- 获取所有课程信息
+export function getCourses() {
+    return request({
+        url: '/getCourses',
+        method: 'get',
+    })
+}
+
+//学生端 -- 根据课程ID进入对应课程
+export function getCourseDetail(course_id) {
+    return request({
+        url: `/course_detail?course_id=${course_id}`,
+        method: 'get',
+    })
+}
+
+//学生端 -- 获取所有作业列表
+export function getAllAssignments() {
+    return request({
+        url: '/get_all_assignments',
+        method: 'get',
+    })
+}
+
+//学生端 -- 根据课程ID获取作业列表
+export function getAssignments(course_id) {
+    return request({
+        url: `/get_assignments?course_id=${course_id}`,
+        method: 'get',
+    })
+}
+
+//学生端 -- 根据作业ID获取作业详情
+export function getAssignmentDetail(assignment_id) {
+    return request({
+        url: `/assignment_detail?assignment_id=${assignment_id}`,
+        method: 'get',
+    })
+}

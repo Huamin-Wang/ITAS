@@ -9,6 +9,7 @@ import chat from '../views/chat.vue' //ai问答小助手
 // students
 import student_profile from '../views/students/student_profile.vue';  //学生中心
 import submission_detail from '../views/students/submission_detail.vue'; //提交作业详情
+import submissions from '../views/students/submissions.vue'; //提交作业
 import course_detail from '../views/students/course_detail.vue'; //课程详情
 
 //teachers
@@ -78,7 +79,7 @@ const routes = [
     }
   },
   {
-    path: '/submission_detail',
+    path: '/submission_detail/:assignmentId?',
     name: 'Submission_detail',
     component: submission_detail,
     meta: {
@@ -86,7 +87,15 @@ const routes = [
     }
   },
   {
-    path: '/course_detail',
+    path: '/submissions',
+    name: 'Submissions',
+    component: submissions,
+    meta: {
+      title: '学生端-提交作业'
+    }
+  },
+  {
+    path: '/course_detail/:courseId?',
     name: 'Course_detail',
     component: course_detail,
     meta: {
