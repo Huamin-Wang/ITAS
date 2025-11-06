@@ -148,8 +148,16 @@
           </button>
           <!--                                    <button onclick="location.href='/course/course_analysis/{{course.id}}'">进入分析</button>-->
         </div>
+
+        <div class="dashboard-card">
+          <h3>课堂测试</h3>
+          <p>发布、批改和管理课程小测</p>
+          <button @click="go_to_course_quiz(this.course.id)">
+            进入课堂测试
+          </button>
+        </div>
       </div>
-      <div style="text-align: center; margin-top: 40px">
+      <!-- <div style="text-align: center; margin-top: 40px">
         <span
           @click="go_to_chat(this.course.id)"
           style="
@@ -167,7 +175,7 @@
         >
           跳转到AI问答
         </span>
-      </div>
+      </div> -->
     </div>
 
     <footer>
@@ -266,6 +274,11 @@ export default {
     //跳转随机选择页面
     go_to_random_select(course_id) {
       this.$router.push(`/random_select/${course_id}`);
+    },
+
+    //跳转课堂测试页面
+    go_to_course_quiz(course_id) {
+      this.$router.push(`/course_quiz/${course_id}`);
     },
 
     //跳转ai小问答

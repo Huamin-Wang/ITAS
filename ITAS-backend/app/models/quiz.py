@@ -7,6 +7,9 @@ class Quiz(db.Model):
     title = db.Column(db.Text, nullable=False)
     create_time = db.Column(db.DateTime, nullable=True)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False, default=0)
+    description = db.Column(db.Text, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(20), nullable=False, default='draft')  #'draft', 'published', 'closed'
     
     # 关联关系
     questions = db.relationship('QuizQuestion', backref='quiz', lazy=True, cascade='all, delete-orphan')
@@ -21,5 +24,8 @@ class Quiz(db.Model):
             'teacher_id': self.teacher_id,
             'title': self.title,
             'create_time': self.create_time.isoformat() if self.create_time else None,
-            'course_id': self.course_id
+            'course_id': self.course_id,
+            'description': self.description,
+            'end_time': self.end_time.isoformat() if self.end_time else None,
+            'status': self.status
         }

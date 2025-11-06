@@ -72,7 +72,7 @@ def create_app(config_name='default'):
             '/get_openid_unlocked',    # 获取openid
             '/minilogin',   #微信登录
             # 聊天相关路由 - 添加到白名单
-            '/chat_handle',
+            '/update_quiz',
             '/chat/stats',
             '/chat/history',
             '/chat/history/clear',

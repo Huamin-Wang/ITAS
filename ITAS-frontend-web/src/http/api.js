@@ -152,6 +152,32 @@ export function chat_handle(data) {
     })
 }
 
+//获取课堂小测列表
+export function get_quizzes(course_id) {
+    return request({
+        url: `/get_quizzes?course_id=${course_id}`,
+        method: 'get',
+    })
+}
+
+//创建课堂小测(总表)
+export function create_quiz(data) {
+    return request({
+        url: '/create_quiz',
+        method: 'post',
+        data: data
+    })
+}
+
+//添加课堂小测题目
+export function add_quiz_questions(data) {
+    return request({
+        url: '/add_quiz_questions',
+        method: 'post',
+        data: data
+    })
+}
+
 //学生端 -- 获取当前用户信息
 export function getCurrentStudent(user_id) {
     return request({

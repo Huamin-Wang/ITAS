@@ -236,6 +236,7 @@ def create_quiz():
 def add_quiz_questions():
     try:
         data = request.get_json()
+        print(f"Received data for adding quiz questions: {data}")
         if 'quiz_id' not in data or 'questions' not in data:
             return Result.bad_request("缺少必要的字段").to_json(), 400
         quiz_id = data.get('quiz_id')
@@ -276,3 +277,17 @@ def get_quiz_questions():
         import traceback
         print(f"获取小测详情错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'获取小测详情时发生错误: {str(e)}').to_json(), 500
+    
+#编辑小测
+@bp.route('/update_quiz', methods=['POST'])
+def update_quiz():
+    try:
+        data = request.get_json()
+        if 'id' not in data:
+            return Result.bad_request("小测ID是必需的").to_json(), 400
+        result = CourseStudentService.update_quiz(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"编辑小测错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'编辑小测时发生错误: {str(e)}').to_json(), 500

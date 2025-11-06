@@ -596,6 +596,7 @@ class CourseStudentService:
             title = data.get('title')
             teacher_id = data.get('teacher_id')
             create_time = data.get('create_time')
+            description = data.get('description')
             # 验证必填字段
             if not all([title, teacher_id]):
                 return Result.internal_error(f'小测标题和教师id是必填的')
@@ -610,6 +611,7 @@ class CourseStudentService:
                 teacher_id=teacher_id, 
                 course_id=course_id,
                 title=title,
+                description=description,
                 create_time=create_time
             )
 
@@ -664,7 +666,23 @@ class CourseStudentService:
             quizzes = Quiz.query.filter_by(course_id=course_id).all()
             if not quizzes:
                 return Result.success('')
-            quizzes_data = [quiz.to_dict() for quiz in quizzes]
+
+            # 批量统计每个 quiz 的题目数量以避免 N+1 查询
+            quiz_ids = [q.id for q in quizzes]
+            from sqlalchemy import func
+            counts = db.session.query(
+                QuizQuestion.quiz_id,
+                func.count(QuizQuestion.id).label('question_count')
+            ).filter(QuizQuestion.quiz_id.in_(quiz_ids)).group_by(QuizQuestion.quiz_id).all()
+
+            counts_dict = {quiz_id: cnt for quiz_id, cnt in counts}
+
+            quizzes_data = []
+            for quiz in quizzes:
+                qd = quiz.to_dict()
+                qd['question_count'] = counts_dict.get(quiz.id, 0)
+                quizzes_data.append(qd)
+
             return Result.success(data=quizzes_data)
         except Exception as e:
             return Result.internal_error(f'获取小测失败: {str(e)}')
@@ -691,3 +709,32 @@ class CourseStudentService:
             return Result.success(data=result_data)
         except Exception as e:
             return Result.internal_error(f'获取小测详情失败: {str(e)}')
+        
+    #更新小测
+    @staticmethod
+    def update_quiz(data: dict[str, Any]) -> Result:
+        try:
+            quiz_id = data.get('id')
+            quiz = Quiz.query.get(quiz_id)
+            if not quiz:
+                return Result.not_found(f'小测 {quiz_id} 未找到')
+            # 允许更新的字段列表
+            updatable_fields = ['title', 'description','end_time']
+
+            # 简单字段直接赋值
+            for field in ['title', 'description']:
+                if field in data:
+                    setattr(quiz, field, data.get(field))
+
+            # 转换日期格式
+            from datetime import datetime, timedelta
+            if 'deadline_time' in data:
+                deadline_time = data.get('deadline_time')
+                quiz.end_time = datetime.now() + timedelta(minutes=int(deadline_time))
+                quiz.status = 'published'
+            db.session.commit()
+            return Result.success(data=quiz.to_dict())
+
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'更新小测失败: {str(e)}')

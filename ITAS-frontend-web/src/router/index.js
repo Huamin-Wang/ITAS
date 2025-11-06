@@ -26,6 +26,7 @@ import create_course from '../views/teachers/create_course.vue'; // 创建课程
 import add_score from '../views/teachers/add_score.vue'; //成绩管理
 import ranking from '../views/teachers/ranking.vue'; //排名
 import random_select from '../views/teachers/random_select.vue'; //随机选择
+import course_quiz from '../views/teachers/course_quiz.vue'; //课堂测试
 
 
 
@@ -198,6 +199,14 @@ const routes = [
     component: chat,
     meta: {
       title: 'AI问答小助手'
+    }
+  },
+  {
+    path: '/course_quiz/:courseId?',
+    name: 'course_quiz',
+    component: course_quiz,
+    meta: {
+      title: '课堂测试'
     }
   },
 ];
