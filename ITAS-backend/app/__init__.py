@@ -72,7 +72,7 @@ def create_app(config_name='default'):
             '/get_openid_unlocked',    # 获取openid
             '/minilogin',   #微信登录
             # 聊天相关路由 - 添加到白名单
-            '/update_quiz',
+            '/course_student_info',
             '/chat/stats',
             '/chat/history',
             '/chat/history/clear',
@@ -110,10 +110,12 @@ def create_app(config_name='default'):
     # 注册蓝图
     from app.controllers.userController import bp as user_bp
     from app.controllers.courseStudentController import bp as course_student_bp
+    from app.controllers.studentController import bp as students_bp
     # 注册聊天控制器蓝图
     from app.controllers.chatController import bp as chat_bp
     
     app.register_blueprint(user_bp)
+    app.register_blueprint(students_bp)
     app.register_blueprint(course_student_bp)
     app.register_blueprint(chat_bp)
     

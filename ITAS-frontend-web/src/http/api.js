@@ -181,7 +181,7 @@ export function add_quiz_questions(data) {
 //学生端 -- 获取当前用户信息
 export function getCurrentStudent(user_id) {
     return request({
-        url: `/me?user_id=${user_id}`,
+        url: `/course_student_info?user_id=${user_id}`,
         method: 'get'
     })
 }
@@ -193,6 +193,15 @@ export function getCourses() {
         method: 'get',
     })
 }
+
+//学生端 -- 根据课程id获取学生对应课程信息
+export function getStudentCourses(course_id) {
+    return request({
+        url: `/get_student_course?course_id=${course_id}`,
+        method: 'get',
+    })
+}
+
 
 //学生端 -- 根据课程ID进入对应课程
 export function getCourseDetail(course_id) {

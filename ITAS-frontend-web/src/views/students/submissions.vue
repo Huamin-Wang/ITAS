@@ -104,18 +104,9 @@ export default {
 </script>
 
 <style scoped>
-:root {
-    --primary-color: #1890ff;
-    --danger-color: #ff4d4f;
-    --bg-color: #f4f4f4;
-    --shadow-color: rgba(0, 0, 0, 0.1);
-    --text-color: #333;
-    --text-secondary: #666;
-}
-
-body {
+.submissions-page {
     font-family: Arial, sans-serif;
-    background-color: var(--bg-color);
+    background-color: #f4f4f4;
     margin: 0;
     padding: 0;
 }
@@ -127,23 +118,23 @@ body {
     align-items: center;
     padding: 1rem 2rem;
     background: white;
-    box-shadow: 0 2px 8px var(--shadow-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .back-button {
     text-decoration: none;
-    color: var(--text-secondary);
+    color: #666;
     padding: 0.5rem 1rem;
     border-radius: 4px;
     transition: background 0.3s ease;
 }
 
 .back-button:hover {
-    background: var(--bg-color);
+    background: #f4f4f4;
 }
 
 .current-time {
-    color: var(--text-secondary);
+    color: #666;
     font-size: 0.9rem;
 }
 
@@ -155,11 +146,11 @@ body {
     padding: 2rem;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 2px 12px var(--shadow-color);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
-    color: var(--primary-color);
+    color: #1890ff;
     text-align: center;
     margin-bottom: 2rem;
 }
@@ -175,7 +166,7 @@ h1 {
     padding: 1rem;
     margin-bottom: 1rem;
     border-radius: 8px;
-    box-shadow: 0 2px 8px var(--shadow-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -189,37 +180,37 @@ h1 {
 
 .assignment-title {
     font-weight: bold;
-    color: var(--text-color);
+    color: #333;
 }
 
 .assignment-deadline {
-    color: var(--text-secondary);
+    color: #666;
     font-size: 0.9rem;
 }
 
 .deadline-passed {
-    color: var(--danger-color);
+    color: #ff4d4f;
     font-weight: bold;
     margin-left: 0.5rem;
 }
 
 .submit-link {
     text-decoration: none;
-    color: var(--primary-color);
+    color: #1890ff;
     padding: 0.5rem 1rem;
-    border: 1px solid var(--primary-color);
+    border: 1px solid #1890ff;
     border-radius: 4px;
     transition: all 0.3s ease;
 }
 
 .submit-link:hover {
-    background: var(--primary-color);
+    background: #1890ff;
     color: white;
 }
 
 .no-assignments {
     text-align: center;
-    color: var(--text-secondary);
+    color: #666;
     font-style: italic;
 }
 

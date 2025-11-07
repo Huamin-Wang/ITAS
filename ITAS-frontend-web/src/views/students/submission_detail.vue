@@ -267,31 +267,17 @@ export default {
 </script>
 
 <style scoped>
-:root {
-    --primary-color: #4a90e2;
-    --primary-light: #eaf2fd;
-    --success-color: #2ecc71;
-    --warning-color: #f1c40f;
-    --error-color: #e74c3c;
-    --text-color: #2c3e50;
-    --text-light: #7f8c8d;
-    --border-color: #dfe6e9;
-    --bg-color: #f5f6fa;
-    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --transition: all 0.3s ease;
-}
-
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body {
+.submission_detail-page {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
-    color: var(--text-color);
-    background: var(--bg-color);
+    color: #2c3e50;
+    background: #f5f6fa;
     padding: 1.5rem;
 }
 
@@ -303,14 +289,14 @@ body {
 .card {
     background: white;
     border-radius: 12px;
-    box-shadow: var(--card-shadow);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     margin-bottom: 2rem;
     overflow: hidden;
 }
 
 .card-header {
     padding: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid #dfe6e9;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -323,12 +309,12 @@ body {
 
 .back-button {
     text-decoration: none;
-    color: var(--text-color);
-    background: var(--bg-color);
+    color: #2c3e50;
+    background: #f5f6fa;
     padding: 0.5rem 1rem;
     border-radius: 6px;
     font-size: 0.9rem;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -349,7 +335,7 @@ body {
 }
 
 .assignment-title {
-    color: var(--primary-color);
+    color: #4a90e2;
     margin: 0;
     font-size: 1.5rem;
 }
@@ -373,12 +359,12 @@ body {
 
 .deadline-approaching {
     color: white;
-    background-color: var(--error-color);
+    background-color: #e74c3c;
 }
 
 .deadline-normal {
     color: white;
-    background-color: var(--success-color);
+    background-color: #2ecc71;
 }
 
 .deadline-passed {
@@ -388,16 +374,16 @@ body {
 
 .section {
     margin-bottom: 2rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid #dfe6e9;
     border-radius: 8px;
     overflow: hidden;
 }
 
 .section-header {
-    background: var(--primary-light);
+    background: #eaf2fd;
     padding: 0.75rem 1.5rem;
     font-weight: 600;
-    color: var(--primary-color);
+    color: #4a90e2;
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -420,11 +406,11 @@ body {
 }
 
 .status-success {
-    background: var(--success-color);
+    background: #2ecc71;
 }
 
 .status-warning {
-    background: var(--warning-color);
+    background: #f1c40f;
 }
 
 .submission-info {
@@ -442,12 +428,12 @@ body {
 
 .info-label {
     font-size: 0.85rem;
-    color: var(--text-light);
+    color: #7f8c8d;
 }
 
 .info-value {
     font-weight: 600;
-    color: var(--text-color);
+    color: #2c3e50;
 }
 
 .grade-badge {
@@ -462,7 +448,7 @@ body {
 }
 
 .grade-value {
-    background: var(--success-color);
+    background: #2ecc71;
 }
 
 .grade-pending {
@@ -473,7 +459,7 @@ body {
     background: #f8f9fa;
     padding: 1.5rem;
     border-radius: 8px;
-    border-left: 4px solid var(--primary-color);
+    border-left: 4px solid #4a90e2;
     margin: 1rem 0;
 }
 
@@ -491,17 +477,17 @@ textarea {
     width: 100%;
     min-height: 200px;
     padding: 1rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid #dfe6e9;
     border-radius: 8px;
     font-size: 1rem;
     font-family: inherit;
     resize: vertical;
-    transition: var(--transition);
+    transition: all 0.3s ease;
 }
 
 textarea:focus {
     outline: none;
-    border-color: var(--primary-color);
+    border-color: #4a90e2;
     box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
 }
 
@@ -510,7 +496,7 @@ textarea:focus {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    background: var(--primary-color);
+    background: #4a90e2;
     color: white;
     border: none;
     padding: 1rem 2rem;
@@ -518,7 +504,7 @@ textarea:focus {
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s ease;
 }
 
 .button:hover {
@@ -533,14 +519,14 @@ textarea:focus {
 }
 
 .word-counter {
-    color: var(--text-light);
+    color: #7f8c8d;
     font-size: 0.85rem;
     text-align: right;
     margin-top: 0.5rem;
 }
 
 .character-limit-warning {
-    color: var(--error-color);
+    color: #e74c3c;
 }
 
 .loading-overlay {
@@ -556,7 +542,7 @@ textarea:focus {
     z-index: 1000;
     visibility: hidden;
     opacity: 0;
-    transition: var(--transition);
+    transition: all 0.3s ease;
 }
 
 .loading-overlay.active {
@@ -569,7 +555,7 @@ textarea:focus {
     height: 40px;
     border: 4px solid rgba(74, 144, 226, 0.2);
     border-radius: 50%;
-    border-top-color: var(--primary-color);
+    border-top-color: #4a90e2;
     animation: spin 1s ease-in-out infinite;
 }
 

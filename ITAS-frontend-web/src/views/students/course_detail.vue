@@ -185,7 +185,6 @@ export default {
     --warning: #fa8c16;
     --info: #13c2c2;
 }
-
 * {
     margin: 0;
     padding: 0;
@@ -194,8 +193,8 @@ export default {
 
 .course_detail-page {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--gray-light);
-    color: var(--text-dark);
+    background-color: #f4f4f4;
+    color: #333;
     line-height: 1.6;
 }
 
@@ -210,20 +209,20 @@ export default {
 
 .main-content,
 .sidebar {
-    background-color: var(--white);
-    box-shadow: var(--shadow);
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     overflow: hidden;
 }
 
 .header {
-    background-color: var(--primary-color);
-    color: var(--white);
+    background-color: #1890ff;
+    color: #fff;
     padding: 2rem;
     grid-column: 1 / -1;
     border-radius: 12px;
     margin-bottom: 1rem;
-    text-align: var(--header-text-align);
+    text-align: center;
 }
 
 .header h1 {
@@ -238,13 +237,13 @@ export default {
     margin-bottom: 2rem;
     padding: 1.5rem;
     border-radius: 8px;
-    border-left: 4px solid var(--primary-color);
+    border-left: 4px solid #1890ff;
     background-color: rgba(24, 144, 255, 0.05);
 }
 
 .section h3 {
     margin-bottom: 1rem;
-    color: var(--primary-color);
+    color: #1890ff;
     display: flex;
     align-items: center;
 }
@@ -266,27 +265,27 @@ export default {
 }
 
 .overview-card {
-    background: var(--white);
-    border: 1px solid var(--gray-medium);
+    background: #fff;
+    border: 1px solid #eee;
     border-radius: 8px;
     padding: 1rem;
     text-align: center;
 }
 
 .overview-card h4 {
-    color: var(--primary-color);
+    color: #1890ff;
     margin-bottom: 0.5rem;
 }
 
 .overview-number {
     font-size: 1.8rem;
     font-weight: bold;
-    color: var(--primary-dark);
+    color: #0056b3;
 }
 
 .homework-card {
-    background: var(--white);
-    border: 1px solid var(--gray-medium);
+    background: #fff;
+    border: 1px solid #eee;
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1rem;
@@ -344,8 +343,8 @@ export default {
 
 .btn {
     padding: 0.8rem 1.2rem;
-    background-color: var(--primary-color);
-    color: var(--white);
+    background-color: #1890ff;
+    color: #fff;
     text-decoration: none;
     border-radius: 6px;
     font-weight: 500;
@@ -359,12 +358,12 @@ export default {
 }
 
 .btn:hover {
-    background-color: var(--primary-dark);
+    background-color: #0056b3;
     transform: translateY(-2px);
 }
 
 .btn-secondary {
-    background-color: var(--warning);
+    background-color: #fa8c16;
 }
 
 .btn-secondary:hover {
@@ -372,7 +371,7 @@ export default {
 }
 
 .btn-info {
-    background-color: var(--info);
+    background-color: #13c2c2;
 }
 
 .btn-info:hover {
@@ -380,18 +379,18 @@ export default {
 }
 
 .notification-item {
-    background: var(--white);
-    border: 1px solid var(--gray-medium);
+    background: #fff;
+    border: 1px solid #eee;
     border-radius: 8px;
     padding: 1rem;
     margin-bottom: 1rem;
-    border-left: 4px solid var(--warning);
+    border-left: 4px solid #fa8c16;
 }
 
 .notification-title {
     font-weight: bold;
     margin-bottom: 0.5rem;
-    color: var(--text-dark);
+    color: #333;
 }
 
 .notification-date {
@@ -402,7 +401,7 @@ export default {
 .progress-bar {
     width: 100%;
     height: 8px;
-    background-color: var(--gray-medium);
+    background-color: #eee;
     border-radius: 4px;
     margin-top: 0.5rem;
     overflow: hidden;
@@ -410,7 +409,7 @@ export default {
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--success), #73d13d);
+    background: linear-gradient(90deg, #52c41a, #73d13d);
     border-radius: 4px;
     transition: width 0.3s ease;
 }
@@ -418,7 +417,7 @@ export default {
 .progress-text {
     margin-top: 0.5rem;
     font-size: 0.9rem;
-    color: var(--text-dark);
+    color: #333;
 }
 
 .back-home {
@@ -458,7 +457,7 @@ export default {
 
 .resource-list li {
     padding: 0.5rem 0;
-    border-bottom: 1px solid var(--gray-medium);
+    border-bottom: 1px solid #eee;
 }
 
 .resource-list li:last-child {
@@ -466,14 +465,14 @@ export default {
 }
 
 .resource-list a {
-    color: var(--primary-color);
+    color: #1890ff;
     text-decoration: none;
     display: flex;
     align-items: center;
 }
 
 .resource-list a:hover {
-    color: var(--primary-dark);
+    color: #0056b3;
 }
 
 .resource-list a::before {

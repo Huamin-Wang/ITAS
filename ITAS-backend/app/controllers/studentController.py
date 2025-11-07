@@ -152,6 +152,30 @@ def get_current_user():
         print(f"获取当前用户信息失败: {str(e)}")
         return Result.internal_error("服务器内部错误").to_json(), 500
 
+# 学生中心--根据用户identifier获取课程学生信息
+@bp.route('/course_student_info', methods=['GET'])
+def get_course_student_info():
+    """根据用户identifier获取课程学生信息"""
+    try:
+        identifier = request.args.get('identifier')
+        user_id = request.args.get('user_id')
+        if user_id and not identifier:
+            user_data = StudentService.get_user_by_id(user_id)
+            if not user_data:
+                return Result.not_found("用户不存在").to_json(), 404
+            identifier = user_data.get('identifier')
+
+        if not identifier:
+            return Result.bad_request("用户标识符不能为空").to_json(), 400
+        
+        result = StudentService.get_course_students_by_identifier(identifier)
+        return result.to_json(), result.code
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'获取课程学生信息失败: {str(e)}'
+        }), 500
+
 # # 学生中心获取课程列表
 @bp.route('/getCourses', methods=['GET'])
 def get_all_courses():
@@ -162,6 +186,22 @@ def get_all_courses():
         'success': True,
         'courses': courses_data
     })
+
+# 学生中心--根据课程id获取课程信息
+@bp.route('/get_student_course', methods=['GET'])
+def get_student_course():
+    try:
+        course_id = request.args.get('course_id', type=int)
+        if course_id is None:
+            return Result.bad_request("课程ID是必需的").to_json(), 400
+
+        result = StudentService.get_course_by_student(course_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取学生课程信息错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取学生课程信息时发生错误: {str(e)}').to_json(), 500
+
 
 # 学生中心--根据课程id进入不同课程
 @bp.route('/course_detail', methods=['GET'])

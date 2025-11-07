@@ -10,7 +10,7 @@
             <p>学生中心 - 提升学习效率，增强学习体验</p>
             <div class="login-status">
                 <span>欢迎, <a href="/edit_profile">
-                        {{ user_name }}
+                        {{ student_name }}
                     </a>同学!</span>
                 <span> <a href="/logout" onclick="return confirm('确定要退出吗？')" style="font-size: 0.5em;">退出</a></span>
             </div>
@@ -19,7 +19,7 @@
         <div class="container">
             <div class="welcome-section">
                 <h2>欢迎, <a href="/edit_profile" style="color: #1890ff; text-decoration: underline;">
-                        {{ user_name }}
+                        {{ student_name }}
                     </a>同学!</h2>
                 <div style="text-align: center;">
                     <h3>关注微信公众号，进入AI教学助手，体验更完整功能！</h3>
@@ -71,12 +71,12 @@
 </template>
 
 <script>
-import { getAllAssignments, getCourses, getCurrentStudent } from '@/http/api';
+import { getAssignments, getStudentCourses, getCurrentStudent } from '@/http/api';
 
 export default {
     data() {
         return {
-            user_name: '',
+            student_name: '',
             userInfo: {},
             courses: [],
             assignments: []
@@ -92,7 +92,7 @@ export default {
                 const response = await getCurrentStudent(userId);
                 if (response.code = 200) {
                     this.userInfo = response.data;
-                    this.user_name = response.data.name;
+                    this.student_name = response.data.student_name;
                 } else {
                     console.log('获取用户信息失败');
                 }
@@ -105,28 +105,65 @@ export default {
 
         async fetchCourses() {
             try {
-                const response = await getCourses();
-                // console.log('获取课程响应:', response);
-                if (response.success === true) {
-                    this.courses = response.courses;
+                // 先获取用户信息，从中获取 course_id
+                const userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
+                const userId = userInfo.user_id;
+
+                // 获取学生课程信息
+                const studentResponse = await getCurrentStudent(userId);
+                if (studentResponse.code === 200) {
+                    // 从学生信息中获取 course_id
+                    const courseId = studentResponse.data.course_id;
+
+                    if (courseId) {
+                        // 使用 course_id 获取课程详情
+                        const response = await getStudentCourses(courseId);
+                        console.log('获取课程响应:', response);
+                        if (response.code === 200) {
+                            this.courses = [response.data]; // 包装成数组，因为可能只有一个课程
+                        } else {
+                            console.log('获取课程失败:', response.message);
+                        }
+                    } else {
+                        console.log('学生信息中未找到课程ID');
+                    }
                 } else {
-                    console.log('获取课程失败:', response.message);
+                    console.log('获取学生信息失败');
                 }
             } catch (error) {
                 console.log('获取课程信息失败:', error);
             }
         },
 
-        async fetchAllAssignments() {
+        async fetchAssignments() {
             try {
-                const response = await getAllAssignments();
-                if (response.code === 200) {
-                    this.assignments = response.data;
+                // 先获取用户信息，从中获取 course_id
+                const userInfo = JSON.parse(sessionStorage.getItem('userInfo'));
+                const userId = userInfo.user_id;
+
+                // 获取学生课程信息
+                const studentResponse = await getCurrentStudent(userId);
+                if (studentResponse.code === 200) {
+                    // 从学生信息中获取 course_id
+                    const courseId = studentResponse.data.course_id;
+
+                    if (courseId) {
+                        // 使用 course_id 获取课程详情
+                        const response = await getAssignments(courseId);
+                        console.log('获取课程响应:', response);
+                        if (response.code === 200) {
+                            this.assignments = response.data; // 包装成数组，因为可能只有一个课程
+                        } else {
+                            console.log('获取课程失败:', response.message);
+                        }
+                    } else {
+                        console.log('学生信息中未找到课程ID');
+                    }
                 } else {
-                    console.log('获取作业失败:', response.message);
+                    console.log('获取学生信息失败');
                 }
             } catch (error) {
-                console.log('获取作业信息失败:', error);
+                console.log('获取课程信息失败:', error);
             }
 
         }
@@ -134,7 +171,7 @@ export default {
     mounted() {
         this.loaduserInfo();
         this.fetchCourses();
-        this.fetchAllAssignments();
+        this.fetchAssignments();
     }
 }
 </script>
