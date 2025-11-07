@@ -1,7 +1,7 @@
 <template>
   <div class="create-course-page">
     <header>
-      <a href="/" class="back-to-home">
+      <a href="/teacher_profile" class="back-to-home">
         <i class="fas fa-home">返回首页</i>
       </a>
       <h1>创建新课程</h1>

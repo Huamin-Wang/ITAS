@@ -556,7 +556,7 @@ export default {
     },
 
     goBack() {
-      this.$router.push(`/teachers/course/${this.course.id}`);
+      this.$router.push(`/course_manager/${this.course.id}`);
     },
 
     //选择题目类型
@@ -767,8 +767,7 @@ export default {
     },
 
     //发布小测
-    releaseQuiz(id) {
-    },
+    releaseQuiz(id) {},
   },
   computed: {
     formatDateToYYYYMMDDHHMM() {

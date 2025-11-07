@@ -1,7 +1,7 @@
 <template>
   <div class="update-course-page">
     <header>
-      <a href="/" class="back-to-home">
+      <a href="/teacher_profile" class="back-to-home">
         <i class="fas fa-home"></i> 返回首页
       </a>
       <h1>更新课程</h1>
