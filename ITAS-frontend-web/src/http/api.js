@@ -178,6 +178,23 @@ export function add_quiz_questions(data) {
     })
 }
 
+//获取小测题目
+export function get_quiz_questions(quiz_id) {
+    return request({
+        url: `/get_quiz_questions?quiz_id=${quiz_id}`,
+        method: 'get'
+    })
+}
+
+//编辑小测
+export function update_quiz(data) {
+    return request({
+        url: '/update_quiz',
+        method: 'post',
+        data: data
+    })
+}
+
 //学生端 -- 获取当前用户信息
 export function getCurrentStudent(user_id) {
     return request({

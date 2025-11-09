@@ -718,6 +718,7 @@ class CourseStudentService:
             quiz = Quiz.query.get(quiz_id)
             if not quiz:
                 return Result.not_found(f'小测 {quiz_id} 未找到')
+
             # 允许更新的字段列表
             updatable_fields = ['title', 'description','end_time']
 
@@ -732,6 +733,48 @@ class CourseStudentService:
                 deadline_time = data.get('deadline_time')
                 quiz.end_time = datetime.now() + timedelta(minutes=int(deadline_time))
                 quiz.status = 'published'
+
+            # 更新题目信息
+            if 'questions' in data:
+                questions_data = data.get('questions')
+                incoming_question_ids = set()
+
+                for question_data in questions_data:
+                    question_id = question_data.get('id')
+                    if question_id:
+                        # 更新现有题目
+                        question = QuizQuestion.query.get(question_id)
+                        if question and question.quiz_id == quiz_id:
+                            # 更新题目的各个字段
+                            question.question_text = question_data.get('question_text', question.question_text)
+                            question.question_type = question_data.get('question_type', question.question_type)
+                            question.correct_answer = question_data.get('correct_answer', question.correct_answer)
+                            question.points = question_data.get('points', question.points)
+
+                            # 处理选项字段
+                            if 'options' in question_data:
+                                question.options = json.dumps(question_data['options'])
+
+                            incoming_question_ids.add(question_id)
+                    else:
+                        # 创建新题目
+                        new_question = QuizQuestion(
+                            quiz_id=quiz_id,
+                            question_text=question_data.get('question_text', ''),
+                            question_type=question_data.get('question_type', 'single_choice'),
+                            correct_answer=question_data.get('correct_answer', ''),
+                            points=question_data.get('points', 1),
+                            options=json.dumps(question_data.get('options', []))
+                        )
+                        db.session.add(new_question)
+                        db.session.flush()
+                        incoming_question_ids.add(new_question.id)
+                # 删除不在传入列表中的题目
+                existing_questions = QuizQuestion.query.filter_by(quiz_id=quiz_id).all()
+                for existing_question in existing_questions:
+                    if existing_question.id not in incoming_question_ids:
+                        db.session.delete(existing_question)
+
             db.session.commit()
             return Result.success(data=quiz.to_dict())
 

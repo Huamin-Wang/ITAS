@@ -283,11 +283,13 @@ def get_quiz_questions():
 def update_quiz():
     try:
         data = request.get_json()
+        print(data.get('questions'))
         if 'id' not in data:
             return Result.bad_request("小测ID是必需的").to_json(), 400
         result = CourseStudentService.update_quiz(data)
         return result.to_json(), result.code
     except Exception as e:
+        print(data.get('questions'))
         import traceback
         print(f"编辑小测错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'编辑小测时发生错误: {str(e)}').to_json(), 500
