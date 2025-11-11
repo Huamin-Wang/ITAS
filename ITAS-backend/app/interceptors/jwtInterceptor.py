@@ -1,11 +1,10 @@
 from flask import jsonify, request
-from flask_jwt_extended import verify_jwt_in_request, get_jwt
+from flask_jwt_extended import verify_jwt_in_request, get_jwt, decode_token
 from functools import wraps
 
 
 class AuthInterceptor:
     token_blacklist = set()
-
 
     @staticmethod
     def token_required(f):
@@ -39,9 +38,17 @@ class AuthInterceptor:
         return jti in AuthInterceptor.token_blacklist
     
     @staticmethod
-    def get_token_from_header():
-        """从请求头获取令牌"""
-        auth_header = request.headers.get('Authorization', '')
-        if auth_header.startswith('Bearer '):
-            return auth_header[7:]
-        return None
+    def get_token_from_cookie():
+        """从Cookie中获取令牌"""
+        return request.cookies.get('access_token')
+    
+    @staticmethod
+    def decode_token_from_request():
+        """从当前请求解码令牌"""
+        try:
+            token = AuthInterceptor.get_token_from_cookie()
+            if token:
+                return decode_token(token)
+            return None
+        except Exception:
+            return None

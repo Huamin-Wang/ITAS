@@ -98,14 +98,17 @@ export default {
       };
       register(data)
         .then((res) => {
-          if (res) {
-            if (res.access_token) {
-              sessionStorage.setItem("token", res.access_token);
-            }
-            if (res.name) {
-              sessionStorage.setItem("user_name", res.name);
-            }
-          }
+          const userInfo = {
+            user_id: response.data.user_id,
+            name: response.data.name,
+            identifier: response.data.identifier,
+            role: response.data.role,
+            email: response.data.email,
+          };
+
+          localStorage.setItem("userInfo", JSON.stringify(userInfo));
+          // 启动心跳服务
+          heartbeat.init();
           console.log("注册成功，返回：", res);
         })
         .catch((err) => {

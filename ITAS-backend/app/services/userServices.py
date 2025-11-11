@@ -1,7 +1,8 @@
 from typing import Dict, Any
-from flask import jsonify
+from flask import jsonify, make_response
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import decode_token
+from flask_jwt_extended import decode_token, set_access_cookies, unset_jwt_cookies, get_jwt_identity, create_access_token, get_jwt
+from datetime import timedelta
 
 from app import db
 from app.models.user import User
@@ -64,23 +65,47 @@ class UserService:
                 additional_claims=additional_claims
             )
             
-            # 返回登录成功数据
+            # 返回登录成功数据（不再返回token到响应体）
             login_data = {
                 'user_id': user.id,
                 'name': user.name,
                 'identifier': user.identifier,
                 'role': user.role,
                 'email': user.email,
-                'access_token': access_token,
                 'login_status': 'success'
             }
             
             print(f'{user.name}登录成功！')
-            return Result.success(login_data, '登录成功')
+            
+            # 创建响应并设置HttpOnly Cookie
+            result = Result.success(login_data, '登录成功')
+            response = make_response(result.to_dict())
+            set_access_cookies(response, access_token)
+            return response
             
         except Exception as e:
             print(f"登录过程中发生错误: {str(e)}")
             return Result.internal_error(f'登录时发生错误: {str(e)}')
+
+    # 根据ID获取用户信息 ,用于学生中心获取用户信息 ---慎独、
+    @staticmethod
+    def get_user_by_id(user_id: int):
+        """根据 ID 获取用户信息(用于 /me)"""
+        try:
+            user = User.query.get(user_id)
+            if not user:
+                return None
+
+            return {
+                'user_id': user.id,
+                'name': user.name,
+                'identifier': user.identifier,
+                'role': user.role,
+                'email': user.email
+            }
+        except Exception as e:
+            print(f"获取用户信息失败: {e}")
+            return None
 
     @staticmethod
     def register(data: Dict[str, Any]) -> Result:
@@ -126,7 +151,7 @@ class UserService:
             db.session.add(user)
             db.session.commit()
 
-            # 创建 JWT token，返回受限用户信息和 token（不包含敏感字段）
+            # 创建 JWT token
             additional_claims = {
                 'username': user.name,
                 'account_category': user.role or 'user'
@@ -136,11 +161,14 @@ class UserService:
             data = {
                 'user_id': user.id,
                 'name': user.name,
-                'access_token': access_token,
                 'registration_status': 'complete'
             }
 
-            return Result.created(data, '注册成功')
+            # 创建响应并设置HttpOnly Cookie
+            result = Result.created(data, '注册成功')
+            response = make_response(result.to_dict())
+            set_access_cookies(response, access_token)
+            return response
 
         except Exception as e:
             try:
@@ -153,10 +181,15 @@ class UserService:
     def logout():
         """用户登出方法"""
         try:
-            # 获取当前请求的令牌
-            token = AuthInterceptor.get_token_from_header()
+            # 从Cookie获取令牌
+            from app.interceptors.jwtInterceptor import AuthInterceptor
+            token = AuthInterceptor.get_token_from_cookie()
+            
             if not token:
-                return jsonify({'error': '未找到令牌'}), 400
+                error_result = Result.bad_request('未找到令牌')
+                response = make_response(error_result.to_json(), error_result.code)
+                response.headers['Content-Type'] = 'application/json'
+                return response
             
             # 解码令牌获取jti
             decoded_token = decode_token(token)
@@ -165,10 +198,79 @@ class UserService:
             # 将令牌加入黑名单
             AuthInterceptor.revoke_token(jti)
             
-            return jsonify({'message': '登出成功'}), 200
+            # 创建响应并清除Cookie
+            success_result = Result.success({'message': '登出成功'}, '登出成功')
+            response = make_response(success_result.to_json(), success_result.code)
+            response.headers['Content-Type'] = 'application/json'
+            unset_jwt_cookies(response)
+            return response
             
         except Exception as e:
-            return jsonify({'error': '登出失败', 'details': str(e)}), 500
+            error_result = Result.internal_error(f'登出失败: {str(e)}')
+            response = make_response(error_result.to_json(), error_result.code)
+            response.headers['Content-Type'] = 'application/json'
+            return response
+    
+    @staticmethod
+    def heartbeat():
+        """
+        心跳检测服务 - 更新用户token
+        """
+        try:
+            # 获取当前用户身份
+            current_user_id = get_jwt_identity()
+            
+            if not current_user_id:
+                return Result.unauthorized('用户身份验证失败')
+            
+            # 获取当前用户信息
+            user = User.query.get(current_user_id)
+            if not user:
+                return Result.not_found('用户不存在')
+            
+            # 获取当前token的jti（用于后续加入黑名单）
+            current_jwt = get_jwt()
+            current_jti = current_jwt['jti']
+            
+            # 创建新的access token（半小时有效期）
+            additional_claims = {
+                'username': user.name,
+                'account_category': user.role or 'user',
+                'identifier': user.identifier
+            }
+            new_token = create_access_token(
+                identity=user.id,
+                additional_claims=additional_claims,
+            )
+            
+            # 构建响应数据
+            heartbeat_data = {
+                'success': True,
+                'message': '心跳正常，token已更新',
+                'userInfo': {
+                    'userId': user.id,
+                    'name': user.name,
+                    'identifier': user.identifier,
+                    'role': user.role,
+                    'email': user.email
+                },
+            }
+            
+            # 创建响应并设置新的token到HttpOnly Cookie
+            result = Result.success(heartbeat_data, '心跳正常')
+            response = make_response(result.to_dict())
+            set_access_cookies(response, new_token)
+            
+            #将旧token加入黑名单（增强安全性）
+            AuthInterceptor.revoke_token(current_jti)
+            
+            return response
+            
+        except Exception as e:
+            print(f"心跳服务错误: {str(e)}")
+            import traceback
+            print(f"心跳错误详情: {traceback.format_exc()}")
+            return Result.internal_error(f'心跳过程中发生错误: {str(e)}')
     
     #获取openid(一键登录)
     @staticmethod
@@ -207,11 +309,15 @@ class UserService:
                 "openid": openid,
                 "email": user.email,
                 "gender": user.gender,
-                "access_token": access_token,
                 "login_status": "success"
             }
             print(f"用户 {user.name} 通过openid登录成功")
-            return Result.success(user_data, '登录成功')
+            
+            # 创建响应并设置HttpOnly Cookie
+            result = Result.success(user_data, '登录成功')
+            response = make_response(result.to_dict())
+            set_access_cookies(response, access_token)
+            return response
         else:
             #   返回信息提示注册登录
             return jsonify(
@@ -261,21 +367,25 @@ class UserService:
                 additional_claims=additional_claims
             )
             
-            # 返回登录成功数据
+            # 返回登录成功数据（不再返回token到响应体）
             login_data = {
                 'user_id': user.id,
                 'name': user.name,
                 'identifier': user.identifier,
                 'role': user.role,
                 'email': user.email,
-                'access_token': access_token,
                 'login_status': 'success',
                 "openid": openid,
                 # "gender": user.gender
             }
             
             print(f'{user.name}登录成功！')
-            return Result.success(login_data, '登录成功')
+            
+            # 创建响应并设置HttpOnly Cookie
+            result = Result.success(login_data, '登录成功')
+            response = make_response(result.to_dict())
+            set_access_cookies(response, access_token)
+            return response
             
         except Exception as e:
             try:

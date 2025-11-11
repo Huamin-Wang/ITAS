@@ -27,7 +27,7 @@ def login():
         if not data:
             return Result.bad_request("请求数据不能为空").to_json(), 400
         result = UserService.login(data)
-        return result.to_json(), result.code
+        return result
         
     except Exception as e:
         import traceback
@@ -53,7 +53,7 @@ def get_openid():
             return Result.bad_request("请求数据不能为空").to_json(), 400
         
         result = UserService.get_openid_unlocked(data)
-        return result.to_json(), result.code
+        return result
         
     except Exception as e:
         import traceback
@@ -69,9 +69,22 @@ def mini_login():
             return Result.bad_request("请求数据不能为空").to_json(), 400
         
         result = UserService.minilogin(data)
-        return result.to_json(), result.code
+        return result
         
     except Exception as e:
         import traceback
         print(f"微信登录错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'微信登录过程中发生错误: {str(e)}').to_json(), 500
+
+@bp.route('/heartbeat', methods=['POST'])
+def heartbeat():
+    """
+    心跳检测接口 - 只负责路由和返回
+    """
+    try:
+        result = UserService.heartbeat()
+        return result
+    except Exception as e:
+        import traceback
+        print(f"心跳控制器错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'心跳接口错误: {str(e)}').to_json(), 500

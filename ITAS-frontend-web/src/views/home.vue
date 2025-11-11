@@ -1,139 +1,172 @@
 <template>
   <div class="home-page">
     <div class="home-page">
-    <header>
-      <h1>基于大模型的智能教学辅助系统</h1>
-      <p>提升课堂教学效率，增强学生学习体验</p>
-      
-      <div class="login-status">
-        <div v-if="user.id">
-          <span v-if="user.role === 'student'">欢迎, {{ user.name }}同学!</span>
-          <span v-else-if="user.role === 'teacher'">欢迎, {{ user.name }}老师!</span>
-          <a href="#" @click.prevent="logout" style="font-size: 0.5em">登出</a>
-          <div class="profile">
-            <a v-if="user.role === 'student'" href="/student_profile">学生中心</a>
-            <a v-else-if="user.role === 'teacher'" href="/teacher_profile">查看课程</a>
+      <header>
+        <h1>基于大模型的智能教学辅助系统</h1>
+        <p>提升课堂教学效率，增强学生学习体验</p>
+
+        <div class="login-status">
+          <div v-if="user.user_id">
+            <span v-if="user.role === 'student'"
+              >欢迎, {{ user.name }}同学!</span
+            >
+            <span v-else-if="user.role === 'teacher'"
+              >欢迎, {{ user.name }}老师!</span
+            >
+            <a href="#" @click.prevent="logout()" style="font-size: 0.5em"
+              >登出</a
+            >
+            <div class="profile">
+              <a v-if="user.role === 'student'" href="/student_profile"
+                >学生中心</a
+              >
+              <a v-else-if="user.role === 'teacher'" href="/teacher_profile"
+                >查看课程</a
+              >
+            </div>
+          </div>
+          <div v-else>
+            <p class="motivation-text">当下的努力，换来的是明天更好的自己！</p>
           </div>
         </div>
-        <div v-else>
-          <p class="motivation-text">
-            当下的努力，换来的是明天更好的自己！
-          </p>
-        </div>
-      </div>
-      
-      <div class="header-links">
+
+        <!-- <div class="header-links">
         <router-link to="/forum">论坛</router-link>
         <router-link to="/chat">智能聊天</router-link>
-      </div>
-    </header>
+      </div> -->
+      </header>
 
-    <div class="container">
-      <div v-if="!user.id" class="login-prompt">
-        <h2>欢迎！您尚未登录</h2>
-        <p>为了更好的使用智能教学辅助系统，请登录或注册。</p>
-        <router-link to="/login" class="auth-link">登录</router-link>
-        <router-link to="/register" class="auth-link">注册</router-link>
-      </div>
+      <div class="container">
+        <div v-if="!user.user_id" class="login-prompt">
+          <h2>欢迎！您尚未登录</h2>
+          <p>为了更好的使用智能教学辅助系统，请登录或注册。</p>
+          <router-link to="/login" class="auth-link">登录</router-link>
+          <router-link to="/register" class="auth-link">注册</router-link>
+        </div>
 
-      <div class="welcome-section">
-        <h2>欢迎使用智能教学辅助系统</h2>
-        <p>让学习变得更智能、更高效、更有趣</p>
-      </div>
+        <div class="welcome-section">
+          <h2>欢迎使用智能教学辅助系统</h2>
+          <p>让学习变得更智能、更高效、更有趣</p>
+        </div>
 
-      <div class="feature-grid">
-        <div 
-          v-for="feature in features" 
-          :key="feature.title"
-          class="feature-card"
-        >
-          <h3>{{ feature.title }}</h3>
-          <p>{{ feature.description }}</p>
+        <div class="feature-grid">
+          <div
+            v-for="feature in features"
+            :key="feature.title"
+            class="feature-card"
+          >
+            <h3>{{ feature.title }}</h3>
+            <p>{{ feature.description }}</p>
+          </div>
         </div>
       </div>
-    </div>
 
-    <footer>
-      <p>&copy; 2025 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
-      <p>
-        备案号：<a href="https://beian.miit.gov.cn/" target="_blank">闽ICP备2025085215号</a>
-      </p>
-    </footer>
-  </div>
+      <footer>
+        <p>&copy; 2025 基于大模型的智能教学辅助系统. All Rights Reserved.</p>
+        <p>
+          备案号：<a href="https://beian.miit.gov.cn/" target="_blank"
+            >闽ICP备2025085215号</a
+          >
+        </p>
+      </footer>
+    </div>
   </div>
 </template>
 
 <script>
+import { logout } from "@/http/api.js";
 export default {
-  name: 'Home',
+  name: "Home",
   data() {
     return {
       user: {
         id: null, // 登录状态管理
-        name: '',
-        role: '' // 'student' 或 'teacher'
+        name: "",
+        role: "", // 'student' 或 'teacher'
       },
       features: [
         {
-          title: '智能答疑',
-          description: '基于大模型的实时问答系统，为学生提供24小时学习支持，快速解答各类学习疑问。'
+          title: "智能答疑",
+          description:
+            "基于大模型的实时问答系统，为学生提供24小时学习支持，快速解答各类学习疑问。",
         },
         {
-          title: '个性化学习',
-          description: '根据学生的学习进度和掌握情况，提供定制化的学习建议和资源推荐。'
+          title: "个性化学习",
+          description:
+            "根据学生的学习进度和掌握情况，提供定制化的学习建议和资源推荐。",
         },
         {
-          title: '课程管理',
-          description: '教师可以轻松创建和管理课程内容，学生可以便捷地访问学习资料。'
+          title: "课程管理",
+          description:
+            "教师可以轻松创建和管理课程内容，学生可以便捷地访问学习资料。",
         },
         {
-          title: '学习分析',
-          description: '通过数据分析，了解学习效果，帮助教师优化教学策略，提升教学质量。'
+          title: "学习分析",
+          description:
+            "通过数据分析，了解学习效果，帮助教师优化教学策略，提升教学质量。",
         },
         {
-          title: '互动讨论',
-          description: '支持师生在线交流，营造良好的学习氛围，促进知识的共享与创新。'
+          title: "互动讨论",
+          description:
+            "支持师生在线交流，营造良好的学习氛围，促进知识的共享与创新。",
         },
         {
-          title: '作业批改',
-          description: '智能辅助批改作业，提供详细的反馈，帮助学生更好地理解和改进。'
-        }
+          title: "作业批改",
+          description:
+            "智能辅助批改作业，提供详细的反馈，帮助学生更好地理解和改进。",
+        },
       ],
       testNote: "",
       studentsList: [],
     };
   },
   mounted() {
-        document.body.classList.add('home-page');
-    },
-    beforeUnmount() {
-        document.body.classList.remove('home-page');
-    },
+    document.body.classList.add("home-page");
+    this.checkLoginStatus();
+  },
+  beforeUnmount() {
+    document.body.classList.remove("home-page");
+  },
   methods: {
-    async checkLoginStatus() {
-      // 这里应该调用API检查用户登录状态
-      // 暂时使用模拟数据
-      // try {
-      //   const userInfo = await getUserInfo();
-      //   this.user = userInfo;
-      // } catch (error) {
-      //   console.log('用户未登录');
-      // }
+    checkLoginStatus() {
+      this.user = JSON.parse(sessionStorage.getItem("userInfo"));
     },
-    
-    logout() {
-      if (confirm('确定要登出吗？')) {
-        // 调用登出API
-        // await logoutApi();
-        this.user.id = null;
-        this.user.name = '';
-        this.user.role = '';
-        console.log('用户已登出');
-        // 可以跳转到登录页
-        // this.$router.push('/login');
+
+    // 退出登录
+    async logout() {
+      const confirmLogout = await this.$confirm("确定要退出登录吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).catch(() => {
+        return false;
+      });
+      if (!confirmLogout) return;
+      try {
+        const response = await logout();
+
+        if (response.code === 200) {
+          this.$message.success("登出成功");
+          // 只清除 sessionStorage，不要清除 localStorage 的 token
+          sessionStorage.removeItem("userInfo");
+          // 跳转到首页，后端会清除 Cookie
+          this.$router.push("/");
+          // 刷新页面以确保状态更新
+          location.reload();
+        } else {
+          this.$message.error("登出失败");
+        }
+      } catch (error) {
+        console.error("退出登录失败:", error);
+        this.$message.error("网络错误，已清除本地登录状态");
+
+        // 即使后端登出失败，也要清除前端存储
+        sessionStorage.removeItem("userInfo");
+        this.$router.push("/");
+        location.reload();
       }
     },
-  }
+  },
 };
 </script>
 
@@ -191,7 +224,7 @@ header p {
 }
 
 .motivation-text {
-  font-family: 'Microsoft YaHei', sans-serif;
+  font-family: "Microsoft YaHei", sans-serif;
   color: gainsboro;
   font-size: 0.5em;
 }

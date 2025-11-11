@@ -9,6 +9,14 @@ export function login(data) {
     })
 }
 
+//心跳检测
+export function heartbeat() {
+    return request({
+        url: '/heartbeat',
+        method: 'post',
+    })
+}
+
 // 注册
 export function register(data) {
     return request({

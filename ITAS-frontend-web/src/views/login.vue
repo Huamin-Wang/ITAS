@@ -6,12 +6,25 @@
         <form @submit.prevent="login">
           <div class="form-group">
             <label for="identifier">学号/教工号</label>
-            <input type="text" id="identifier" name="identifier" placeholder="请输入学号/教工号" required
-              v-model="identifier" />
+            <input
+              type="text"
+              id="identifier"
+              name="identifier"
+              placeholder="请输入学号/教工号"
+              required
+              v-model="identifier"
+            />
           </div>
           <div class="form-group">
             <label for="password">密码</label>
-            <input type="password" id="password" name="password" placeholder="请输入密码" required v-model="password" />
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="请输入密码"
+              required
+              v-model="password"
+            />
           </div>
           <div v-if="errorMessage" class="error-message">
             {{ errorMessage }}
@@ -33,7 +46,7 @@
 
 <script>
 import { login } from "../http/api.js";
-
+import heartbeat from "@/utils/heartbeat";
 export default {
   data() {
     return {
@@ -58,8 +71,6 @@ export default {
         const response = await login(data);
 
         if (response.code == 200) {
-          // 保存 token 和用户信息到 sessionStorage
-          const token = response.data.access_token;
           const userInfo = {
             user_id: response.data.user_id,
             name: response.data.name,
@@ -68,8 +79,9 @@ export default {
             email: response.data.email,
           };
 
-          sessionStorage.setItem("token", token);
-          sessionStorage.setItem("userInfo", JSON.stringify(userInfo));
+          localStorage.setItem("userInfo", JSON.stringify(userInfo));
+          // 启动心跳服务
+          heartbeat.init();
           this.$message.success("登陆成功");
           // 跳转到首页或其他页面
           if (userInfo.role == "teacher") {
@@ -84,7 +96,6 @@ export default {
                 console.log("路由跳转错误:", err);
               });
             }, 1000);
-
           } else {
             setTimeout(() => {
               this.$router.push("/").catch((err) => {

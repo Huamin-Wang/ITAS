@@ -5,16 +5,14 @@ const baseURL = import.meta.env.PROD ? '/api' : 'http://127.0.0.1:5000';
 
 const service = axios.create({
     baseURL: baseURL,
-    timeout: 5000
+    timeout: 5000,
+    withCredentials: true  // 重要：允许携带Cookie
 })
 
-// 请求拦截器
+// 请求拦截器 - 移除手动添加token的逻辑，因为现在使用HttpOnly Cookie
 service.interceptors.request.use(
     config => {
-        const token = sessionStorage.getItem('token');
-        if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`;
-        }
+        // 不再手动设置Authorization头部，token将通过Cookie自动发送
         return config;
     },
     error => {

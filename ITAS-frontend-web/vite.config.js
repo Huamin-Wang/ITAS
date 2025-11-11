@@ -15,7 +15,7 @@ export default defineConfig({
     },
   },
   // 添加以下配置
-  base: './', // 使用相对路径，确保资源正确加载
+  base: '/', // 强制使用绝对路径，解决刷新 404 和 MIME 错误
   build: {
     outDir: 'dist',
     assetsDir: 'assets',

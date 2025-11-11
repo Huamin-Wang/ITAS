@@ -31,13 +31,13 @@ def create_app(config_name='default'):
     # 初始化扩展
     db.init_app(app)
 
-    # 更全面的 CORS 配置
+    # 更全面的 CORS 配置 - 启用凭证支持
     CORS(app, 
-         origins="*",
+         origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5000", "http://127.0.0.1:5000"],  # 明确指定允许的源
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
          allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"],
          expose_headers=["Content-Range", "X-Content-Range"],
-         supports_credentials=False, #调试阶段关闭，允许全部跨域请求
+         supports_credentials=True,  # 重要：必须为True以支持Cookie
          max_age=3600)
     
     # 初始化聊天服务

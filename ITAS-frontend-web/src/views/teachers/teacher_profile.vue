@@ -74,7 +74,7 @@ export default {
   methods: {
     // 初始化用户信息
     init_userInfo() {
-      this.userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+      this.userInfo = JSON.parse(localStorage.getItem("userInfo"));
     },
 
     //初始化课程信息
@@ -107,9 +107,7 @@ export default {
           this.$message.success("登出成功");
           // 延迟跳转，让用户看到成功消息
           setTimeout(() => {
-            sessionStorage.removeItem("userInfo");
-            localStorage.removeItem("access_token"); // 确保清除token
-            localStorage.removeItem("user_info"); // 确保清除用户信息
+            localStorage.removeItem("userInfo"); // 确保清除用户信息
             this.$router.push("/");
           }, 500);
         } else {

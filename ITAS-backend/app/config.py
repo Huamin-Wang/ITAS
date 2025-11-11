@@ -15,7 +15,15 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-here'
     # Token配置
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-key-change-in-production'
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)  # 1天过期
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)  # 改为半小时过期
+    # Cookie配置
+    JWT_TOKEN_LOCATION = ['cookies']
+    JWT_ACCESS_COOKIE_NAME = 'access_token'
+    JWT_COOKIE_CSRF_PROTECT = False  # 开发环境关闭CSRF保护，生产环境建议开启
+    JWT_COOKIE_HTTPONLY = True
+    JWT_COOKIE_SECURE = True  # 开发环境为False，生产环境应为True
+    JWT_COOKIE_SAMESITE = 'None' # 开发环境使用，生产环境使用lax
+    JWT_COOKIE_DOMAIN = None  # 设为None，让浏览器自动处理
     # 数据库配置
     if environment == 'development':
         # 数据库文件放在项目根目录下的instance文件夹中
@@ -43,6 +51,7 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """生产环境配置"""
     DEBUG = False
+    JWT_COOKIE_SECURE = True  # 生产环境启用Secure
 
 # 配置映射
 config = {

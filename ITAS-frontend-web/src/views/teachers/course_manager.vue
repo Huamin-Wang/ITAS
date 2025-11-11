@@ -221,7 +221,7 @@ export default {
 
     //初始化用户信息
     init_userInfo() {
-      this.userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+      this.userInfo = JSON.parse(localStorage.getItem("userInfo"));
     },
 
     //更新学生注册信息
