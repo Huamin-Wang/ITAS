@@ -27,33 +27,45 @@ class UserService:
     @staticmethod
     def login(data: Dict[str, Any]) -> Result:
         """用户登录方法"""
+        print("==== 登录调试 ====")
+        print("接收数据:", data)
+
         try:
             identifier = data.get('identifier') or data.get('xuehao')
             password = data.get('password')
-            
+
             # 基本校验
             if not identifier:
                 return Result.bad_request('请输入学号/标识符')
             if not password:
                 return Result.bad_request('请输入密码')
-            
+
             # 统一处理标识符格式（转大写，去空格）
             identifier = identifier.upper().replace(' ', '')
-            
+
             # 查找用户（支持学号/邮箱登录）
             user = User.query.filter(
                 (User.identifier == identifier) | (User.email == identifier)
             ).first()
-            
+
+            print("查询到的用户:", user)
+            if user:
+                print("数据库用户名:", user.name)
+                print("数据库标识符:", user.identifier)
+                print("数据库密码:", user.password)
+            else:
+                print("未找到用户")
+
+            # 用户不存在
             if not user:
                 print(f"用户不存在: {identifier}")
                 return Result.unauthorized('用户不存在或密码错误')
-            
+
             # 验证密码
             if not UserService.check_password(user.password, password):
                 print(f"密码错误: {identifier}")
                 return Result.unauthorized('用户不存在或密码错误')
-            
+
             # 生成 JWT token
             additional_claims = {
                 'username': user.name,
@@ -61,10 +73,10 @@ class UserService:
                 'identifier': user.identifier
             }
             access_token = JWTUtils.create_access_token(
-                identity=user.id, 
+                identity=user.id,
                 additional_claims=additional_claims
             )
-            
+
             # 返回登录成功数据（不再返回token到响应体）
             login_data = {
                 'user_id': user.id,
@@ -74,18 +86,19 @@ class UserService:
                 'email': user.email,
                 'login_status': 'success'
             }
-            
-            print(f'{user.name}登录成功！')
-            
-            # 创建响应并设置HttpOnly Cookie
+
+            print(f'{user.name} 登录成功！')
+
+            # 创建响应并设置 HttpOnly Cookie
             result = Result.success(login_data, '登录成功')
             response = make_response(result.to_dict())
             set_access_cookies(response, access_token)
             return response
-            
+
         except Exception as e:
             print(f"登录过程中发生错误: {str(e)}")
             return Result.internal_error(f'登录时发生错误: {str(e)}')
+
 
     # 根据ID获取用户信息 ,用于学生中心获取用户信息 ---慎独、
     @staticmethod
@@ -261,8 +274,6 @@ class UserService:
             response = make_response(result.to_dict())
             set_access_cookies(response, new_token)
             
-            #将旧token加入黑名单（增强安全性）
-            AuthInterceptor.revoke_token(current_jti)
             
             return response
             

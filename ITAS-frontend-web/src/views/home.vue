@@ -130,6 +130,15 @@ export default {
   methods: {
     checkLoginStatus() {
       this.user = JSON.parse(sessionStorage.getItem("userInfo"));
+      if (this.user) {
+        return;
+      } else {
+        this.user = {
+          id: null,
+          name: "",
+          role: "",
+        };
+      }
     },
 
     // 退出登录
