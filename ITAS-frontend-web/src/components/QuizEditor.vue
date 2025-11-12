@@ -816,7 +816,7 @@ export default {
           // 新增模式 - 创建小测
           const data = {
             course_id: this.courseId,
-            teacher_id: JSON.parse(sessionStorage.getItem("userInfo")).user_id,
+            teacher_id: JSON.parse(localStorage.getItem("userInfo")).user_id,
             title: this.quizForm.title,
             description: this.quizForm.description,
             create_time: this.formatDateToYYYYMMDDHHMM,

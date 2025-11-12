@@ -156,8 +156,7 @@ export default {
 
         if (response.code === 200) {
           this.$message.success("登出成功");
-          // 只清除 sessionStorage，不要清除 localStorage 的 token
-          sessionStorage.removeItem("userInfo");
+          localStorage.removeItem("userInfo");
           // 跳转到首页，后端会清除 Cookie
           this.$router.push("/");
           // 刷新页面以确保状态更新
@@ -170,7 +169,7 @@ export default {
         this.$message.error("网络错误，已清除本地登录状态");
 
         // 即使后端登出失败，也要清除前端存储
-        sessionStorage.removeItem("userInfo");
+        localStorage.removeItem("userInfo");
         this.$router.push("/");
         location.reload();
       }
