@@ -129,7 +129,7 @@ export default {
   },
   methods: {
     checkLoginStatus() {
-      this.user = JSON.parse(sessionStorage.getItem("userInfo"));
+      this.user = JSON.parse(localStorage.getItem("userInfo"));
       if (this.user) {
         return;
       } else {

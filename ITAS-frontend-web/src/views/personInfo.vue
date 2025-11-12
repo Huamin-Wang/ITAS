@@ -42,7 +42,7 @@ export default {
   },
   methods: {
     back_profile() {
-      const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
       if (userInfo.role == "teacher") {
         this.$router.push("/teacher_profile");
       } else {

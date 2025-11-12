@@ -121,7 +121,7 @@ export default {
         setTimeout(() => {
           sessionStorage.removeItem("userInfo");
           localStorage.removeItem("access_token");
-          localStorage.removeItem("user_info");
+          localStorage.removeItem("userInfo");
           this.$router.push("/");
         }, 1500);
       }

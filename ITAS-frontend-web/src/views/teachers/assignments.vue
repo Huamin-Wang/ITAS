@@ -159,7 +159,7 @@ export default {
       try {
         const data = new FormData();
         const teacherId = JSON.parse(
-          sessionStorage.getItem("userInfo")
+          lcoalStorage.getItem("userInfo")
         ).user_id;
         data.append("teacher_id", teacherId);
         data.append("course_id", this.course.id);
