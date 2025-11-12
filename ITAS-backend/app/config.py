@@ -29,7 +29,7 @@ class Config:
         # 数据库文件放在项目根目录下的instance文件夹中
         db_path = os.path.join(base_dir, 'instance', 'test1.db')
     else:
-        db_path = os.path.join(base_dir, 'prod.db')
+        db_path = os.path.join(base_dir, 'instance','prod.db')
     
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + db_path
     SQLALCHEMY_TRACK_MODIFICATIONS = False

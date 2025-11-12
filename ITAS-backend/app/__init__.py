@@ -1,11 +1,13 @@
 from flask import Flask,request,jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_cors import CORS  # 导入CORS
 from flask_jwt_extended import JWTManager, verify_jwt_in_request, get_jwt
 from .interceptors.jwtInterceptor import AuthInterceptor
 
 # 给 db 添加类型注解，方便静态分析器（如 Pylance）识别 db.Column 等属性
 db: SQLAlchemy = SQLAlchemy()
+migrate = Migrate()
 
 # 在 __init__.py 中修改 CORS 配置
 def create_app(config_name='default'):
@@ -30,7 +32,7 @@ def create_app(config_name='default'):
     jwt.token_in_blocklist_loader(AuthInterceptor.is_token_revoked)
     # 初始化扩展
     db.init_app(app)
-
+    migrate.init_app(app, db)
     # 更全面的 CORS 配置 - 启用凭证支持
     CORS(app, 
          origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5000", "http://127.0.0.1:5000"],  # 明确指定允许的源
