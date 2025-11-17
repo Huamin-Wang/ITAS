@@ -57,7 +57,6 @@ class HeartbeatService {
         this.sendHeartbeat();
 
         this.intervalId = setInterval(() => {
-            // 每次执行前检查登录状态
             if (!this.checkLoginStatus()) {
                 console.log('🔐 检测到用户已登出，停止心跳服务');
                 this.stop();
@@ -87,13 +86,11 @@ class HeartbeatService {
         try {
             const response = await heartbeat();
 
-            if (response.success) {
+            if (response.code === 200) {
                 console.log('✅ 心跳成功', new Date().toLocaleTimeString());
-            } else if (response.code === 401) {
+            } else {
                 console.log('🔐 Token 已过期，停止心跳服务');
                 this.handleTokenExpired();
-            } else {
-                console.warn('⚠️ 心跳失败:', response);
             }
         } catch (error) {
             console.error('❌ 心跳请求错误:', error);
