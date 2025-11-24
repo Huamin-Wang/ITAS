@@ -288,52 +288,95 @@ class UserService:
     def get_openid_unlocked(data):
         print("登录小程序")
         code = data.get('code')
-        # userInfo = data.get('userInfo')
-        print(f"code:{code}")
-        # print(f"userInfo:{userInfo}")
+        print(f"接收到的code: {code}")
+        print(f"使用的APP_ID: {Config.APP_ID}")
+        print(f"使用的APP_SECRET: {Config.APP_SECRET[:8]}...")
+    
         if not code:
             return jsonify({'success': False, 'message': '缺少 code'})
+
         # 向微信服务器请求 openid
         wx_url = f"https://api.weixin.qq.com/sns/jscode2session?appid={Config.APP_ID}&secret={Config.APP_SECRET}&js_code={code}&grant_type=authorization_code"
-        response = requests.get(wx_url).json()
-        openid = response['openid']
-        print(f"openid:{openid}")
-        # 如果成功获取 openid，则根据openid返回用户信息
-        user = User.query.filter_by(openid=response['openid']).first()
-        if user:
-            # 生成 JWT token
-            additional_claims = {
-                'username': user.name,
-                'account_category': user.role or 'user',
-                'identifier': user.identifier
-            }
-            access_token = JWTUtils.create_access_token(
-                identity=user.id, 
-                additional_claims=additional_claims
-            )
-            
-            user_data = {
-                'user_id': user.id,
-                'name': user.name,
-                'role': user.role,
-                "identifier": user.identifier,
-                "openid": openid,
-                "email": user.email,
-                "gender": user.gender,
-                "login_status": "success"
-            }
-            print(f"用户 {user.name} 通过openid登录成功")
-            
-            # 创建响应并设置HttpOnly Cookie
-            result = Result.success(user_data, '登录成功')
-            response = make_response(result.to_dict())
-            set_access_cookies(response, access_token)
-            return response
-        else:
-            #   返回信息提示注册登录
-            return jsonify(
-                {'success': True, 'user_id': -1, 'user_name': "未登录过小程序,退出重新登录", 'user_role': "游客",
-                 "openid": openid})
+
+        try:
+            response = requests.get(wx_url, timeout=10)
+            response_data = response.json()
+            print(f"微信API响应: {response_data}")
+
+            # 检查微信API是否返回错误
+            if 'errcode' in response_data and response_data['errcode'] != 0:
+                error_msg = response_data.get('errmsg', '未知错误')
+                print(f"微信API错误: {response_data['errcode']} - {error_msg}")
+                return jsonify({
+                    'success': False, 
+                    'message': f'微信接口错误: {error_msg}',
+                    'errcode': response_data['errcode']
+                })
+
+            # 检查是否成功获取openid
+            openid = response_data.get('openid')
+            if not openid:
+                print("微信响应中未找到openid")
+                return jsonify({
+                    'success': False, 
+                    'message': '获取openid失败: 响应中未包含openid'
+                })
+
+            print(f"成功获取openid: {openid}")
+
+            # 如果成功获取 openid，则根据openid返回用户信息
+            user = User.query.filter_by(openid=openid).first()
+            if user:
+                # 生成 JWT token
+                additional_claims = {
+                    'username': user.name,
+                    'account_category': user.role or 'user',
+                    'identifier': user.identifier
+                }
+                access_token = JWTUtils.create_access_token(
+                    identity=user.id, 
+                    additional_claims=additional_claims
+                )
+
+                user_data = {
+                    'user_id': user.id,
+                    'name': user.name,
+                    'role': user.role,
+                    "identifier": user.identifier,
+                    "openid": openid,
+                    "email": user.email,
+                    "gender": user.gender,
+                    "login_status": "success"
+                }
+                print(f"用户 {user.name} 通过openid登录成功")
+
+                # 创建响应并设置HttpOnly Cookie
+                result = Result.success(user_data, '登录成功')
+                response = make_response(result.to_dict())
+                set_access_cookies(response, access_token)
+                return response
+            else:
+                # 返回信息提示注册登录
+                return jsonify({
+                    'success': True, 
+                    'user_id': -1, 
+                    'user_name': "未登录过小程序,退出重新登录", 
+                    'user_role': "游客",
+                    "openid": openid
+                })
+
+        except requests.exceptions.RequestException as e:
+            print(f"请求微信API失败: {str(e)}")
+            return jsonify({
+                'success': False, 
+                'message': f'网络请求失败: {str(e)}'
+            })
+        except Exception as e:
+            print(f"处理微信登录时发生未知错误: {str(e)}")
+            return jsonify({
+                'success': False, 
+                'message': f'处理登录时发生错误: {str(e)}'
+            })
         
     #微信登录绑定
     @staticmethod

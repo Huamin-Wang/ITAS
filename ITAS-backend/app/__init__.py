@@ -74,8 +74,8 @@ def create_app(config_name='default'):
             '/get_openid_unlocked',    # 获取openid
             '/minilogin',   #微信登录
             # 聊天相关路由 - 添加到白名单
-            '/course_student_info',
-            '/chat/stats',
+            '/getOpenId',
+            '/minilogin',
             '/chat/history',
             '/chat/history/clear',
         ]
