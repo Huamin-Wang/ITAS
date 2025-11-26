@@ -117,6 +117,15 @@ export function assignments(data) {
     })
 }
 
+// // 生成作业标签
+// export function generate_tags(data) {
+//     return request({
+//         url: '/generate_tags',
+//         method: 'post',
+//         data: data
+//     })
+// }
+
 //编辑作业
 export function update_assignment(data) {
     return request({

@@ -10,7 +10,7 @@ def register():
         if not data:
             return Result.bad_request("请求数据不能为空").to_json(), 400
         result = UserService.register(data)
-        return result.to_json(), result.code
+        return result
     except Exception as e:
         import traceback
         print(f"注册错误详情: {traceback.format_exc()}")

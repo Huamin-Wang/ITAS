@@ -36,9 +36,9 @@ class UserService:
 
             # 基本校验
             if not identifier:
-                return Result.bad_request('请输入学号/标识符')
+                return Result.bad_request('请输入学号/标识符').to_json(), 500
             if not password:
-                return Result.bad_request('请输入密码')
+                return Result.bad_request('请输入密码').to_json(), 500
 
             # 统一处理标识符格式（转大写，去空格）
             identifier = identifier.upper().replace(' ', '')
@@ -59,12 +59,12 @@ class UserService:
             # 用户不存在
             if not user:
                 print(f"用户不存在: {identifier}")
-                return Result.unauthorized('用户不存在或密码错误')
+                return Result.unauthorized('用户不存在或密码错误').to_json(), 500
 
             # 验证密码
             if not UserService.check_password(user.password, password):
                 print(f"密码错误: {identifier}")
-                return Result.unauthorized('用户不存在或密码错误')
+                return Result.unauthorized('用户不存在或密码错误').to_json(), 500
 
             # 生成 JWT token
             additional_claims = {
@@ -97,7 +97,7 @@ class UserService:
 
         except Exception as e:
             print(f"登录过程中发生错误: {str(e)}")
-            return Result.internal_error(f'登录时发生错误: {str(e)}')
+            return Result.internal_error(f'登录时发生错误: {str(e)}').to_json(), 500
 
 
     # 根据ID获取用户信息 ,用于学生中心获取用户信息 ---慎独、
@@ -149,14 +149,14 @@ class UserService:
                 return Result.bad_request(f'Missing fields: {", ".join(missing)}')
 
             if password != confirm_password:
-                return Result.bad_request('密码不一致！')
+                return Result.bad_request('密码不一致！').to_json(), 500
 
             # 唯一性检查
             if User.query.filter_by(email=email).first():
                 print(User.query.filter_by(email=email).first())
-                return Result.bad_request('邮箱已存在！')
+                return Result.bad_request('邮箱已存在！').to_json(), 500
             if User.query.filter_by(identifier=identifier).first():
-                return Result.bad_request('学号已存在！')
+                return Result.bad_request('学号已存在！').to_json(), 500
 
             password_hash = UserService.set_password(password)
             user = User(identifier=identifier, role=role, name=name, email=email,
@@ -188,7 +188,7 @@ class UserService:
                 db.session.rollback()
             except Exception:
                 pass
-            return Result.internal_error(f'注册时发生错误: {str(e)}')
+            return Result.internal_error(f'注册时发生错误: {str(e)}').to_json(), 500
     
     @staticmethod
     def logout():
@@ -293,37 +293,35 @@ class UserService:
         print(f"使用的APP_SECRET: {Config.APP_SECRET[:8]}...")
     
         if not code:
-            return jsonify({'success': False, 'message': '缺少 code'})
-
-        # 向微信服务器请求 openid
-        wx_url = f"https://api.weixin.qq.com/sns/jscode2session?appid={Config.APP_ID}&secret={Config.APP_SECRET}&js_code={code}&grant_type=authorization_code"
-
+            error_result = Result.bad_request('缺少 code')
+            response = make_response(error_result.to_dict())
+            response.headers['Content-Type'] = 'application/json'
+            return response
+    
         try:
-            response = requests.get(wx_url, timeout=10)
-            response_data = response.json()
-            print(f"微信API响应: {response_data}")
-
-            # 检查微信API是否返回错误
-            if 'errcode' in response_data and response_data['errcode'] != 0:
-                error_msg = response_data.get('errmsg', '未知错误')
-                print(f"微信API错误: {response_data['errcode']} - {error_msg}")
-                return jsonify({
-                    'success': False, 
-                    'message': f'微信接口错误: {error_msg}',
-                    'errcode': response_data['errcode']
-                })
-
-            # 检查是否成功获取openid
-            openid = response_data.get('openid')
+            # 向微信服务器请求 openid
+            wx_url = f"https://api.weixin.qq.com/sns/jscode2session?appid={Config.APP_ID}&secret={Config.APP_SECRET}&js_code={code}&grant_type=authorization_code"
+    
+            response = requests.get(wx_url).json()
+            
+            # 检查微信API返回错误
+            if 'errcode' in response:
+                error_msg = response.get('errmsg', '微信API调用失败')
+                print(f"微信API错误: {error_msg}")
+                error_result = Result.internal_error(f'微信登录失败: {error_msg}')
+                response = make_response(error_result.to_dict())
+                response.headers['Content-Type'] = 'application/json'
+                return response
+                
+            openid = response.get('openid')
             if not openid:
-                print("微信响应中未找到openid")
-                return jsonify({
-                    'success': False, 
-                    'message': '获取openid失败: 响应中未包含openid'
-                })
-
-            print(f"成功获取openid: {openid}")
-
+                error_result = Result.internal_error('未能获取到openid')
+                response = make_response(error_result.to_dict())
+                response.headers['Content-Type'] = 'application/json'
+                return response
+                
+            print(f"openid:{openid}")
+            
             # 如果成功获取 openid，则根据openid返回用户信息
             user = User.query.filter_by(openid=openid).first()
             if user:
@@ -337,7 +335,7 @@ class UserService:
                     identity=user.id, 
                     additional_claims=additional_claims
                 )
-
+                
                 user_data = {
                     'user_id': user.id,
                     'name': user.name,
@@ -345,38 +343,38 @@ class UserService:
                     "identifier": user.identifier,
                     "openid": openid,
                     "email": user.email,
-                    "gender": user.gender,
+                    # "gender": user.gender,
+                    "access_token": access_token,
                     "login_status": "success"
                 }
                 print(f"用户 {user.name} 通过openid登录成功")
-
-                # 创建响应并设置HttpOnly Cookie
+                
                 result = Result.success(user_data, '登录成功')
                 response = make_response(result.to_dict())
-                set_access_cookies(response, access_token)
+                response.headers['Content-Type'] = 'application/json'
                 return response
             else:
                 # 返回信息提示注册登录
-                return jsonify({
-                    'success': True, 
-                    'user_id': -1, 
-                    'user_name': "未登录过小程序,退出重新登录", 
+                temp_data = {
+                    'user_id': -1,
+                    'user_name': "未登录过小程序,退出重新登录",
                     'user_role': "游客",
                     "openid": openid
-                })
-
-        except requests.exceptions.RequestException as e:
-            print(f"请求微信API失败: {str(e)}")
-            return jsonify({
-                'success': False, 
-                'message': f'网络请求失败: {str(e)}'
-            })
+                }
+                result = Result.success(temp_data, message="新用户，请注册")
+                response = make_response(result.to_dict())
+                response.headers['Content-Type'] = 'application/json'
+                return response
+    
         except Exception as e:
-            print(f"处理微信登录时发生未知错误: {str(e)}")
-            return jsonify({
-                'success': False, 
-                'message': f'处理登录时发生错误: {str(e)}'
-            })
+            print(f"获取openid过程中发生错误: {str(e)}")
+            import traceback
+            print(f"错误详情: {traceback.format_exc()}")
+            error_result = Result.internal_error(f'获取openid失败: {str(e)}')
+            response = make_response(error_result.to_dict())
+            response.headers['Content-Type'] = 'application/json'
+            return response
+
         
     #微信登录绑定
     @staticmethod

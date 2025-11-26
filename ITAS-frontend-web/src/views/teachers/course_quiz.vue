@@ -21,6 +21,7 @@
                 <th>小测名称</th>
                 <th>题目数量</th>
                 <th>创建日期</th>
+                <th>状态</th>
                 <th style="text-align: center">操作</th>
               </tr>
             </thead>
@@ -31,6 +32,10 @@
                 <td>
                   {{ quiz.create_time.replace("T", " ").substring(0, 16) }}
                 </td>
+                <td v-if="quiz.status == 'draft'" style="color: #e74c3c">
+                  未发布
+                </td>
+                <td style="color: #27ae60" v-else>已发布</td>
                 <td class="td-btn">
                   <span @click="editQuiz(quiz.id)" class="btn btn-edit"
                     >编辑</span

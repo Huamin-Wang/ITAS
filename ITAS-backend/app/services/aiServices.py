@@ -88,10 +88,38 @@ class AiServices:
             }}
         }}
         '''
-        answer = AiServices.get_answer(question)
-        json_match = re.search(r'\{.*\}', answer, re.DOTALL)
-        if json_match:
-            json_str = json_match.group()
-            result = json.loads(json_str)
-        return Result.success(result)
+        try:
+            answer = AiServices.get_answer(question)
+            json_match = re.search(r'\{.*\}', answer, re.DOTALL)
+            if json_match:
+                json_str = json_match.group()
+                result_data = json.loads(json_str)
+                return Result.success(result_data)
+            else:
+            # 如果没有匹配到JSON，返回默认结构或错误信息
+                default_result = {
+                    "title": title,
+                    "tags": {
+                        "theme": [],
+                        "core_points": [],  
+                        "category": []
+                    }
+                }
+                return Result.success(default_result)
+            
+        except json.JSONDecodeError as e:
+            print(f"JSON解析错误: {e}")
+            # JSON解析失败时返回默认结构
+            default_result = {
+                "title": title,
+                "tags": {
+                    "theme": [],
+                    "core_points": [],
+                    "category": []
+                }
+            }
+            return Result.success(default_result)
+        except Exception as e:
+            print(f"生成标签过程中发生错误: {e}")
+            return Result.internal_error(f"生成标签失败: {str(e)}")
    

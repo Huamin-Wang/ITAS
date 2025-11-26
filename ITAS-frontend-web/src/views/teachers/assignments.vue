@@ -16,6 +16,7 @@
             <tr>
               <th>作业名称</th>
               <th>作业描述</th>
+              <th>标签</th>
               <th>截止日期</th>
               <th>操作</th>
             </tr>
@@ -28,6 +29,7 @@
             >
               <td>{{ assignment.title }}</td>
               <td>{{ assignment.description }}</td>
+              <td></td>
               <td>{{ assignment.due_date }}</td>
               <td>
                 <span
@@ -38,7 +40,7 @@
               </td>
             </tr>
             <tr v-else>
-              <td colspan="4" style="text-align: center; padding: 20px">
+              <td colspan="5" style="text-align: center; padding: 20px">
                 暂无作业
               </td>
             </tr>
@@ -60,6 +62,16 @@
               placeholder="请输入作业标题"
               v-model="formData.title"
             />
+
+            <!-- 生成标签按钮 -->
+            <button
+              type="button"
+              @click="generateAssignmentTags"
+              class="btn btn-generate-tags"
+              :disabled="isLoadingTags || !formData.title.trim()"
+            >
+              {{ isLoadingTags ? "生成中..." : "生成标签" }}
+            </button>
           </div>
 
           <div class="form-group">
@@ -83,8 +95,26 @@
             />
           </div>
 
+          <!-- // 作业标签 -->
+          <!-- 作业标签显示区域 -->
+          <div class="assignment_tags" v-if="assignmentTags.length > 0">
+            <div class="tags-section">
+              <h4>生成的作业标签：</h4>
+              <div class="tags-container">
+                <el-tag
+                  v-for="(tag, index) in assignmentTags"
+                  :key="index"
+                  :type="getTagType(index)"
+                  class="tag-item"
+                >
+                  {{ tag }}
+                </el-tag>
+              </div>
+            </div>
+          </div>
+
           <div class="actions">
-            <button type="submit" class="btn btn-submit">提交作业</button>
+            <button type="submit" class="btn btn-submit">发布作业</button>
             <span
               @click="go_to_course_manager(this.course.id)"
               class="btn btn-back"
@@ -110,6 +140,8 @@ export default {
         description: "",
         due_date: "",
       },
+      assignmentTags: [], // 作业标签
+      isLoadingTags: false, // 标签生成加载状态
     };
   },
   methods: {
@@ -158,9 +190,7 @@ export default {
     async submitForm() {
       try {
         const data = new FormData();
-        const teacherId = JSON.parse(
-          lcoalStorage.getItem("userInfo")
-        ).user_id;
+        const teacherId = JSON.parse(lcoalStorage.getItem("userInfo")).user_id;
         data.append("teacher_id", teacherId);
         data.append("course_id", this.course.id);
         data.append("title", this.formData.title);
@@ -178,6 +208,39 @@ export default {
         this.$message.error("发生错误，请稍后重试。");
       }
     },
+
+    //生成作业标签
+    // async generateAssignmentTags() {
+    //   if (!this.formData.title.trim()) {
+    //     this.$message.warning("请先填写作业标题");
+    //     return;
+    //   }
+
+    //   this.isLoadingTags = true;
+    //   try {
+    //     const response = await generate_tags({
+    //       title: this.formData.title
+    //     });
+
+    //     if (response.code === 200) {
+    //       const tagsData = response.data.tags;
+    //       // 将所有标签合并到一个数组中显示
+    //       this.assignmentTags = [
+    //         ...tagsData.theme,
+    //         ...tagsData.core_points,
+    //         ...tagsData.category
+    //       ];
+    //       this.$message.success("标签生成成功！");
+    //     } else {
+    //       this.$message.error("标签生成失败");
+    //     }
+    //   } catch (error) {
+    //     console.error("生成标签时出错:", error);
+    //     this.$message.error("生成标签失败，请稍后重试");
+    //   } finally {
+    //     this.isLoadingTags = false;
+    //   }
+    // },
 
     //跳转作业编辑
     go_to_assignment_detail(id) {
@@ -387,5 +450,48 @@ h2 {
   margin-top: 20px;
   display: flex;
   gap: 10px;
+}
+
+/* 生成标签按钮样式 */
+.btn-generate-tags {
+  background-color: #9b59b6;
+  margin-top: 8px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+}
+
+.btn-generate-tags:hover {
+  background-color: #8e44ad;
+}
+
+.btn-generate-tags:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 标签区域样式 */
+.tags-section {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #3498db;
+}
+
+.tags-section h4 {
+  margin-bottom: 10px;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-item {
+  margin: 2px;
 }
 </style>

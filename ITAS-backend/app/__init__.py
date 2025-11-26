@@ -71,7 +71,7 @@ def create_app(config_name='default'):
             '/logout',     # 登出
             '/',                       # 根路径
             '/favicon.ico',            # 网站图标
-            '/get_openid_unlocked',    # 获取openid
+            '/getOpenId',    # 获取openid
             '/minilogin',   #微信登录
             # 聊天相关路由 - 添加到白名单
             '/getOpenId',
@@ -115,10 +115,11 @@ def create_app(config_name='default'):
     from app.controllers.studentController import bp as students_bp
     # 注册聊天控制器蓝图
     from app.controllers.chatController import bp as chat_bp
-    
+    from app.controllers.aiController import bp as ai_bp
     app.register_blueprint(user_bp)
     app.register_blueprint(students_bp)
     app.register_blueprint(course_student_bp)
     app.register_blueprint(chat_bp)
+    app.register_blueprint(ai_bp)
     
     return app

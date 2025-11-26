@@ -108,7 +108,7 @@ export default {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         console.log(userInfo);
         const userId = userInfo.user_id;
-        //使用接口获取用户信息而不是从sessionStorage获取
+        //使用接口获取用户信息而不是从localStorage获取
         const response = await getCurrentStudent(userId);
         if ((response.code = 200)) {
           this.userInfo = response.data;
@@ -125,7 +125,7 @@ export default {
     async fetchCourses() {
       try {
         // 先获取用户信息，从中获取 course_id
-        const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         const userId = userInfo.user_id;
 
         // 获取学生课程信息
@@ -157,7 +157,7 @@ export default {
     async fetchAssignments() {
       try {
         // 先获取用户信息，从中获取 course_id
-        const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         const userId = userInfo.user_id;
 
         // 获取学生课程信息
