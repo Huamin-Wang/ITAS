@@ -174,7 +174,11 @@ class UserService:
             data = {
                 'user_id': user.id,
                 'name': user.name,
-                'registration_status': 'complete'
+                'identifier': user.identifier,
+                'role': user.role,
+                'email': user.email,
+                'registration_status': 'complete',
+                'login_status': 'success'
             }
 
             # 创建响应并设置HttpOnly Cookie

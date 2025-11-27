@@ -126,9 +126,19 @@ export default {
         this.$message.success("注册成功！");
 
         // 注册成功跳转
-        setTimeout(() => {
-          this.$router.push("/login");
-        }, 1000);
+        if (userInfo.role == "teacher") {
+          setTimeout(() => {
+            this.$router.push("/teacher_profile").catch((err) => {
+              console.log("路由跳转错误:", err);
+            });
+          }, 1000);
+        } else if (userInfo.role == "student") {
+          setTimeout(() => {
+            this.$router.push("/student_profile").catch((err) => {
+              console.log("路由跳转错误:", err);
+            });
+          }, 1000);
+        }
       } catch (err) {
         console.error(err);
         this.errorMessage = "网络错误，请稍后再试";
