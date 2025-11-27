@@ -32,7 +32,11 @@
         </button>
       </div>
 
-      <div class="semester-section" v-for="semesterCourses in this.couresList">
+      <div
+        class="semester-section"
+        v-for="semesterCourses in this.couresList"
+        v-if="this.couresList"
+      >
         <h4 class="semester-heading">
           <b>{{ semesterCourses.semester }}</b>
         </h4>
@@ -50,6 +54,9 @@
             </button>
           </div>
         </div>
+      </div>
+      <div class="null" v-if="!this.couresList || this.couresList.length === 0">
+        <h3>您当前没有教授的课程。请点击上方按钮创建新课程。</h3>
       </div>
     </div>
 
@@ -81,8 +88,12 @@ export default {
     init_course() {
       teacher_course({ teacher_id: this.userInfo.user_id })
         .then((response) => {
-          this.couresList = response.data;
-          console.log(this.couresList);
+          if (response.data == "暂无课程") {
+            this.couresList = [];
+            console.log(this.couresList, this.couresList.length);
+          } else {
+            this.couresList = response.data;
+          }
         })
         .catch((error) => {
           console.error("获取课程信息失败:", error);
@@ -292,6 +303,13 @@ header p {
   color: #666;
   line-height: 1.6;
   margin-bottom: 15px;
+}
+
+.null {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1890ff;
 }
 
 .course-card button {

@@ -22,7 +22,7 @@ class CourseStudentService:
             courses = Course.query.filter_by(teacher_id=teacher_id).all()
 
             if not courses:
-                return Result.not_found('暂无课程')
+                return Result.success('暂无课程')
 
             # 获取所有课程ID，用于批量查询学生数量
             course_ids = [course.id for course in courses]
