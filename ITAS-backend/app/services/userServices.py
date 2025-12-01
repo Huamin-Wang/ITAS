@@ -450,3 +450,34 @@ class UserService:
                 pass
             print(f"微信登录过程中发生错误: {str(e)}")
             return Result.internal_error(f'登录失败: {str(e)}')
+        
+    #微信解绑
+    @staticmethod
+    def unbind_wechat(data) -> Result:
+        try:
+            openid = data.get('openid')
+
+            if not openid:
+                return Result.bad_request('当前账号未绑定微信')
+            user = User.query.filter_by(openid=openid).first()
+            user.openid = None
+            db.session.commit()
+            print("解绑成功！")
+
+            user_info = {
+                'user_id': user.id,
+                'name': user.name,
+                'identifier': user.identifier,
+                'role': user.role,
+                'email': user.email,
+                'openid': None  # 明确表示已解绑
+            }
+            result = Result.success(user_info, '微信解绑成功')
+            response = make_response(result.to_dict())
+
+                
+            return response
+        except Exception as e:
+            db.session.rollback()
+            print(f"解绑微信时发生错误: {str(e)}")
+            return Result.internal_error(f'解绑失败: {str(e)}')

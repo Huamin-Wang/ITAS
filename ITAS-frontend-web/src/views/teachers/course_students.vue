@@ -55,6 +55,7 @@
             <th>学号</th>
             <th>学生姓名</th>
             <th>状态</th>
+            <th>备注</th>
           </tr>
         </thead>
         <tbody v-if="not_enrolled_students.length > 0">
@@ -81,6 +82,7 @@ import {
   get_course_by_id,
   update_registration_status,
   course_students,
+  get_records,
 } from "@/http/api.js";
 export default {
   name: "course_students",
@@ -145,6 +147,18 @@ export default {
     //转跳到更新课程信息
     go_to_update_course(course_id) {
       this.$router.push(`/update_course/${course_id}`);
+    },
+
+    //获取备注
+    get_records(course_id) {
+      get_records(course_id)
+        .then((response) => {
+          return response.data;
+        })
+        .catch((error) => {
+          console.error("获取备注失败:", error);
+          return "";
+        });
     },
   },
   mounted() {

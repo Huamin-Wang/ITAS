@@ -212,6 +212,32 @@ export function update_quiz(data) {
     })
 }
 
+//创建备注
+export function create_record(data) {
+    return request({
+        url: '/create_record',
+        method: 'post',
+        data: data
+    })
+}
+
+//获取备注
+export function get_records(course_id) {
+    return request({
+        url: `/get_records?course_id=${course_id}`,
+        method: 'get'
+    })
+}
+
+//修改备注
+export function update_record(data) {
+    return request({
+        url: '/update_record',
+        method: 'post',
+        data: data
+    })
+}
+
 //学生端 -- 获取当前用户信息
 export function getCurrentStudent(user_id) {
     return request({
@@ -268,3 +294,4 @@ export function getAssignmentDetail(assignment_id) {
         method: 'get',
     })
 }
+

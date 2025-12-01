@@ -63,9 +63,15 @@ class StudentService:
             course_student = Course_Students.query.filter_by(
                 student_number=identifier
             ).first()
-            
+
             if not course_student:
-                return Result.not_found("未找到该学生的课程信息")
+                user = User.query.filter_by(identifier=identifier).first()
+                return Result.success(message="未找到该学生的课程信息",data={
+                    'student_name': user.name,
+                    'student_number': user.identifier,
+                    'E-mail': user.email,
+                    'user_id': user.id
+                })
             
             return Result.success(course_student.to_dict())
         except Exception as e:

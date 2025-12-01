@@ -76,6 +76,7 @@ def create_app(config_name='default'):
             # 聊天相关路由 - 添加到白名单
             '/getOpenId',
             '/minilogin',
+            '/unbindOpenId',  #微信解绑
             '/chat/history',
             '/chat/history/clear',
         ]

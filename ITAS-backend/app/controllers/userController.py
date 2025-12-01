@@ -76,6 +76,21 @@ def mini_login():
         print(f"微信登录错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'微信登录过程中发生错误: {str(e)}').to_json(), 500
 
+@bp.route('/unbindOpenId', methods=['POST'])
+def unbind_wechat():
+    try:
+        data = request.get_json()
+        if not data:
+            return Result.bad_request("请求数据不能为空").to_json(), 400
+        
+        result = UserService.unbind_wechat(data)
+        return result
+    except Exception as e:
+        import traceback
+        print(f"解绑微信错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'解绑微信过程中发生错误: {str(e)}').to_json(), 500
+
+
 @bp.route('/heartbeat', methods=['POST'])
 def heartbeat():
     """

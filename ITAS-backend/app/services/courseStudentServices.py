@@ -6,6 +6,7 @@ from app.models.Result import Result
 from app.models.assignment import Assignment
 from app.models.quiz import Quiz
 from app.models.quizQuestion import QuizQuestion
+from app.models.records import Records
 import chardet
 import io
 import csv
@@ -781,3 +782,60 @@ class CourseStudentService:
         except Exception as e:
             db.session.rollback()
             return Result.internal_error(f'更新小测失败: {str(e)}')
+        
+    #创建备注
+    @staticmethod
+    def create_record(data: dict[str, Any]) -> Result:
+        try:
+            course_student_id = data.get('course_student_id')
+            teacher_id = data.get('teacher_id')
+            remark = data.get('remark')
+
+            if not all([course_student_id, teacher_id]):
+                return Result.bad_request('缺少必填字段: course_student_id 或 teacher_id')
+
+            record = Records(
+                course_student_id=course_student_id,
+                teacher_id=teacher_id,
+                remark=remark
+            )
+
+            db.session.add(record)
+            db.session.commit()
+
+            return Result.success(data=record.to_dict())
+
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'创建备注失败: {str(e)}')
+        
+    #获取备注
+    @staticmethod
+    def get_records(course_id: int) -> Result:
+        try:
+            records = Records.query.filter_by(course_id=course_id).all()
+            records_data = [record.to_dict() for record in records]
+            return Result.success(data=records_data)
+        except Exception as e:
+            return Result.internal_error(f'获取备注失败: {str(e)}')
+        
+    #修改备注
+    @staticmethod
+    def update_record(data: dict[str, Any]) -> Result:
+        try:
+            record_id = data.get('id')
+            record = Records.query.get(record_id)
+            if not record:
+                return Result.not_found(f'备注 {record_id} 未找到')
+
+            # 更新备注信息
+            remark = data.get('remark')
+            if remark is not None:
+                record.remark = remark
+
+            db.session.commit()
+            return Result.success(data=record.to_dict())
+
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'更新备注失败: {str(e)}')

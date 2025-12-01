@@ -6,20 +6,11 @@
       <h1>基于大模型的智能教学辅助系统</h1>
       <p>学生中心 - 提升学习效率，增强学习体验</p>
       <div class="login-status">
-        <span
-          >欢迎,
+        <span>欢迎,
           <a href="/edit_profile">
-            {{ student_name }} </a
-          >同学!</span
-        >
-        <span>
-          <a
-            href="/logout"
-            onclick="return confirm('确定要退出吗？')"
-            style="font-size: 0.5em"
-            >退出</a
-          ></span
-        >
+            {{ student_name }} </a>同学!</span>
+
+        <span class="logout" @click="logout()">退出</span>
       </div>
     </header>
 
@@ -27,26 +18,18 @@
       <div class="welcome-section">
         <h2>
           欢迎,
-          <a
-            href="/edit_profile"
-            style="color: #1890ff; text-decoration: underline"
-          >
-            {{ student_name }} </a
-          >同学!
+          <a href="/edit_profile" style="color: #1890ff; text-decoration: underline">
+            {{ student_name }} </a>同学!
         </h2>
         <div style="text-align: center">
           <h3>关注微信公众号，进入AI教学助手，体验更完整功能！</h3>
-          <img
-            src=""
-            alt="微信公众号二维码"
-            style="
+          <img src="../../static/weixinQR.jpg" alt="微信公众号二维码" style="
               width: 50px;
               height: 50px;
               border: 1px solid #ddd;
               border-radius: 10px;
               box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            "
-          />
+            " />
         </div>
         <p>
           以下是您的学习数据和相关功能，如未显示课程，请联系教师上传名单或检查注册信息是否与学校教务系统一致
@@ -91,6 +74,7 @@ import {
   getAssignments,
   getStudentCourses,
   getCurrentStudent,
+  logout,
 } from "@/http/api";
 
 export default {
@@ -164,7 +148,7 @@ export default {
         const studentResponse = await getCurrentStudent(userId);
         if (studentResponse.code === 200) {
           // 从学生信息中获取 course_id
-          const courseId = studentResponse.data.course_id;
+          const courseId = studentResponse.data.course_id ;
 
           if (courseId) {
             // 使用 course_id 获取课程详情
@@ -185,6 +169,43 @@ export default {
         console.log("获取课程信息失败:", error);
       }
     },
+
+    async logout() {
+      const confirmLogout = await this.$confirm("确定要退出登录吗？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).catch(() => {
+        return false;
+      });
+      if (!confirmLogout) return;
+      try {
+        const response = await logout();
+
+        if (response.code === 200) {
+          // 显示成功消息
+          this.$message.success("登出成功");
+          // 延迟跳转，让用户看到成功消息
+          setTimeout(() => {
+            localStorage.removeItem("userInfo"); // 确保清除用户信息
+            this.$router.push("/");
+          }, 500);
+        } else {
+          this.$message.error("登出失败");
+        }
+      } catch (error) {
+        console.error("退出登录失败:", error);
+        // 即使后端登出失败，也要清除前端存储
+        this.$message.error("网络错误，已清除本地登录状态");
+
+        setTimeout(() => {
+          sessionStorage.removeItem("userInfo");
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("userInfo");
+          this.$router.push("/");
+        }, 1500);
+      }
+    }
   },
   mounted() {
     this.loaduserInfo();
@@ -362,5 +383,9 @@ footer {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   margin-top: 30px;
+}
+
+.logout {
+  cursor: pointer;
 }
 </style>
