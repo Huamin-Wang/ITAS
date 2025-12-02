@@ -7,6 +7,7 @@ from app.models.assignment import Assignment
 from app.models.quiz import Quiz
 from app.models.quizQuestion import QuizQuestion
 from app.models.records import Records
+from app.models.resource import Resource
 import chardet
 import io
 import csv
@@ -847,3 +848,71 @@ class CourseStudentService:
     #         return Result.success(data=records_data)
     #     except Exception as e:
     #         return Result.internal_error(f'获取备注失败: {str(e)}')
+
+    #获取课程资源
+    @staticmethod
+    def get_resources(course_id: int) -> Result:
+        try:
+            resources = Resource.query.filter_by(course_id=course_id).all()
+            if not resources:
+                return Result.success('')
+
+            resources_data = [resource.to_dict() for resource in resources]
+            return Result.success(data=resources_data)
+        except Exception as e:
+            return Result.internal_error(f'获取资源失败: {str(e)}')
+    
+    #创建课程资源
+    @staticmethod
+    def create_resource(data: dict[str, Any]) -> Result:
+        try:
+            # 检查课程是否存在
+            course_id = data.get('course_id')
+            course = Course.query.get(course_id)
+            if not course:
+                return Result.internal_error(f'课程 {course_id} 未找到')
+
+            # 获取数据
+            title = data.get('title')
+            description = data.get('description')
+            url = data.get('url')
+            teacher_id = data.get('teacher_id')
+
+            # 验证必填字段
+            if not all([title, url, teacher_id]):
+                return Result.internal_error(f'资源标题、URL和教师ID是必填的')
+
+            # 创建资源
+            resource = Resource(
+                teacher_id=teacher_id, 
+                course_id=course_id,
+                title=title,
+                description=description,
+                url=url
+            )
+
+            db.session.add(resource)
+            db.session.commit()
+
+            # 返回成功响应
+            return Result.success(data=resource.to_dict())
+
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'创建资源失败: {str(e)}')
+        
+    #删除课程资源
+    @staticmethod
+    def delete_resource(resource_id: int) -> Result:
+        try:
+            resource = Resource.query.get(resource_id)
+            if not resource:
+                return Result.not_found(f'资源 {resource_id} 未找到')
+
+            db.session.delete(resource)
+            db.session.commit()
+            return Result.success(data={'resource_id': resource_id})
+
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'删除资源失败: {str(e)}')

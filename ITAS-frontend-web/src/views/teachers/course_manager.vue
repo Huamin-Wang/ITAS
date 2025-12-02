@@ -96,7 +96,7 @@
           <h3>随机选择</h3>
           <p>随机选中一个学生回答问题，增强课堂互动性</p>
           <button @click="go_to_random_select(this.course.id)">
-            进入随机选管理
+            进入随机选择管理
           </button>
         </div>
 
@@ -133,11 +133,10 @@
 
         <div class="dashboard-card">
           <h3>教学资源</h3>
-          <p>上传和管理课程学习资源</p>
-          <button disabled style="cursor: not-allowed; opacity: 0.6">
-            功能开发中
+          <p>分享和管理课程学习资源</p>
+          <button @click="go_to_course_resource(this.course.id)">
+            进入资源管理
           </button>
-          <!--                                    <button onclick="location.href='/upload/{{course.id}}'">进入资源管理</button>-->
         </div>
 
         <div class="dashboard-card">
@@ -281,10 +280,15 @@ export default {
       this.$router.push(`/course_quiz/${course_id}`);
     },
 
-    //跳转ai小问答
-    go_to_chat(course_id) {
-      this.$router.push(`/chat/${course_id}`);
+    //跳转资源分享页面
+    go_to_course_resource(course_id) {
+      this.$router.push(`/course_resource/${course_id}`);
     },
+
+    //跳转ai小问答
+    // go_to_chat(course_id) {
+    //   this.$router.push(`/chat/${course_id}`);
+    // },
   },
   mounted() {
     this.init_course();

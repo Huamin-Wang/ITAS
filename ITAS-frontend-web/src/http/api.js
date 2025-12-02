@@ -238,6 +238,32 @@ export function update_record(data) {
     })
 }
 
+//获取教学资源
+export function get_resources(course_id) {
+    return request({
+        url: `/get_resources?course_id=${course_id}`,
+        method: 'get'
+    })
+}
+
+//创建教学资源
+export function create_resource(data) {
+    return request({
+        url: '/create_resource',
+        method: 'post',
+        data: data
+    })
+}
+
+//删除教学资源分享
+export function delete_resource(data) {
+    return request({
+        url: `/delete_resource`,
+        method: 'post',
+        data: data
+    })
+}
+
 //学生端 -- 获取当前用户信息
 export function getCurrentStudent(user_id) {
     return request({

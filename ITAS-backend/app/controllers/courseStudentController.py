@@ -334,3 +334,46 @@ def update_record():
         import traceback
         print(f"修改备注错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'修改备注时发生错误: {str(e)}').to_json(), 500
+    
+#创建课程资源
+@bp.route('/create_resource', methods=['POST'])
+def create_resource():
+    try:
+        data = request.get_json()
+        result = CourseStudentService.create_resource(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"创建课程资源错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'创建课程资源时发生错误: {str(e)}').to_json(), 500
+    
+#获取课程资源
+@bp.route('/get_resources', methods=['GET'])
+def get_resources():
+    try:
+        course_id = request.args.get('course_id', type=int)
+        if course_id is None:
+            return Result.bad_request("课程ID是必需的").to_json(), 400
+
+        result = CourseStudentService.get_resources(course_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取课程资源错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取课程资源时发生错误: {str(e)}').to_json(), 500
+    
+#删除课程资源
+@bp.route('/delete_resource', methods=['POST'])
+def delete_resource():
+    try:
+        data = request.get_json()
+        resource_id = data.get('resource_id')
+        if resource_id is None:
+            return Result.bad_request("资源ID是必需的").to_json(), 400
+
+        result = CourseStudentService.delete_resource(resource_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"删除课程资源错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'删除课程资源时发生错误: {str(e)}').to_json(), 500

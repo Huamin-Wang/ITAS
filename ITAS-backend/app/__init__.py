@@ -34,6 +34,7 @@ def create_app(config_name='default'):
     db.init_app(app)
     migrate.init_app(app, db)
     # 更全面的 CORS 配置 - 启用凭证支持
+    # CORS(app)
     CORS(app, 
          origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5000", "http://127.0.0.1:5000"],  # 明确指定允许的源
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
