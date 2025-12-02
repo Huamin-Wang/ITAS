@@ -64,6 +64,17 @@
                       ><strong>姓名:</strong>
                       {{ student.student_name }}
                     </span>
+                    <span>
+                      <strong>备注:</strong>
+                      <input
+                        type="text"
+                        class="remark-input"
+                        v-model="student.remark"
+                        @change="update_record(student.id, student.remark)"
+                        placeholder="输入备注"
+                      />
+                    </span>
+
                     <span class="score-badge current-score"
                       >当前分值: {{ student.score }}</span
                     >
@@ -156,7 +167,12 @@
   </div>
 </template>
 <script>
-import { get_course_by_id, course_students, update_score } from "@/http/api.js";
+import {
+  get_course_by_id,
+  course_students,
+  update_score,
+  update_record,
+} from "@/http/api.js";
 export default {
   data() {
     return {
@@ -273,6 +289,25 @@ export default {
     go_to_ranking(courseId) {
       this.$router.push({ path: `/ranking/${courseId}` });
     },
+    //修改备注
+    update_record(course_student_id, remark) {
+      const courseId = this.$route.params.courseId;
+      const teacherId = JSON.parse(localStorage.getItem("userInfo")).user_id;
+      const data = {
+        course_student_id: course_student_id,
+        remark: remark,
+        course_id: courseId,
+        teacher_id: teacherId,
+      };
+      update_record(data)
+        .then((response) => {
+          this.$message.success("备注更新成功");
+        })
+        .catch((error) => {
+          console.error("更新备注失败:", error);
+          this.$message.error("更新备注失败");
+        });
+    },
   },
   mounted() {
     this.init_course();
@@ -298,7 +333,7 @@ export default {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 2rem auto;
   padding: 0 1rem;
   animation: fadeIn 0.4s ease;
@@ -310,6 +345,33 @@ export default {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 2rem;
   margin-bottom: 2rem;
+}
+
+/* 优化备注输入框样式（仅视觉，不影响逻辑） */
+.remark-input {
+  width: 150px;
+  padding: 6px 10px;
+  border: 1.5px solid #cbd5e0; /* 浅灰 */
+  border-radius: 6px;
+  background-color: #f9fafb;
+  font-size: 0.85rem;
+  color: #2d3748;
+  transition: all 0.2s ease;
+  margin-left: 10px;
+}
+
+/* hover 更显可编辑 */
+.remark-input:hover {
+  background-color: #ffffff;
+  border-color: #a0aec0;
+}
+
+/* 聚焦时蓝色高亮，与系统主色调一致 */
+.remark-input:focus {
+  outline: none;
+  background-color: #ffffff;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.25);
 }
 
 @keyframes fadeIn {

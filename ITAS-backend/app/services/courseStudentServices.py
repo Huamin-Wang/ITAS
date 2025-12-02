@@ -274,28 +274,43 @@ class CourseStudentService:
             course = Course.query.get(course_id)
             if not course:
                 return Result.not_found('课程不存在')
-                
+
+            # 获取课程学生及其备注（假设有relationship）
             course_students = course.course_students
-            
-            # 使用模型的 to_dict 方法序列化数据
-            enrolled_students = [
-                student.to_dict()
-                for student in course_students if student.course_status == 'enrolled'
-            ]
-            
-            not_enrolled_students = [
-                student.to_dict()
-                for student in course_students if student.course_status == 'not_enrolled'
-            ]
-            
+
+            # 处理学生数据
+            enrolled_students = []
+            not_enrolled_students = []
+
+            for student in course_students:
+                student_data = student.to_dict()
+
+                # 假设 student 有一个 remarks 关系属性
+                # 或者通过 Records.query 获取该学生的备注
+                remark = Records.query.filter_by(
+                    course_id=course_id, 
+                    course_student_id=student.id
+                ).first()
+
+                if remark:
+                    student_data['remark'] = remark.to_dict()['remark']
+                    # 或者 student_data['remark'] = remark.content 如果只需要内容
+                else:
+                    student_data['remark'] = None
+
+                if student.course_status == 'enrolled':
+                    enrolled_students.append(student_data)
+                else:
+                    not_enrolled_students.append(student_data)
+
             data = {
                 'enrolled_students': enrolled_students,
                 'not_enrolled_students': not_enrolled_students,
                 'enrolled_students_count': len(enrolled_students),
             }
-            
+
             return Result.success(data=data)
-            
+
         except Exception as e:
             db.session.rollback()
             return Result.internal_error(f'获取学生失败: {str(e)}')
@@ -783,59 +798,52 @@ class CourseStudentService:
             db.session.rollback()
             return Result.internal_error(f'更新小测失败: {str(e)}')
         
-    #创建备注
+    #创建更新备注
     @staticmethod
-    def create_record(data: dict[str, Any]) -> Result:
+    def create_update_record(data: dict[str, Any]) -> Result:
         try:
             course_student_id = data.get('course_student_id')
             teacher_id = data.get('teacher_id')
+            course_id = data.get('course_id')
             remark = data.get('remark')
 
-            if not all([course_student_id, teacher_id]):
-                return Result.bad_request('缺少必填字段: course_student_id 或 teacher_id')
+            if not all([course_student_id, teacher_id, course_id]):
+                return Result.bad_request('缺少必填字段: course_student_id 或 teacher_id 或 course_id')
 
-            record = Records(
-                course_student_id=course_student_id,
-                teacher_id=teacher_id,
-                remark=remark
-            )
+            existing_record = Records.query.filter_by(
+                course_student_id=course_student_id
+            ).first()
 
-            db.session.add(record)
-            db.session.commit()
+            if existing_record:
+                # 更新备注
+                existing_record.remark = remark
+                db.session.commit()
+                return Result.success(data=existing_record.to_dict())
 
-            return Result.success(data=record.to_dict())
+            else:
+                # 创建新的备注记录
+                new_record = Records(
+                    course_student_id=course_student_id,
+                    teacher_id=teacher_id,
+                    course_id=course_id,
+                    remark=remark
+                )
+
+                db.session.add(new_record)
+                db.session.commit()
+                return Result.success(data=new_record.to_dict())
 
         except Exception as e:
             db.session.rollback()
             return Result.internal_error(f'创建备注失败: {str(e)}')
+
         
-    #获取备注
-    @staticmethod
-    def get_records(course_id: int) -> Result:
-        try:
-            records = Records.query.filter_by(course_id=course_id).all()
-            records_data = [record.to_dict() for record in records]
-            return Result.success(data=records_data)
-        except Exception as e:
-            return Result.internal_error(f'获取备注失败: {str(e)}')
-        
-    #修改备注
-    @staticmethod
-    def update_record(data: dict[str, Any]) -> Result:
-        try:
-            record_id = data.get('id')
-            record = Records.query.get(record_id)
-            if not record:
-                return Result.not_found(f'备注 {record_id} 未找到')
-
-            # 更新备注信息
-            remark = data.get('remark')
-            if remark is not None:
-                record.remark = remark
-
-            db.session.commit()
-            return Result.success(data=record.to_dict())
-
-        except Exception as e:
-            db.session.rollback()
-            return Result.internal_error(f'更新备注失败: {str(e)}')
+    # #获取备注
+    # @staticmethod
+    # def get_records(course_id: int) -> Result:
+    #     try:
+    #         records = Records.query.filter_by(course_id=course_id).all()
+    #         records_data = [record.to_dict() for record in records]
+    #         return Result.success(data=records_data)
+    #     except Exception as e:
+    #         return Result.internal_error(f'获取备注失败: {str(e)}')

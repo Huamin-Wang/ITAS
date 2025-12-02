@@ -309,28 +309,26 @@ def create_record():
         return Result.internal_error(f'创建备注时发生错误: {str(e)}').to_json(), 500
     
 #获取备注
-@bp.route('/get_records', methods=['GET'])
-def get_records():
-    try:
-        course_id = request.args.get('course_id', type=int)
-        if course_id is None:
-            return Result.bad_request("课程ID是必需的").to_json(), 400
+# @bp.route('/get_records', methods=['GET'])
+# def get_records():
+#     try:
+#         course_id = request.args.get('course_id', type=int)
+#         if course_id is None:
+#             return Result.bad_request("课程ID是必需的").to_json(), 400
 
-        result = CourseStudentService.get_records(course_id)
-        return result.to_json(), result.code
-    except Exception as e:
-        import traceback
-        print(f"获取备注错误详情: {traceback.format_exc()}")
-        return Result.internal_error(f'获取备注时发生错误: {str(e)}').to_json(), 500
+#         result = CourseStudentService.get_records(course_id)
+#         return result.to_json(), result.code
+#     except Exception as e:
+#         import traceback
+#         print(f"获取备注错误详情: {traceback.format_exc()}")
+#         return Result.internal_error(f'获取备注时发生错误: {str(e)}').to_json(), 500
     
 #修改备注
 @bp.route('/update_record', methods=['POST'])
 def update_record():
     try:
         data = request.get_json()
-        if not all(key in data for key in ['id', 'remark']):
-            return Result.bad_request("缺少必要的字段").to_json(), 400
-        result = CourseStudentService.update_record(data)
+        result = CourseStudentService.create_update_record(data)
         return result.to_json(), result.code
     except Exception as e:
         import traceback

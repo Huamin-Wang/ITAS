@@ -26,9 +26,10 @@
       <table>
         <thead>
           <tr>
-            <th>学生学号</th>
+            <th>学号</th>
             <th>学生姓名</th>
             <th>状态</th>
+            <th>备注</th>
           </tr>
         </thead>
         <tbody v-if="enrolled_students.length > 0">
@@ -36,13 +37,21 @@
             <td>{{ student.student_number }}</td>
             <td>{{ student.student_name }}</td>
             <td>
-              <span style="color: #27ae60">{{ student.course_status }}</span>
+              <span style="color: #27ae60">已注册</span>
+            </td>
+            <td>
+              <input
+                type="text"
+                v-model="student.remark"
+                @change="update_record(student.id, student.remark)"
+                placeholder="输入备注"
+              />
             </td>
           </tr>
         </tbody>
         <tbody v-else>
           <tr>
-            <td colspan="3" style="text-align: center">暂无已注册学生</td>
+            <td colspan="4" style="text-align: center">暂无已注册学生</td>
           </tr>
         </tbody>
       </table>
@@ -63,13 +72,21 @@
             <td>{{ student.student_number }}</td>
             <td>{{ student.student_name }}</td>
             <td>
-              <span style="color: #e74c3c">{{ student.course_status }}</span>
+              <span style="color: #e74c3c">未注册</span>
+            </td>
+            <td>
+              <input
+                type="text"
+                v-model="student.remark"
+                @change="update_record(student.id, student.remark)"
+                placeholder="输入备注"
+              />
             </td>
           </tr>
         </tbody>
         <tbody v-else>
           <tr>
-            <td colspan="3" style="text-align: center">暂无未注册学生</td>
+            <td colspan="4" style="text-align: center">暂无未注册学生</td>
           </tr>
         </tbody>
       </table>
@@ -82,7 +99,7 @@ import {
   get_course_by_id,
   update_registration_status,
   course_students,
-  get_records,
+  update_record,
 } from "@/http/api.js";
 export default {
   name: "course_students",
@@ -149,15 +166,23 @@ export default {
       this.$router.push(`/update_course/${course_id}`);
     },
 
-    //获取备注
-    get_records(course_id) {
-      get_records(course_id)
+    //修改备注
+    update_record(course_student_id, remark) {
+      const courseId = this.$route.params.courseId;
+      const teacherId = JSON.parse(localStorage.getItem("userInfo")).user_id;
+      const data = {
+        course_student_id: course_student_id,
+        remark: remark,
+        course_id: courseId,
+        teacher_id: teacherId,
+      };
+      update_record(data)
         .then((response) => {
-          return response.data;
+          this.$message.success("备注更新成功");
         })
         .catch((error) => {
-          console.error("获取备注失败:", error);
-          return "";
+          console.error("更新备注失败:", error);
+          this.$message.error("更新备注失败");
         });
     },
   },
@@ -229,7 +254,7 @@ table {
 th,
 td {
   padding: 12px 15px;
-  text-align: left;
+  text-align: center;
 }
 
 th {
@@ -295,5 +320,34 @@ tr:hover {
   background-color: #2acb11;
   transform: translateY(-1px);
   box-shadow: 0 4px 6px rgba(66, 153, 225, 0.2);
+}
+/* 备注输入框优化样式 */
+table input[type="text"] {
+  width: 50%;
+  padding: 6px 10px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  background-color: #fafbfc;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+/* hover 效果 */
+table input[type="text"]:hover {
+  background-color: #ffffff;
+  border-color: #b4bbc2;
+}
+
+/* 聚焦效果 */
+table input[type="text"]:focus {
+  background-color: #ffffff;
+  border-color: #3498db;
+  box-shadow: 0 0 4px rgba(52, 152, 219, 0.4);
+}
+
+/* 表格内备注单元格居中优化 */
+td input[type="text"] {
+  text-align: left;
 }
 </style>
