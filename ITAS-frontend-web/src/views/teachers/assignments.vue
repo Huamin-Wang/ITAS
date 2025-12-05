@@ -190,7 +190,7 @@ export default {
     async submitForm() {
       try {
         const data = new FormData();
-        const teacherId = JSON.parse(lcoalStorage.getItem("userInfo")).user_id;
+        const teacherId = JSON.parse(localStorage.getItem("userInfo")).user_id;
         data.append("teacher_id", teacherId);
         data.append("course_id", this.course.id);
         data.append("title", this.formData.title);

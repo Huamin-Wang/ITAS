@@ -1,7 +1,11 @@
-from flask import Blueprint, request
+from flask import Blueprint, request,Response,json
+import time
+import queue
 from app.models.Result import Result
 from app.services.courseStudentServices import CourseStudentService
 bp = Blueprint('course_student', __name__)
+
+subscribers = []
 
 #教师获取对应课程
 @bp.route('/teacher_course', methods=['GET'])
@@ -197,6 +201,8 @@ def assignments():
         if not all(key in data for key in ['course_id', 'title', 'description', 'due_date','teacher_id']):
             return Result.bad_request("缺少必要的字段").to_json(), 400
         result = CourseStudentService.assignments(data)
+        global NEW_ASSIGNMENT_EVENT
+        NEW_ASSIGNMENT_EVENT = True
         return result.to_json(), result.code
     except Exception as e:
         import traceback
@@ -216,7 +222,8 @@ def update_assignment():
         import traceback
         print(f"编辑作业错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'编辑作业时发生错误: {str(e)}').to_json(), 500
-    
+
+
 #新建小测
 @bp.route('/create_quiz', methods=['POST'])
 def create_quiz():
@@ -236,7 +243,6 @@ def create_quiz():
 def add_quiz_questions():
     try:
         data = request.get_json()
-        print(f"Received data for adding quiz questions: {data}")
         if 'quiz_id' not in data or 'questions' not in data:
             return Result.bad_request("缺少必要的字段").to_json(), 400
         quiz_id = data.get('quiz_id')
@@ -283,17 +289,79 @@ def get_quiz_questions():
 def update_quiz():
     try:
         data = request.get_json()
-        print(data.get('questions'))
         if 'id' not in data:
             return Result.bad_request("小测ID是必需的").to_json(), 400
         result = CourseStudentService.update_quiz(data)
         return result.to_json(), result.code
     except Exception as e:
-        print(data.get('questions'))
         import traceback
         print(f"编辑小测错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'编辑小测时发生错误: {str(e)}').to_json(), 500
+
+
+#学生监听课程小测推送
+@bp.route('/quiz_stream', methods=['GET'])
+def quiz_stream():
+    """学生监听课程的小测推送"""
     
+    courses_param = request.args.get("course_ids", "")
+    course_list = courses_param.split(",") if courses_param else []
+
+    q = queue.Queue()
+    subscribers.append({"queue": q, "courses": course_list})
+
+    def stream():
+        while True:
+            event = q.get()   # 阻塞等待队列消息
+            yield f"data: {json.dumps(event)}\n\n"
+
+    return Response(stream(), mimetype="text/event-stream")
+
+#发布小测
+@bp.route('/publish_quiz', methods=['POST'])
+def publish_quiz():
+    try:
+        data = request.get_json()
+        quiz_id = data.get("quiz_id")
+        course_id = data.get("course_id")
+
+        if not quiz_id:
+            return Result.bad_request("quiz_id 不能为空").to_json(), 400
+
+        # SSE 推送事件
+        event = {
+            "type": "new_quiz",
+            "course_id": course_id
+        }
+
+        # 推送到所有订阅该课程的学生
+        for sub in subscribers:
+            if str(course_id) in sub["courses"]:
+                sub["queue"].put(event)
+
+        # 保存发布记录
+        result = CourseStudentService.publish_quiz(data)
+        return result.to_json(), result.code
+
+    except Exception as e:
+        return Result.internal_error(str(e)).to_json(), 500
+
+
+#删除小测
+@bp.route('/delete_quiz', methods=['POST'])
+def delete_quiz():
+    try:
+        data = request.get_json()
+        quiz_id = data.get('quiz_id')
+        if quiz_id is None:
+            return Result.bad_request("小测ID是必需的").to_json(), 400
+        result = CourseStudentService.delete_quiz(quiz_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"删除小测错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'删除小测时发生错误: {str(e)}').to_json(), 500
+
 #创建备注
 @bp.route('/create_record', methods=['POST'])
 def create_record():
@@ -377,3 +445,4 @@ def delete_resource():
         import traceback
         print(f"删除课程资源错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'删除课程资源时发生错误: {str(e)}').to_json(), 500
+

@@ -21,6 +21,7 @@
                 <th>小测名称</th>
                 <th>题目数量</th>
                 <th>创建日期</th>
+                <th>截止日期</th>
                 <th>状态</th>
                 <th style="text-align: center">操作</th>
               </tr>
@@ -32,10 +33,21 @@
                 <td>
                   {{ quiz.create_time.replace("T", " ").substring(0, 16) }}
                 </td>
+                <td
+                  v-if="quiz.status == 'published' || quiz.status == 'finished'"
+                >
+                  {{ quiz.end_time.replace("T", " ").substring(0, 16) }}
+                </td>
+                <td v-else></td>
                 <td v-if="quiz.status == 'draft'" style="color: #e74c3c">
                   未发布
                 </td>
-                <td style="color: #27ae60" v-else>已发布</td>
+                <td v-if="quiz.status == 'published'" style="color: #27ae60">
+                  已发布
+                </td>
+                <td v-if="quiz.status == 'finished'" style="color: #e74c3c">
+                  已截止
+                </td>
                 <td class="td-btn">
                   <span @click="editQuiz(quiz.id)" class="btn btn-edit"
                     >编辑</span
@@ -100,7 +112,13 @@
 </template>
 
 <script>
-import { get_course_by_id, get_quizzes, update_quiz } from "@/http/api.js";
+import {
+  get_course_by_id,
+  get_quizzes,
+  update_quiz,
+  publish_quiz,
+  delete_quiz,
+} from "@/http/api.js";
 import QuizEditor from "@/components/QuizEditor.vue"; // 导入组件
 
 export default {
@@ -179,7 +197,22 @@ export default {
       this.showDeadLineDialog = true;
     },
 
-    deleteQuiz(quizId) {},
+    deleteQuiz(quizId) {
+      const data = {
+        quiz_id: quizId,
+      };
+      delete_quiz(data)
+        .then((res) => {
+          if (res.code == 200) {
+            this.$message.success("小测删除成功");
+            this.init_quizzes();
+          }
+        })
+        .catch((error) => {
+          console.error("删除小测失败:", error);
+          this.$message.error("删除小测失败");
+        });
+    },
 
     // 关闭截止时间弹窗
     closeDeadlineDialog() {
@@ -201,11 +234,12 @@ export default {
       }
 
       const updateData = {
-        id: this.releaseQuizId,
+        quiz_id: this.releaseQuizId,
         deadline_time: this.deadlineMinutes,
+        course_id: this.$route.params.courseId,
       };
 
-      update_quiz(updateData)
+      publish_quiz(updateData)
         .then((res) => {
           if (res.code == 200) {
             this.$message.success("小测发布成功");

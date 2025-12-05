@@ -164,11 +164,31 @@ def get_course_student_info():
             if not user_data:
                 return Result.not_found("用户不存在").to_json(), 404
             identifier = user_data.get('identifier')
-
         if not identifier:
             return Result.bad_request("用户标识符不能为空").to_json(), 400
         
         result = StudentService.get_course_students_by_identifier(identifier)
+        return result.to_json(), result.code
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'获取课程学生信息失败: {str(e)}'
+        }), 500
+    
+@bp.route('/student_course_info', methods=['GET'])
+def get_student_course_info():
+    try:
+        identifier = request.args.get('identifier')
+        user_id = request.args.get('user_id')
+        if user_id and not identifier:
+            user_data = StudentService.get_user_by_id(user_id)
+            if not user_data:
+                return Result.not_found("用户不存在").to_json(), 404
+            identifier = user_data.get('identifier')
+        if not identifier:
+            return Result.bad_request("用户标识符不能为空").to_json(), 400
+        
+        result = StudentService.get_course_by_identifier(identifier)
         return result.to_json(), result.code
     except Exception as e:
         return jsonify({
@@ -264,3 +284,30 @@ def get_assignment_detail():
             'success': False,
             'message': f'获取作业详情失败: {str(e)}'
         }), 500
+
+# 学生中心 -- 获取小测列表
+@bp.route('/get_quizzes_student', methods=['GET'])
+def get_quizzes():
+    try:
+        course_id = request.args.get('course_id', type=int)
+        if course_id is None:
+            return Result.bad_request("课程ID是必需的").to_json(), 400
+
+        result = StudentService.get_quizzes_student(course_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取小测列表错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取小测列表时发生错误: {str(e)}').to_json(), 500
+    
+# 学生端 -- 提交小测
+@bp.route('/submit_quiz', methods=['POST'])
+def submit_quiz():
+    try:
+        data = request.get_json()
+        result = StudentService.submit_quiz(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"提交小测错误详情: {traceback.format_exc()}")
+        return

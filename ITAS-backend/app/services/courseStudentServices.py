@@ -676,13 +676,28 @@ class CourseStudentService:
             db.session.rollback()
             return Result.internal_error(f'添加小测题目失败: {str(e)}')
     
-    #获取小测列表
+   #获取小测列表
     @staticmethod
     def get_quizzes(course_id: int) -> Result:
         try:
             quizzes = Quiz.query.filter_by(course_id=course_id).all()
             if not quizzes:
                 return Result.success('')
+
+            # 📌 获取当前时间
+            from datetime import datetime
+            now = datetime.now()
+            # 📌 批量更新已超时的小测状态
+            need_commit = False
+            for quiz in quizzes:
+                if quiz.end_time and quiz.status != "finished":
+                    if now > quiz.end_time:
+                        quiz.status = "finished"
+                        need_commit = True
+
+            # 若有更新则提交数据库
+            if need_commit:
+                db.session.commit()
 
             # 批量统计每个 quiz 的题目数量以避免 N+1 查询
             quiz_ids = [q.id for q in quizzes]
@@ -701,8 +716,10 @@ class CourseStudentService:
                 quizzes_data.append(qd)
 
             return Result.success(data=quizzes_data)
+
         except Exception as e:
             return Result.internal_error(f'获取小测失败: {str(e)}')
+
         
     #获取小测详情
     @staticmethod
@@ -744,12 +761,6 @@ class CourseStudentService:
                 if field in data:
                     setattr(quiz, field, data.get(field))
 
-            # 转换日期格式
-            from datetime import datetime, timedelta
-            if 'deadline_time' in data:
-                deadline_time = data.get('deadline_time')
-                quiz.end_time = datetime.now() + timedelta(minutes=int(deadline_time))
-                quiz.status = 'published'
 
             # 更新题目信息
             if 'questions' in data:
@@ -798,7 +809,44 @@ class CourseStudentService:
         except Exception as e:
             db.session.rollback()
             return Result.internal_error(f'更新小测失败: {str(e)}')
-        
+
+        #发布小测
+    
+    #发布小测
+    @staticmethod
+    def publish_quiz(data: dict[str, Any]) -> Result:
+        """教师发布小测，同时触发 SSE 推送"""
+        quiz_id = data.get('quiz_id')
+        quiz = Quiz.query.get(quiz_id)
+        if not quiz:
+            return Result.not_found("小测不存在")
+        # 转换日期格式
+        from datetime import datetime, timedelta
+        if 'deadline_time' in data:
+            deadline_time = data.get('deadline_time')
+            quiz.end_time = datetime.now() + timedelta(minutes=int(deadline_time))
+            quiz.status = 'published'
+            db.session.commit()
+
+        return Result.success("发布成功")
+    
+    #删除小测
+    @staticmethod
+    def delete_quiz(quiz_id: int) -> Result:
+        try:
+            quiz = Quiz.query.get(quiz_id)
+            if not quiz:
+                return Result.not_found(f'小测 {quiz_id} 未找到')
+
+            db.session.delete(quiz)
+            db.session.commit()
+            return Result.success(data={'quiz_id': quiz_id})
+
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'删除小测失败: {str(e)}')
+
+
     #创建更新备注
     @staticmethod
     def create_update_record(data: dict[str, Any]) -> Result:
@@ -838,7 +886,8 @@ class CourseStudentService:
             db.session.rollback()
             return Result.internal_error(f'创建备注失败: {str(e)}')
 
-        
+        #通知学生小测更新
+    
     # #获取备注
     # @staticmethod
     # def get_records(course_id: int) -> Result:
@@ -916,3 +965,4 @@ class CourseStudentService:
         except Exception as e:
             db.session.rollback()
             return Result.internal_error(f'删除资源失败: {str(e)}')
+        

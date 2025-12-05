@@ -39,7 +39,7 @@ def create_app(config_name='default'):
          origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5000", "http://127.0.0.1:5000"],  # 明确指定允许的源
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
          allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"],
-         expose_headers=["Content-Range", "X-Content-Range"],
+         expose_headers=["Content-Type","Content-Range", "X-Content-Range"],
          supports_credentials=True,  # 重要：必须为True以支持Cookie
          max_age=3600)
     
@@ -78,7 +78,7 @@ def create_app(config_name='default'):
             '/getOpenId',
             '/minilogin',
             '/unbindOpenId',  #微信解绑
-            '/chat/history',
+            '/quiz_stream',
             '/chat/history/clear',
         ]
         

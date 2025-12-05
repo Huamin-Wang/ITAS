@@ -212,6 +212,24 @@ export function update_quiz(data) {
     })
 }
 
+//发布小测
+export function publish_quiz(data) {
+    return request({
+        url: '/publish_quiz',
+        method: 'post',
+        data: data
+    })
+}
+
+//删除小测
+export function delete_quiz(data) {
+    return request({
+        url: '/delete_quiz',
+        method: 'post',
+        data: data
+    })
+}
+
 //创建备注
 export function create_record(data) {
     return request({
@@ -272,6 +290,14 @@ export function getCurrentStudent(user_id) {
     })
 }
 
+//学生端 -- 获取当前用户课程id
+export function getCurrentStudentCourseId(user_id) {
+    return request({
+        url: `/student_course_info?user_id=${user_id}`,
+        method: 'get'
+    })
+}
+
 //学生端 -- 获取所有课程信息
 export function getCourses() {
     return request({
@@ -318,6 +344,23 @@ export function getAssignmentDetail(assignment_id) {
     return request({
         url: `/assignment_detail?assignment_id=${assignment_id}`,
         method: 'get',
+    })
+}
+
+//学生端 -- 获取小测列表
+export function getQuizzesStudent(course_id) {
+    return request({
+        url: `/get_quizzes_student?course_id=${course_id}`,
+        method: 'get',
+    })
+}
+
+//学生端 -- 提交小测
+export function submit_quiz(data) {
+    return request({
+        url: '/submit_quiz',
+        method: 'post',
+        data: data
     })
 }
 

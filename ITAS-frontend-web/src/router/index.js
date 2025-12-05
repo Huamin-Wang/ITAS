@@ -11,6 +11,7 @@ import student_profile from '../views/students/student_profile.vue';  //学生�
 import submission_detail from '../views/students/submission_detail.vue'; //提交作业详情
 import submissions from '../views/students/submissions.vue'; //提交作业
 import course_detail from '../views/students/course_detail.vue'; //课程详情
+import student_quiz from '../views/students/student_quiz.vue'; //学生小测
 
 //teachers
 import TeacherProfile from '../views/teachers/teacher_profile.vue'; //教师中心
@@ -102,6 +103,14 @@ const routes = [
     component: course_detail,
     meta: {
       title: '学生端-课程详情'
+    }
+  },
+  {
+    path: '/student_quiz/:quizId?',
+    name: 'student_quiz',
+    component: student_quiz,
+    meta: {
+      title: '学生端-小测详情'
     }
   },
   {
