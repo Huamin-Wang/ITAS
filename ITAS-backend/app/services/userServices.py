@@ -295,19 +295,19 @@ class UserService:
         print(f"接收到的code: {code}")
         print(f"使用的APP_ID: {Config.APP_ID}")
         print(f"使用的APP_SECRET: {Config.APP_SECRET[:8]}...")
-    
+
         if not code:
             error_result = Result.bad_request('缺少 code')
             response = make_response(error_result.to_dict())
             response.headers['Content-Type'] = 'application/json'
             return response
-    
+
         try:
             # 向微信服务器请求 openid
             wx_url = f"https://api.weixin.qq.com/sns/jscode2session?appid={Config.APP_ID}&secret={Config.APP_SECRET}&js_code={code}&grant_type=authorization_code"
-    
+
             response = requests.get(wx_url).json()
-            
+
             # 检查微信API返回错误
             if 'errcode' in response:
                 error_msg = response.get('errmsg', '微信API调用失败')
@@ -316,16 +316,16 @@ class UserService:
                 response = make_response(error_result.to_dict())
                 response.headers['Content-Type'] = 'application/json'
                 return response
-                
+
             openid = response.get('openid')
             if not openid:
                 error_result = Result.internal_error('未能获取到openid')
                 response = make_response(error_result.to_dict())
                 response.headers['Content-Type'] = 'application/json'
                 return response
-                
+
             print(f"openid:{openid}")
-            
+
             # 如果成功获取 openid，则根据openid返回用户信息
             user = User.query.filter_by(openid=openid).first()
             if user:
@@ -339,7 +339,8 @@ class UserService:
                     identity=user.id, 
                     additional_claims=additional_claims
                 )
-                
+
+                # 构建用户数据（不再包含 access_token）
                 user_data = {
                     'user_id': user.id,
                     'name': user.name,
@@ -348,14 +349,14 @@ class UserService:
                     "openid": openid,
                     "email": user.email,
                     # "gender": user.gender,
-                    "access_token": access_token,
                     "login_status": "success"
                 }
                 print(f"用户 {user.name} 通过openid登录成功")
-                
+
+                # 创建响应并通过 HttpOnly Cookie 设置 token
                 result = Result.success(user_data, '登录成功')
                 response = make_response(result.to_dict())
-                response.headers['Content-Type'] = 'application/json'
+                set_access_cookies(response, access_token)  # 通过 Cookie 设置 token
                 return response
             else:
                 # 返回信息提示注册登录
@@ -369,7 +370,7 @@ class UserService:
                 response = make_response(result.to_dict())
                 response.headers['Content-Type'] = 'application/json'
                 return response
-    
+
         except Exception as e:
             print(f"获取openid过程中发生错误: {str(e)}")
             import traceback
