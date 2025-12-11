@@ -231,7 +231,7 @@ export default {
       if (!userId) return;
 
       this.sse = new EventSource(
-        `http://localhost:5000/quiz_stream?course_ids=${this.courseIds.join(
+        `https://www.001ai.top/api/quiz_stream?course_ids=${this.courseIds.join(
           ","
         )}`
       );

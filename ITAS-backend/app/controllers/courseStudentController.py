@@ -312,7 +312,7 @@ def quiz_stream():
 
     def stream():
         while True:
-            event = q.get()   # 阻塞等待队列消息
+            event = q.get(timeout=5)   # 阻塞等待队列消息
             yield f"data: {json.dumps(event)}\n\n"
 
     return Response(stream(), mimetype="text/event-stream")
