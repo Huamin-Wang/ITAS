@@ -303,19 +303,36 @@ def update_quiz():
 @bp.route('/quiz_stream', methods=['GET'])
 def quiz_stream():
     """学生监听课程的小测推送"""
-    
+
     courses_param = request.args.get("course_ids", "")
     course_list = courses_param.split(",") if courses_param else []
 
     q = queue.Queue()
-    subscribers.append({"queue": q, "courses": course_list})
+    subscriber = {"queue": q, "courses": course_list}
+    subscribers.append(subscriber)
 
     def stream():
-        while True:
-            event = q.get(timeout=5)   # 阻塞等待队列消息
-            yield f"data: {json.dumps(event)}\n\n"
+        try:
+            while True:
+                try:
+                    event = q.get(timeout=15)  # 阻塞等待消息
+                    yield f"data: {json.dumps(event)}\n\n"
+                except queue.Empty:
+                    # 队列空时发送心跳，保持连接
+                    yield ":\n\n"
+        finally:
+            # 连接关闭时从订阅列表移除
+            if subscriber in subscribers:
+                subscribers.remove(subscriber)
 
-    return Response(stream(), mimetype="text/event-stream")
+    headers = {
+        "Cache-Control": "no-cache",
+        "Content-Type": "text/event-stream",
+        "Connection": "keep-alive",
+    }
+
+    return Response(stream(), headers=headers)
+
 
 #发布小测
 @bp.route('/publish_quiz', methods=['POST'])
