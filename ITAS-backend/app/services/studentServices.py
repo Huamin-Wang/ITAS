@@ -153,24 +153,62 @@ class StudentService:
             return Result.success(assignment_data)
         except Exception as e:
             return Result.internal_error(f'获取作业详情失败: {str(e)}')
-        
-    #获取多课程小测列表
+    
+    #获取小测列表
     @staticmethod
-    def get_quizzes_student(course_id: int) -> Result:
-        try:
-            quizzes = Quiz.query.filter(
-                Quiz.course_id == course_id,
-                Quiz.status != 'draft'
-            )
-            print(f"查询到的课程: {quizzes}")
-            if not quizzes:
-                return Result.not_found("课程不存在")
-
-            quizzes_data = [quiz.to_dict() for quiz in quizzes]
-            return Result.success(quizzes_data)
-        except Exception as e:
-            return Result.internal_error(f'获取小测失败: {str(e)}')
-
+    def get_quizzes_student(data) -> Result:
+       try:
+           from datetime import datetime
+           
+           now = datetime.now()
+           course_id = data.get('course_id')
+           student_id = data.get('student_id')         
+           # 更新已超时的小测
+           Quiz.query.filter(
+               Quiz.course_id == course_id,
+               Quiz.status.in_(['not_started', 'ongoing']),
+               Quiz.end_time.isnot(None),
+               Quiz.end_time <= now
+           ).update(
+               {'status': 'finished'},
+           )
+           
+           # 2. 查询课程的小测列表
+           quizzes = Quiz.query.filter(
+               Quiz.course_id == course_id,
+               Quiz.status != 'draft'
+           ).order_by(Quiz.create_time.desc()).all()
+           
+           if not quizzes:
+               return Result.not_found("课程不存在或无可用小测")
+           
+           # 3. 批量查询学生已提交的小测ID列表
+           submitted_quiz_ids = []
+           if student_id:
+               # 查询学生已提交的所有小测ID
+               submitted_responses = QuizResponse.query.filter(
+                   QuizResponse.student_id == student_id,
+                   QuizResponse.quiz_id.in_([quiz.id for quiz in quizzes])
+               ).with_entities(QuizResponse.quiz_id).all()
+               submitted_quiz_ids = [resp.quiz_id for resp in submitted_responses]
+           
+           # 4. 构建返回数据，添加提交状态
+           quizzes_data = []
+           for quiz in quizzes:
+               quiz_dict = quiz.to_dict()
+               # 添加提交状态字段
+               quiz_dict['is_submitted'] = quiz.id in submitted_quiz_ids
+               quizzes_data.append(quiz_dict)
+           
+           # 如果有更新操作，提交事务
+           db.session.commit()
+           
+           print(f"查询到的小测数量: {len(quizzes)}")
+           return Result.success(quizzes_data)
+           
+       except Exception as e:
+           db.session.rollback()
+           return Result.internal_error(f'获取小测失败: {str(e)}')
     #提交小测  
     @staticmethod
     def submit_quiz(data: dict[str, Any]) -> Result:

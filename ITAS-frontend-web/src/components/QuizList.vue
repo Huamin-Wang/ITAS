@@ -9,7 +9,7 @@
 
     <!-- 小测列表 -->
     <div v-if="quiz && quiz.length" class="quiz-list-container">
-      <!-- 进行中的小测 -->
+      <!-- 进行中的小测（未提交） -->
       <div v-if="hasPublishedQuizzes" class="quiz-section">
         <h4 class="quiz-section-title">
           待完成小测
@@ -40,7 +40,42 @@
         </ul>
       </div>
 
-      <!-- 已结束的小测 -->
+      <!-- 已提交的小测 -->
+      <div v-if="hasSubmittedQuizzes" class="quiz-section">
+        <h4 class="quiz-section-title quiz-section-submitted">
+          已提交小测
+          <span class="quiz-count-badge">{{ submittedQuizzesCount }}</span>
+        </h4>
+        <ul class="quiz-list">
+          <li
+            v-for="q in submittedQuizzes"
+            :key="q.id"
+            class="quiz-item quiz-item-submitted"
+          >
+            <div class="quiz-item-content">
+              <div class="quiz-info">
+                <span
+                  @click="go_to_student_quiz(q.id)"
+                  class="quiz-title submitted"
+                >
+                  {{ q.title }}
+                </span>
+                <div class="quiz-meta">
+                  <span class="quiz-deadline">
+                    截止日期：{{ formatDateTime(q.end_time) }}
+                  </span>
+                  <span class="quiz-status-text">已提交</span>
+                </div>
+              </div>
+              <div class="quiz-status">
+                <span class="status-badge status-submitted">已提交</span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 已结束的小测（未提交） -->
       <div v-if="hasFinishedQuizzes" class="quiz-section">
         <h4 class="quiz-section-title quiz-section-finished">
           已结束小测
@@ -91,6 +126,10 @@ export default {
       required: true,
       default: () => [],
     },
+    student_id: {
+      type: Number,
+      required: true,
+    },
   },
   data() {
     return {
@@ -109,19 +148,35 @@ export default {
   computed: {
     // 根据状态过滤小测
     publishedQuizzes() {
-      return this.quiz.filter((q) => q.status === "published");
+      // 只显示进行中且未提交的小测
+      return this.quiz.filter(
+        (q) => q.status === "published" && !q.is_submitted
+      );
+    },
+    submittedQuizzes() {
+      // 显示所有已提交的小测（包括进行中和已结束的）
+      return this.quiz.filter((q) => q.is_submitted === true);
     },
     finishedQuizzes() {
-      return this.quiz.filter((q) => q.status === "finished");
+      // 只显示已结束且未提交的小测
+      return this.quiz.filter(
+        (q) => q.status === "finished" && !q.is_submitted
+      );
     },
     publishedQuizzesCount() {
       return this.publishedQuizzes.length;
+    },
+    submittedQuizzesCount() {
+      return this.submittedQuizzes.length;
     },
     finishedQuizzesCount() {
       return this.finishedQuizzes.length;
     },
     hasPublishedQuizzes() {
       return this.publishedQuizzes.length > 0;
+    },
+    hasSubmittedQuizzes() {
+      return this.submittedQuizzes.length > 0;
     },
     hasFinishedQuizzes() {
       return this.finishedQuizzes.length > 0;
@@ -149,7 +204,8 @@ export default {
       let newList = [];
 
       for (const courseId of this.courseIds) {
-        const r = await getQuizzesStudent(courseId);
+        const params = { student_id: this.student_id, course_id: courseId };
+        const r = await getQuizzesStudent(params);
         if (r.code === 200) newList.push(...r.data);
       }
 
@@ -348,6 +404,10 @@ export default {
   align-items: center;
 }
 
+.quiz-section-submitted {
+  color: #1890ff;
+}
+
 .quiz-section-finished {
   color: #999;
 }
@@ -383,6 +443,11 @@ export default {
   border-left: 4px solid #52c41a;
 }
 
+.quiz-item-submitted {
+  background-color: #f0f8ff;
+  border-left: 4px solid #1890ff;
+}
+
 .quiz-item-finished {
   background-color: #fafafa;
   border-left: 4px solid #d9d9d9;
@@ -406,9 +471,20 @@ export default {
   display: block;
   margin-bottom: 5px;
   transition: color 0.2s;
+  cursor: pointer;
 }
 
 .quiz-title:hover {
+  color: #096dd9;
+  text-decoration: underline;
+}
+
+.quiz-title.submitted {
+  color: #1890ff;
+  cursor: pointer;
+}
+
+.quiz-title.submitted:hover {
   color: #096dd9;
   text-decoration: underline;
 }
@@ -456,6 +532,12 @@ export default {
   background-color: #f6ffed;
   color: #52c41a;
   border: 1px solid #b7eb8f;
+}
+
+.status-submitted {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border: 1px solid #91d5ff;
 }
 
 .status-finished {

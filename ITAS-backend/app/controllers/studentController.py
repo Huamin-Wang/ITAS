@@ -286,14 +286,14 @@ def get_assignment_detail():
         }), 500
 
 # 学生中心 -- 获取小测列表
-@bp.route('/get_quizzes_student', methods=['GET'])
+@bp.route('/get_quizzes_student', methods=['POST'])
 def get_quizzes():
     try:
-        course_id = request.args.get('course_id', type=int)
-        if course_id is None:
-            return Result.bad_request("课程ID是必需的").to_json(), 400
+        data = request.get_json()
+        if not all(key in data for key in ['student_id', 'course_id']):
+            return Result.bad_request("缺少必要的字段").to_json(), 400
 
-        result = StudentService.get_quizzes_student(course_id)
+        result = StudentService.get_quizzes_student(data)
         return result.to_json(), result.code
     except Exception as e:
         import traceback

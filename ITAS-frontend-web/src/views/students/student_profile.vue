@@ -57,7 +57,7 @@
       </div>
 
       <!-- 使用封装的小测组件，确保course_ids已加载 -->
-      <QuizList v-if="course_ids.length > 0" :course-ids="course_ids" />
+      <QuizList v-if="course_ids.length > 0" :course-ids="course_ids" :student_id="student_id"/>
 
       <!-- 作业 -->
       <div class="dashboard-card">
@@ -103,6 +103,7 @@ export default {
       courses: [],
       assignments: [],
       course_ids: [],
+      student_id: null,
       coursesLoaded: false, // 添加加载状态
     };
   },
@@ -112,7 +113,7 @@ export default {
       try {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
         const userId = userInfo.user_id;
-
+        this.student_id = userId;
         const response = await getCurrentStudent(userId);
         if (response.code === 200) {
           this.userInfo = response.data;

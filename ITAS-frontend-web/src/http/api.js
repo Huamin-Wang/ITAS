@@ -348,10 +348,11 @@ export function getAssignmentDetail(assignment_id) {
 }
 
 //学生端 -- 获取小测列表
-export function getQuizzesStudent(course_id) {
+export function getQuizzesStudent(data) {
     return request({
-        url: `/get_quizzes_student?course_id=${course_id}`,
-        method: 'get',
+        url: '/get_quizzes_student',
+        method: 'post',
+        data: data
     })
 }
 

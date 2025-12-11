@@ -23,12 +23,6 @@
                   {{ assignments.length }}
                 </div>
               </div>
-              <div class="overview-card">
-                <h4>小测数量</h4>
-                <div class="overview-number">
-                  {{ quizzesCount }}
-                </div>
-              </div>
             </div>
           </div>
 
@@ -39,7 +33,7 @@
             <QuizList
               v-if="course.id"
               :course-ids="[course.id]"
-              :show-header="false"
+              :student_id="student_id"
             />
           </div>
 
@@ -208,11 +202,20 @@ export default {
       error: "",
       loading: true,
       assignments: {},
+      student_id: null,
       showAllAssignments: false,
-      quizzesCount: 0, // 小测数量
     };
   },
   methods: {
+    init_student_id() {
+      try {
+        const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+        this.student_id = userInfo.user_id;
+      } catch (error) {
+        console.error("获取用户信息失败:", error);
+        return null;
+      }
+    },
     async loadCourseDetail() {
       const courseId = this.$route.params.courseId;
       try {
@@ -247,6 +250,7 @@ export default {
     },
   },
   mounted() {
+    this.init_student_id();
     this.loadCourseDetail();
     this.fetchAssignments();
   },
