@@ -14,7 +14,6 @@ class User(db.Model):
     # 学生关系
     attendances = db.relationship('Attendance', backref='student', lazy=True)  # 学生的考勤记录
     submissions = db.relationship('Submission', backref='student', lazy=True)  # 学生的作业提交
-    quiz_responses = db.relationship('QuizResponse', backref='student', lazy=True)  # 学生的抢答记录
     reports = db.relationship('Report', backref='student', lazy=True)  # 学生的学习数据分析报告
     # 教师关系
     assigned_homeworks = db.relationship('Assignment', backref='teacher', lazy=True)  # 教师发布的作业

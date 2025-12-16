@@ -162,11 +162,11 @@ class StudentService:
            
            now = datetime.now()
            course_id = data.get('course_id')
-           student_id = data.get('student_id')         
+           student_number = data.get('student_number')         
            # 更新已超时的小测
            Quiz.query.filter(
                Quiz.course_id == course_id,
-               Quiz.status.in_(['not_started', 'ongoing']),
+               Quiz.status.in_(['not_started', 'published']),
                Quiz.end_time.isnot(None),
                Quiz.end_time <= now
            ).update(
@@ -184,10 +184,10 @@ class StudentService:
            
            # 3. 批量查询学生已提交的小测ID列表
            submitted_quiz_ids = []
-           if student_id:
+           if student_number:
                # 查询学生已提交的所有小测ID
                submitted_responses = QuizResponse.query.filter(
-                   QuizResponse.student_id == student_id,
+                   QuizResponse.student_number == student_number,
                    QuizResponse.quiz_id.in_([quiz.id for quiz in quizzes])
                ).with_entities(QuizResponse.quiz_id).all()
                submitted_quiz_ids = [resp.quiz_id for resp in submitted_responses]
@@ -209,6 +209,7 @@ class StudentService:
        except Exception as e:
            db.session.rollback()
            return Result.internal_error(f'获取小测失败: {str(e)}')
+    
     #提交小测  
     @staticmethod
     def submit_quiz(data: dict[str, Any]) -> Result:
@@ -217,13 +218,13 @@ class StudentService:
                 quiz_id = answer.get('quiz_id')
                 question_id = answer.get('question_id')
                 student_answer = answer.get('student_answer')
-                student_id = answer.get('student_id')
+                student_number = answer.get('student_number')
 
                 # 查是否已有记录
                 existing = QuizResponse.query.filter_by(
                     quiz_id=quiz_id,
                     question_id=question_id,
-                    student_id=student_id
+                    student_number=student_number
                 ).first()
 
                 from datetime import datetime
@@ -235,7 +236,7 @@ class StudentService:
                     new_response = QuizResponse(
                         quiz_id=quiz_id,
                         question_id=question_id,
-                        student_id=student_id,
+                        student_number=student_number,
                         response=student_answer,
                         response_time=now
                     )

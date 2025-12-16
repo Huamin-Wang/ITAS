@@ -379,6 +379,33 @@ def delete_quiz():
         print(f"删除小测错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'删除小测时发生错误: {str(e)}').to_json(), 500
 
+#获取学生小测提交详情
+@bp.route('/get_quiz_response', methods=['GET'])
+def get_quiz_response():
+    try:
+        quiz_id = request.args.get('quiz_id', type=int)
+        if quiz_id is None:
+            return Result.bad_request("小测ID是必需的").to_json(), 400
+
+        result = CourseStudentService.get_quiz_response(quiz_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取学生小测提交详情错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取学生小测提交详情时发生错误: {str(e)}').to_json(), 500
+
+#判断学生是否提交小测
+@bp.route('/has_submitted_quiz', methods=['POST'])
+def has_submitted_quiz():
+    try:
+        data = request.get_json()
+        result = CourseStudentService.has_submitted_quiz(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"判断学生是否提交小测错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'判断学生是否提交小测时发生错误: {str(e)}').to_json(), 500
+
 #创建备注
 @bp.route('/create_record', methods=['POST'])
 def create_record():

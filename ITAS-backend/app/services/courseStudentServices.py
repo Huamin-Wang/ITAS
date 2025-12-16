@@ -6,6 +6,7 @@ from app.models.Result import Result
 from app.models.assignment import Assignment
 from app.models.quiz import Quiz
 from app.models.quizQuestion import QuizQuestion
+from app.models.quizResponse import QuizResponse
 from app.models.records import Records
 from app.models.resource import Resource
 import chardet
@@ -719,8 +720,7 @@ class CourseStudentService:
 
         except Exception as e:
             return Result.internal_error(f'获取小测失败: {str(e)}')
-
-        
+       
     #获取小测详情
     @staticmethod
     def get_quiz_questions(quiz_id: int) -> Result:
@@ -846,7 +846,81 @@ class CourseStudentService:
             db.session.rollback()
             return Result.internal_error(f'删除小测失败: {str(e)}')
 
+    #获取学生小测提交详情
+    @staticmethod
+    def get_quiz_response(quiz_id: int) -> Result:
+        try:
+            responses = QuizResponse.query.filter_by(quiz_id=quiz_id).all()
+            if not responses:
+                return Result.success('')
 
+            # 按照 student_id 分组
+            grouped_responses = {}
+            for response in responses:
+                student_id = response.student_id
+                if student_id not in grouped_responses:
+                    grouped_responses[student_id] = {
+                        'student_id': student_id,
+                        'response_list': []
+                    }
+
+                # 将每个题目的答案添加到对应学生的列表中
+                grouped_responses[student_id]['response_list'].append({
+                    'question_id': response.question_id,
+                    'response': response.response,
+                    'response_time': response.response_time
+                })
+
+            # 将字典转换为列表
+            result_data = list(grouped_responses.values())
+            return Result.success(data=result_data)
+        except Exception as e:
+            return Result.internal_error(f'获取小测提交详情失败: {str(e)}')
+
+    #判断学生是否提交小测
+    def has_submitted_quiz(data: dict[str, Any]) -> Result:
+        try:
+            quiz_id = data.get('quiz_id')
+            identifier_arr = data.get('identifier_arr')
+
+            # 确保identifier_arr是列表格式
+            if isinstance(identifier_arr, (str, int, float)):
+                identifier_arr = [identifier_arr]
+            elif not identifier_arr:
+                identifier_arr = []
+
+            if not quiz_id or not identifier_arr:
+                return Result.error("quiz_id和identifier_arr不能为空")
+
+            # 批量查询提交记录 - 使用distinct确保每个学生只出现一次
+            # 这里假设QuizResponse表中有student_identifier字段
+            submitted_students = QuizResponse.query.filter(
+                QuizResponse.quiz_id == quiz_id,
+                QuizResponse.student_number.in_(identifier_arr)
+            ).with_entities(
+                QuizResponse.student_number
+            ).distinct().all()
+
+            # 转换为已提交的identifier集合
+            submitted_identifiers = {student.student_number for student in submitted_students}
+            # 批量查询用户信息 - 假设User表中有identifier字段
+            users = User.query.filter(User.identifier.in_(identifier_arr)).all()
+            user_map = {user.identifier: user for user in users}
+
+            # 构建结果列表
+            result_list = []
+            for identifier in identifier_arr:
+                user = user_map.get(identifier)
+                result_list.append({
+                    'identifier': identifier,
+                    'student_name': user.name if user else '用户不存在',
+                    'submitted': identifier in submitted_identifiers
+                })
+
+            return Result.success(data={'results': result_list})
+
+        except Exception as e:
+            return Result.internal_error(f'检查提交状态失败: {str(e)}')
     #创建更新备注
     @staticmethod
     def create_update_record(data: dict[str, Any]) -> Result:

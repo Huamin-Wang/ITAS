@@ -290,7 +290,7 @@ def get_assignment_detail():
 def get_quizzes():
     try:
         data = request.get_json()
-        if not all(key in data for key in ['student_id', 'course_id']):
+        if not all(key in data for key in ['student_number', 'course_id']):
             return Result.bad_request("缺少必要的字段").to_json(), 400
 
         result = StudentService.get_quizzes_student(data)
