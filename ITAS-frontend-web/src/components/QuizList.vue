@@ -126,8 +126,8 @@ export default {
       required: true,
       default: () => [],
     },
-    student_id: {
-      type: Number,
+    student_number: {
+      type: String,
       required: true,
     },
   },
@@ -204,7 +204,10 @@ export default {
       let newList = [];
 
       for (const courseId of this.courseIds) {
-        const params = { student_id: this.student_id, course_id: courseId };
+        const params = {
+          student_number: this.student_number,
+          course_id: courseId,
+        };
         const r = await getQuizzesStudent(params);
         if (r.code === 200) newList.push(...r.data);
       }

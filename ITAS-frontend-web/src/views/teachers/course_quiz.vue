@@ -27,7 +27,12 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="quiz in quizzes" :key="quiz.id">
+              <tr
+                v-for="quiz in quizzes"
+                :key="quiz.id"
+                @click="go_to_quiz_grading(quiz.id)"
+                style="cursor: pointer"
+              >
                 <td>{{ quiz.title }}</td>
                 <td>{{ quiz.question_count }}</td>
                 <td>
@@ -276,6 +281,17 @@ export default {
       setTimeout(() => {
         this.alertMessage = "";
       }, 3000);
+    },
+
+    //跳转到小测批改页面
+    go_to_quiz_grading(quiz_id) {
+      this.$router.push({
+        name: "quiz_grading",
+        params: {
+          quizId: quiz_id,
+          courseId: this.course.id,
+        },
+      });
     },
   },
 };

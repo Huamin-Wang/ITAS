@@ -363,7 +363,6 @@ def publish_quiz():
     except Exception as e:
         return Result.internal_error(str(e)).to_json(), 500
 
-
 #删除小测
 @bp.route('/delete_quiz', methods=['POST'])
 def delete_quiz():
@@ -380,14 +379,11 @@ def delete_quiz():
         return Result.internal_error(f'删除小测时发生错误: {str(e)}').to_json(), 500
 
 #获取学生小测提交详情
-@bp.route('/get_quiz_response', methods=['GET'])
+@bp.route('/get_quiz_response', methods=['POST'])
 def get_quiz_response():
     try:
-        quiz_id = request.args.get('quiz_id', type=int)
-        if quiz_id is None:
-            return Result.bad_request("小测ID是必需的").to_json(), 400
-
-        result = CourseStudentService.get_quiz_response(quiz_id)
+        data = request.get_json()
+        result = CourseStudentService.get_quiz_response(data)
         return result.to_json(), result.code
     except Exception as e:
         import traceback
@@ -405,6 +401,21 @@ def has_submitted_quiz():
         import traceback
         print(f"判断学生是否提交小测错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'判断学生是否提交小测时发生错误: {str(e)}').to_json(), 500
+
+#获取班级学生学号
+@bp.route('/get_student_numbers', methods=['GET'])
+def get_student_numbers():
+    try:
+        course_id = request.args.get('course_id', type=int)
+        if course_id is None:
+            return Result.bad_request("课程ID是必需的").to_json(), 400
+
+        result = CourseStudentService.get_student_numbers(course_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取班级学生学号错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取班级学生学号时发生错误: {str(e)}').to_json(), 500
 
 #创建备注
 @bp.route('/create_record', methods=['POST'])

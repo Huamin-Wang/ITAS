@@ -152,7 +152,8 @@ export default {
           quiz_id: q.quiz_id,
           question_id: q.id,
           student_answer: finalAnswer,
-          student_id: JSON.parse(localStorage.getItem("userInfo")).user_id,
+          student_number: JSON.parse(localStorage.getItem("userInfo"))
+            .identifier,
         };
       });
 
