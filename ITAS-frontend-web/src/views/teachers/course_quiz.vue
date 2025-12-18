@@ -53,14 +53,14 @@
                 <td v-if="quiz.status == 'finished'" style="color: #e74c3c">
                   已截止
                 </td>
-                <td class="td-btn">
-                  <span @click="editQuiz(quiz.id)" class="btn btn-edit"
+                <td class="td-btn" @click.stop>
+                  <span @click.stop="editQuiz(quiz.id)" class="btn btn-edit"
                     >编辑</span
                   >
-                  <span @click="releaseQuiz(quiz.id)" class="btn btn-release"
+                  <span @click.stop="releaseQuiz(quiz.id)" class="btn btn-release"
                     >发布</span
                   >
-                  <span @click="deleteQuiz(quiz.id)" class="btn btn-delete"
+                  <span @click.stop="deleteQuiz(quiz.id)" class="btn btn-delete"
                     >删除</span
                   >
                 </td>

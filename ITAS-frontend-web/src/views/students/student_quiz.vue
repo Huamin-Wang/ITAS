@@ -1,91 +1,268 @@
 <template>
-  <div class="quiz-container">
-    <h2 class="quiz-title">{{ quiz.title }}</h2>
-    <div class="quiz-detail">
-      <p class="quiz-description">{{ quiz.description }}</p>
-      <p class="quiz-description">
-        截止时间：{{ formatDateTime(quiz.end_time) }}
-      </p>
-    </div>
-    <div class="quiz-questions">
-      <div
-        class="question-item"
-        v-for="(question, index) in questions"
-        :key="question.id"
-      >
-        <h3 class="question-title">
-          {{ index + 1 }}. {{ question.question_text }}
-          <span class="points">（{{ question.points }} 分）</span>
-        </h3>
-
-        <!-- 单选题 -->
-        <div v-if="question.question_type === 'single_choice'">
-          <label
-            class="option"
-            v-for="(opt, optIndex) in question.options"
-            :key="optIndex"
-          >
-            <input
-              type="radio"
-              :name="'q' + question.id"
-              :value="String.fromCharCode(65 + optIndex)"
-              v-model="question.student_answer"
-            />
-            {{ String.fromCharCode(65 + optIndex) }}. {{ opt }}
-          </label>
+  <div class="student-quiz-container">
+    <!-- 头部区域 -->
+    <div class="quiz-header">
+      <div class="header-content">
+        <h2 class="quiz-title">{{ quiz.title }}</h2>
+        <div v-if="hasGradingResults" class="total-score-display">
+          <span class="score-label">总分:</span>
+          <span class="score-value">{{ calculateTotalScore() }}</span>
+          <span class="score-divider">/</span>
+          <span class="score-max">{{ calculateMaxScore() }}</span>
         </div>
+      </div>
 
-        <!-- 多选题 -->
-        <div v-else-if="question.question_type === 'multiple_choice'">
-          <label
-            class="option"
-            v-for="(opt, optIndex) in question.options"
-            :key="optIndex"
-          >
-            <input
-              type="checkbox"
-              :value="String.fromCharCode(65 + optIndex)"
-              v-model="question.student_answer"
-            />
-            {{ String.fromCharCode(65 + optIndex) }}. {{ opt }}
-          </label>
+      <div class="quiz-details">
+        <div class="detail-item">
+          <span class="detail-label">描述:</span>
+          <span class="detail-content">{{ quiz.description }}</span>
         </div>
-
-        <!-- 判断题 -->
-        <div v-else-if="question.question_type === 'true_false'">
-          <label class="option">
-            <input
-              type="radio"
-              :name="'q' + question.id"
-              value="true"
-              v-model="question.student_answer"
-            />
-            正确
-          </label>
-          <label class="option">
-            <input
-              type="radio"
-              :name="'q' + question.id"
-              value="false"
-              v-model="question.student_answer"
-            />
-            错误
-          </label>
-        </div>
-
-        <!-- 简答题 -->
-        <div v-else-if="question.question_type === 'short_answer'">
-          <textarea
-            class="short-answer"
-            placeholder="请输入你的回答"
-            v-model="question.student_answer"
-          ></textarea>
+        <div class="detail-item">
+          <span class="detail-label">截止时间:</span>
+          <span class="detail-content">{{
+            formatDateTime(quiz.end_time)
+          }}</span>
         </div>
       </div>
     </div>
 
-    <div class="actions">
-      <button class="btn btn-submit" @click="submitQuiz">提交小测</button>
+    <!-- 题目列表 -->
+    <div class="questions-container">
+      <div
+        class="question-item"
+        v-for="(question, index) in questions"
+        :key="question.id"
+        :class="{ graded: question.gradingResult }"
+      >
+        <div class="question-header">
+          <div class="question-info">
+            <h3 class="question-number">第{{ index + 1 }}题</h3>
+            <span class="question-points">（{{ question.points }}分）</span>
+          </div>
+
+          <!-- 批改结果 -->
+          <div v-if="question.gradingResult" class="grading-result-badge">
+            <div class="score-display">
+              得分：<span class="score-value">{{
+                question.gradingResult.score
+              }}</span>
+              / {{ question.gradingResult.total_score }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 问题内容 -->
+        <div class="question-content">
+          <p class="question-text">{{ question.question_text }}</p>
+
+          <!-- 单选题 -->
+          <div
+            v-if="question.question_type === 'single_choice'"
+            class="question-options"
+          >
+            <label
+              class="option"
+              v-for="(opt, optIndex) in question.options"
+              :key="optIndex"
+              :class="{
+                'selected-option':
+                  question.student_answer ===
+                  String.fromCharCode(65 + optIndex),
+                'correct-option':
+                  question.gradingResult &&
+                  question.gradingResult.reference_answer ===
+                    String.fromCharCode(65 + optIndex),
+                'incorrect-option':
+                  question.gradingResult &&
+                  question.student_answer ===
+                    String.fromCharCode(65 + optIndex) &&
+                  question.gradingResult.reference_answer !==
+                    String.fromCharCode(65 + optIndex),
+              }"
+            >
+              <input
+                type="radio"
+                :name="'q' + question.id"
+                :value="String.fromCharCode(65 + optIndex)"
+                v-model="question.student_answer"
+                :disabled="question.gradingResult"
+              />
+              <span class="option-letter"
+                >{{ String.fromCharCode(65 + optIndex) }}.</span
+              >
+              <span class="option-text">{{ opt }}</span>
+            </label>
+          </div>
+
+          <!-- 多选题 -->
+          <div
+            v-else-if="question.question_type === 'multiple_choice'"
+            class="question-options"
+          >
+            <label
+              class="option"
+              v-for="(opt, optIndex) in question.options"
+              :key="optIndex"
+              :class="{
+                'selected-option':
+                  question.student_answer &&
+                  question.student_answer.includes(
+                    String.fromCharCode(65 + optIndex)
+                  ),
+                'correct-option':
+                  question.gradingResult &&
+                  question.gradingResult.reference_answer &&
+                  question.gradingResult.reference_answer.includes(
+                    String.fromCharCode(65 + optIndex)
+                  ),
+                'incorrect-option':
+                  question.gradingResult &&
+                  question.student_answer &&
+                  question.student_answer.includes(
+                    String.fromCharCode(65 + optIndex)
+                  ) &&
+                  (!question.gradingResult.reference_answer ||
+                    !question.gradingResult.reference_answer.includes(
+                      String.fromCharCode(65 + optIndex)
+                    )),
+              }"
+            >
+              <input
+                type="checkbox"
+                :value="String.fromCharCode(65 + optIndex)"
+                v-model="question.student_answer"
+                :disabled="question.gradingResult"
+              />
+              <span class="option-letter"
+                >{{ String.fromCharCode(65 + optIndex) }}.</span
+              >
+              <span class="option-text">{{ opt }}</span>
+            </label>
+          </div>
+
+          <!-- 判断题 -->
+          <div
+            v-else-if="question.question_type === 'true_false'"
+            class="question-options"
+          >
+            <label
+              class="option"
+              :class="{
+                'selected-option': question.student_answer === 'true',
+                'correct-option':
+                  question.gradingResult &&
+                  question.gradingResult.reference_answer === 'true',
+                'incorrect-option':
+                  question.gradingResult &&
+                  question.student_answer === 'true' &&
+                  question.gradingResult.reference_answer !== 'true',
+              }"
+            >
+              <input
+                type="radio"
+                :name="'q' + question.id"
+                value="true"
+                v-model="question.student_answer"
+                :disabled="question.gradingResult"
+              />
+              <span class="option-text">正确</span>
+            </label>
+            <label
+              class="option"
+              :class="{
+                'selected-option': question.student_answer === 'false',
+                'correct-option':
+                  question.gradingResult &&
+                  question.gradingResult.reference_answer === 'false',
+                'incorrect-option':
+                  question.gradingResult &&
+                  question.student_answer === 'false' &&
+                  question.gradingResult.reference_answer !== 'false',
+              }"
+            >
+              <input
+                type="radio"
+                :name="'q' + question.id"
+                value="false"
+                v-model="question.student_answer"
+                :disabled="question.gradingResult"
+              />
+              <span class="option-text">错误</span>
+            </label>
+          </div>
+
+          <!-- 简答题 -->
+          <div
+            v-else-if="question.question_type === 'short_answer'"
+            class="question-options"
+          >
+            <textarea
+              class="short-answer"
+              :class="{
+                'graded-answer': question.gradingResult,
+                'ungraded-answer': !question.gradingResult,
+              }"
+              placeholder="请输入你的回答..."
+              v-model="question.student_answer"
+              :disabled="question.gradingResult"
+              :readonly="question.gradingResult"
+              rows="4"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- 批改详情 -->
+        <div v-if="question.gradingResult" class="grading-details">
+          <h4 class="details-title">批改详情</h4>
+          <div class="details-content">
+            <div class="detail-row">
+              <span class="detail-label">学生答案:</span>
+              <span class="detail-value student-answer">
+                {{
+                  formatStudentAnswer(
+                    question.student_answer,
+                    question.question_type
+                  )
+                }}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">参考答案:</span>
+              <span class="detail-value reference-answer">
+                {{
+                  formatReferenceAnswer(
+                    question.gradingResult.reference_answer,
+                    question.question_type
+                  )
+                }}
+              </span>
+            </div>
+            <div v-if="question.gradingResult.comment" class="detail-row">
+              <span class="detail-label">教师评语:</span>
+              <span class="detail-value teacher-comment">
+                {{ question.gradingResult.comment }}
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">批改时间:</span>
+              <span class="detail-value grading-time">
+                {{ formatDateTime(question.gradingResult.grading_time) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部操作区域 -->
+    <div class="quiz-footer">
+      <button
+        v-if="!hasGradingResults"
+        class="btn btn-submit"
+        @click="submitQuiz"
+      >
+        提交小测
+      </button>
       <button class="btn btn-back" @click="go_to_student_profile()">
         返回
       </button>
@@ -94,7 +271,13 @@
 </template>
 
 <script>
-import { get_quiz_questions, submit_quiz } from "@/http/api.js";
+// 保持原有的script部分不变，只修改样式
+import {
+  get_quiz_questions,
+  submit_quiz,
+  get_quiz_response,
+  get_grading_results,
+} from "@/http/api.js";
 
 export default {
   name: "StudentQuizPage",
@@ -102,7 +285,13 @@ export default {
     return {
       quiz: {},
       questions: [],
+      gradingResults: [],
     };
+  },
+  computed: {
+    hasGradingResults() {
+      return this.gradingResults && this.gradingResults.length > 0;
+    },
   },
   mounted() {
     this.loadQuizData();
@@ -111,24 +300,164 @@ export default {
     async loadQuizData() {
       try {
         const quizId = this.$route.params.quizId;
-        const res = await get_quiz_questions(quizId);
+        const studentNumber = JSON.parse(
+          localStorage.getItem("userInfo")
+        ).identifier;
 
-        this.quiz = res.data.quiz;
-        this.questions = res.data.questions;
+        // 1. 获取题目数据
+        const quizRes = await get_quiz_questions(quizId);
+        this.quiz = quizRes.data.quiz;
 
-        // 初始化 answers
-        this.questions = res.data.questions.map((q) => ({
+        // 初始化 questions
+        this.questions = quizRes.data.questions.map((q) => ({
           ...q,
           student_answer:
             q.question_type === "multiple_choice"
               ? [] // 多选题必须是数组
               : "", // 单选、判断、简答是字符串
+          gradingResult: null, // 初始化为null
         }));
-        console.log(this.questions);
+
+        // 2. 尝试获取学生已有的答案数据
+        try {
+          const params = {
+            quiz_id: quizId,
+            student_number: studentNumber,
+          };
+          const responseRes = await get_quiz_response(params);
+
+          if (responseRes.data && responseRes.data.length > 0) {
+            // 有答案数据，填充到 questions 中
+            this.fillStudentAnswers(responseRes.data);
+          }
+        } catch (error) {
+          console.log("未找到学生的答案数据，使用初始状态");
+          // 如果没有答案数据，保持初始状态
+        }
+
+        // 3. 获取批改结果
+        await this.loadGradingResults(quizId, studentNumber);
       } catch (error) {
-        console.error("加载小测失败：", error);
         this.$message.error("加载小测失败");
+        console.error("加载小测失败:", error);
       }
+    },
+
+    // 加载批改结果
+    async loadGradingResults(quizId, studentNumber) {
+      try {
+        const params = {
+          quiz_id: quizId,
+          student_number: studentNumber,
+        };
+        const gradingRes = await get_grading_results(params);
+
+        if (gradingRes.code === 200 && gradingRes.data.length > 0) {
+          this.gradingResults = gradingRes.data;
+
+          // 将批改结果与题目关联
+          this.associateGradingResults();
+        }
+      } catch (error) {
+        console.log("未找到批改结果或批改未完成");
+      }
+    },
+
+    // 将批改结果关联到对应题目
+    associateGradingResults() {
+      this.questions.forEach((question) => {
+        const gradingResult = this.gradingResults.find(
+          (result) => result.question_id === question.id
+        );
+
+        if (gradingResult) {
+          question.gradingResult = gradingResult;
+
+          // 对于多选题，需要将学生答案转换为数组
+          if (
+            question.question_type === "multiple_choice" &&
+            gradingResult.student_answer
+          ) {
+            question.student_answer = gradingResult.student_answer
+              .split(",")
+              .map((item) => item.trim());
+          } else {
+            question.student_answer = gradingResult.student_answer || "";
+          }
+        }
+      });
+    },
+
+    // 填充学生答案数据
+    fillStudentAnswers(responseData) {
+      responseData.forEach((responseItem) => {
+        const question = this.questions.find(
+          (q) => q.id === responseItem.question_id
+        );
+
+        if (question) {
+          // 根据题目类型处理答案数据
+          if (question.question_type === "multiple_choice") {
+            // 多选题：将逗号分隔的字符串转换为数组
+            question.student_answer = responseItem.response
+              ? responseItem.response.split(",").map((item) => item.trim())
+              : [];
+          } else {
+            // 其他类型：直接使用字符串
+            question.student_answer = responseItem.response || "";
+          }
+        }
+      });
+    },
+
+    // 格式化参考答案显示
+    formatReferenceAnswer(referenceAnswer, questionType) {
+      if (!referenceAnswer) return "无";
+
+      if (questionType === "multiple_choice" && referenceAnswer.includes(",")) {
+        return referenceAnswer
+          .split(",")
+          .map((item) => item.trim())
+          .join(", ");
+      }
+
+      return referenceAnswer;
+    },
+
+    // 格式化学生答案显示
+    formatStudentAnswer(studentAnswer, questionType) {
+      if (
+        !studentAnswer ||
+        (Array.isArray(studentAnswer) && studentAnswer.length === 0)
+      ) {
+        return "未回答";
+      }
+
+      if (questionType === "multiple_choice" && Array.isArray(studentAnswer)) {
+        return studentAnswer.join(", ");
+      }
+
+      return studentAnswer;
+    },
+
+    // 计算总得分
+    calculateTotalScore() {
+      return this.questions.reduce((total, question) => {
+        if (question.gradingResult) {
+          return total + parseFloat(question.gradingResult.score);
+        }
+        return total;
+      }, 0);
+    },
+
+    // 计算满分
+    calculateMaxScore() {
+      return this.questions.reduce((total, question) => {
+        if (question.gradingResult) {
+          return total + parseFloat(question.gradingResult.total_score);
+        }
+        return total + parseFloat(question.points || 0);
+      }, 0);
     },
 
     submitQuiz() {
@@ -157,7 +486,7 @@ export default {
         };
       });
 
-      console.log("最终提交：", submitData); // 你应该在此能看到 "A,B"
+      console.log("最终提交：", submitData);
 
       submit_quiz(submitData)
         .then(() => {
@@ -168,10 +497,12 @@ export default {
           this.$message.error("提交失败");
         });
     },
+
     formatDateTime(isoString) {
       if (!isoString) return "";
       return isoString.slice(0, 16).replace("T", " ");
     },
+
     go_to_student_profile() {
       this.$router.push("/student_profile");
     },
@@ -180,81 +511,421 @@ export default {
 </script>
 
 <style scoped>
-.quiz-container {
-  background: white;
-  padding: 20px;
+/* ==================== 整体布局样式 ==================== */
+.student-quiz-container {
+  width: 100%;
+  position: relative;
+  background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 25px;
+}
+
+/* ==================== 头部样式 ==================== */
+.quiz-header {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .quiz-title {
-  font-size: 1.8rem;
   color: #2c3e50;
-  margin-left: 10px;
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 600;
 }
-.quiz-detail {
+
+.total-score-display {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #f6ffed 0%, #d9f7be 100%);
+  border-radius: 8px;
+  border: 1px solid #b7eb8f;
 }
-.quiz-description {
-  color: #7f8c8d;
-  margin-bottom: 20px;
-  margin-left: 10px;
+
+.score-label {
+  font-weight: 500;
+  color: #389e0d;
+}
+
+.score-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #389e0d;
+}
+
+.score-divider {
+  color: #999;
+  margin: 0 2px;
+}
+
+.score-max {
+  font-weight: 500;
+  color: #666;
+}
+
+.quiz-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.detail-label {
+  min-width: 70px;
+  font-weight: 500;
+  color: #666;
+}
+
+.detail-content {
+  color: #333;
+  flex: 1;
+}
+
+/* ==================== 问题列表样式 ==================== */
+.questions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
 }
 
 .question-item {
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 25px;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  background-color: #fff;
 }
 
-.question-title {
-  margin-bottom: 10px;
-  font-size: 1.1rem;
+.question-item.graded {
+  border-left: 4px solid #2ecc71;
+  background-color: rgba(46, 204, 113, 0.03);
 }
 
-.points {
+/* ==================== 问题头部样式 ==================== */
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.question-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.question-number {
   color: #3498db;
-  font-size: 0.9rem;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.question-points {
+  color: #e67e22;
+  font-weight: 500;
+}
+
+.grading-result-badge {
+  padding: 8px 16px;
+  background-color: #2ecc71;
+  color: white;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.score-display {
+  font-size: 0.95rem;
+}
+
+.score-display .score-value {
+  font-size: 1.1rem;
+  color: white;
+}
+
+/* ==================== 问题内容样式 ==================== */
+.question-content {
+  margin-bottom: 20px;
+}
+
+.question-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #333;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+/* ==================== 选项样式 ==================== */
+.question-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .option {
   display: flex;
   align-items: center;
-  margin: 8px 0;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background-color: #fafafa;
   cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 48px;
 }
 
+.option:hover {
+  background-color: #f5f5f5;
+  border-color: #3498db;
+}
+
+.option.selected-option {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+}
+
+.option.correct-option {
+  background-color: #e8f5e9;
+  border-color: #4caf50;
+}
+
+.option.incorrect-option {
+  background-color: #ffebee;
+  border-color: #f44336;
+}
+
+.option input[type="radio"],
+.option input[type="checkbox"] {
+  margin-right: 12px;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3498db;
+}
+
+.option input[type="radio"]:disabled,
+.option input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+}
+
+.option-letter {
+  font-weight: 600;
+  color: #555;
+  min-width: 24px;
+  margin-right: 8px;
+}
+
+.option-text {
+  color: #333;
+  font-size: 1rem;
+}
+
+/* ==================== 简答题样式 ==================== */
 .short-answer {
   width: 100%;
-  min-height: 100px;
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: vertical;
+  transition: all 0.3s ease;
 }
 
-.actions {
-  margin-top: 20px;
+.short-answer.ungraded-answer {
+  background-color: #fff;
+  border-color: #ddd;
+}
+
+.short-answer.ungraded-answer:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  outline: none;
+}
+
+.short-answer.graded-answer {
+  background-color: #f6ffed;
+  border-color: #b7eb8f;
+  color: #333;
+}
+
+.short-answer:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+/* ==================== 批改详情样式 ==================== */
+.grading-details {
+  margin-top: 25px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.details-title {
+  color: #2c3e50;
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.details-content {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
   gap: 10px;
 }
 
-.btn {
-  padding: 10px 20px;
+.detail-label {
+  min-width: 80px;
+  font-weight: 500;
+  color: #666;
+}
+
+.detail-value {
+  flex: 1;
+  color: #333;
+  line-height: 1.5;
+}
+
+.student-answer {
+  color: #1890ff;
+  background-color: #fff9e6;
+  padding: 8px 12px;
   border-radius: 4px;
+  border-left: 3px solid #ffcc00;
+}
+
+.reference-answer {
+  color: #52c41a;
+  background-color: #e8f5e9;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #4caf50;
+}
+
+.teacher-comment {
+  color: #666;
+  font-style: italic;
+  background-color: #f0f7ff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #3498db;
+}
+
+.grading-time {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+/* ==================== 底部样式 ==================== */
+.quiz-footer {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+  padding-top: 25px;
+  border-top: 1px solid #eee;
+}
+
+.btn {
+  padding: 12px 32px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
 }
 
 .btn-submit {
-  background: #3498db;
+  background-color: #3498db;
   color: white;
 }
 
+.btn-submit:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
 .btn-back {
-  background: #bdc3c7;
+  background-color: #95a5a6;
   color: white;
+}
+
+.btn-back:hover {
+  background-color: #7f8c8d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(149, 165, 166, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .student-quiz-container {
+    padding: 15px;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .question-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .grading-result-badge {
+    align-self: flex-start;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .detail-label {
+    min-width: auto;
+  }
+
+  .quiz-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn {
+    width: 100%;
+  }
 }
 </style>

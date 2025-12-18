@@ -36,33 +36,12 @@
         </div>
 
         <!-- Grading组件 -->
-        <grading-component
-          v-if="studentInfo.submitted"
-          :quizData="quizData"
-          :studentAnswers="studentAnswers"
-          @grading-complete="handleGradingComplete"
-        />
-
-        <div v-else class="no-submission">
-          <p>该学生尚未提交答案，无法进行批改。</p>
-        </div>
-      </div>
-
-      <div class="page-section actions-section" v-if="studentInfo.submitted">
-        <div class="action-buttons">
-          <button class="btn-save" @click="saveGrading">保存批改</button>
-          <button class="btn-submit" @click="submitGrading">
-            提交批改结果
-          </button>
-          <button class="btn-cancel" @click="goBackToQuizGrading">取消</button>
-        </div>
-
-        <div class="grading-summary" v-if="showSummary">
-          <h3>批改摘要</h3>
-          <div class="summary-content">
-            <!-- 批改摘要内容 -->
-          </div>
-        </div>
+        <Grading
+          v-if="quizId != null && studentNumber != null"
+          :quiz_id="quizId"
+          :student_number="studentNumber"
+          @grading-completed="goBackToQuizGrading"
+        ></Grading>
       </div>
     </div>
   </div>
@@ -136,9 +115,6 @@ export default {
       }
     },
 
-    // 加载学生提交详情
-    loadStudentSubmission() {},
-
     // 保存批改
     saveGrading() {
       console.log("保存批改");
@@ -167,10 +143,10 @@ export default {
     },
   },
   mounted() {
+    this.courseId = this.$route.params.courseId;
     this.quizId = this.$route.params.quizId;
     this.studentNumber = this.$route.params.studentNumber;
     this.init_grading(this.quizId, this.studentNumber);
-    this.loadStudentSubmission();
   },
 };
 </script>

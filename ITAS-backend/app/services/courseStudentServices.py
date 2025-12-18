@@ -7,6 +7,7 @@ from app.models.assignment import Assignment
 from app.models.quiz import Quiz
 from app.models.quizQuestion import QuizQuestion
 from app.models.quizResponse import QuizResponse
+from app.models.gradingResults import GradingResult
 from app.models.records import Records
 from app.models.resource import Resource
 import chardet
@@ -659,8 +660,8 @@ class CourseStudentService:
                 options = json.dumps(question_data.get('options'))
                 correct_answer = question_data.get('correct_answer')
                 points = question_data.get('points', 1)
-                if not all([question_text, question_type, correct_answer]):
-                    return Result.bad_request('题目文本、题目类型和正确答案是必填的')
+                if not all([question_text, question_type]):
+                    return Result.bad_request('题目文本、题目类型是必填的')
                 quiz_question = QuizQuestion(
                     quiz_id=quiz_id,
                     question_text=question_text,
@@ -854,12 +855,44 @@ class CourseStudentService:
             student_number = data.get('student_number')
             if not quiz_id or not student_number:
                 return Result.error("quiz_id和student_number不能为空")
+
+            # 一次性获取所有相关的题目信息
             quiz_responses = QuizResponse.query.filter_by(
                 quiz_id=quiz_id,
                 student_number=student_number
             ).all()
-             # 获取所有提交记录
-            return Result.success(quiz_responses)
+
+            # 收集所有题目ID
+            question_ids = [response.question_id for response in quiz_responses]
+
+            # 批量查询题目信息
+            questions = QuizQuestion.query.filter(
+                QuizQuestion.id.in_(question_ids)
+            ).all()
+
+            # 创建题目ID到题目信息的映射
+            questions_map = {question.id: question.to_dict() for question in questions}
+
+            # 转换为字典列表并添加题目信息
+            responses_list = []
+            for response in quiz_responses:
+                response_dict = {
+                    'id': response.id,
+                    'quiz_id': response.quiz_id,
+                    'student_number': response.student_number,
+                    'response': response.response,
+                    'question_id': response.question_id,
+                }
+
+                # 添加对应的题目信息
+                if response.question_id in questions_map:
+                    response_dict['question'] = questions_map[response.question_id]
+                else:
+                    response_dict['question'] = None
+
+                responses_list.append(response_dict)
+
+            return Result.success(responses_list)
         except Exception as e:
             return Result.internal_error(f'获取小测提交详情失败: {str(e)}')
 
@@ -1043,3 +1076,120 @@ class CourseStudentService:
             db.session.rollback()
             return Result.internal_error(f'删除资源失败: {str(e)}')
         
+    #存储批改结果
+    @staticmethod
+    def add_grading_results(data: dict[str, Any]) -> Result:
+        """
+        添加或更新批改结果
+        支持批量提交，通过grading_list字段传递批改结果列表
+        """
+        try:
+            # 获取批改列表
+            grading_list = data.get('grading_list', [])
+
+            if not grading_list or not isinstance(grading_list, list):
+                return Result.validation_error('批改结果列表不能为空')
+
+            results = []
+            from datetime import datetime
+
+            for item_data in grading_list:
+                # 获取关键字段
+                assignment_id = item_data.get('assignment_id')
+                quiz_id = item_data.get('quiz_id')
+                question_id = item_data.get('question_id')
+                student_number = item_data.get('student_number')
+                title = item_data.get('title')
+
+                # 验证必要字段
+                if not student_number:
+                    return Result.validation_error('学生学号不能为空')
+
+                if not title:
+                    return Result.validation_error('作业/小测标题不能为空')
+
+                # 必须要有 assignment_id 或 quiz_id 中的一个
+                if not assignment_id and not quiz_id:
+                    return Result.validation_error('必须提供 assignment_id 或 quiz_id')
+
+                # 构建查询条件
+                filter_condition = {
+                    'student_number': student_number
+                }
+
+                if assignment_id:
+                    filter_condition['assignment_id'] = assignment_id
+                else:
+                    filter_condition['quiz_id'] = quiz_id
+
+                # 如果有 question_id，也作为查询条件
+                if question_id:
+                    filter_condition['question_id'] = question_id
+
+                # 检查是否已存在该学生的批改记录
+                existing_record = GradingResult.query.filter_by(**filter_condition).first()
+
+                if existing_record:
+                    # 更新现有记录
+                    existing_record.score = item_data.get('score', existing_record.score)
+                    existing_record.total_score = item_data.get('total_score', existing_record.total_score)
+                    existing_record.comment = item_data.get('comment', existing_record.comment)
+                    existing_record.student_answer = item_data.get('student_answer', existing_record.student_answer)
+                    existing_record.reference_answer = item_data.get('reference_answer', existing_record.reference_answer)
+                    existing_record.status = item_data.get('status', existing_record.status)
+                    existing_record.grading_time = datetime.now()
+                    results.append(existing_record)
+                else:
+                    # 创建新的批改记录
+                    new_record = GradingResult(
+                        assignment_id=item_data.get('assignment_id'),
+                        quiz_id=item_data.get('quiz_id'),
+                        question_id=item_data.get('question_id', ''),
+                        student_number=student_number,
+                        title=title,
+                        description=item_data.get('description', ''),
+                        student_answer=item_data.get('student_answer', ''),
+                        reference_answer=item_data.get('reference_answer', ''),
+                        total_score=item_data.get('total_score', 0.0),
+                        score=item_data.get('score', 0.0),
+                        comment=item_data.get('comment', ''),
+                        status=item_data.get('status', 'completed')
+                    )
+                    db.session.add(new_record)
+                    results.append(new_record)
+
+            db.session.commit()
+
+            return Result.success(
+                message=f'成功保存{len(results)}条批改结果'
+            )
+
+        except KeyError as e:
+            db.session.rollback()
+            return Result.validation_error(f'缺少必要字段: {str(e)}')
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'存储批改结果失败: {str(e)}')
+        
+    #获取批改结果
+    @staticmethod
+    def get_grading_results(data: dict[str, Any]) -> Result:
+        try:
+            quiz_id = data.get('quiz_id')
+            student_number = data.get('student_number')
+
+            if not quiz_id or not student_number:
+                return Result.error('quiz_id和student_number不能为空')
+
+            # 查询批改结果
+            grading_results = GradingResult.query.filter_by(
+                quiz_id=quiz_id,
+                student_number=student_number
+            ).all()
+
+            results_data = [result.to_dict() for result in grading_results]
+
+            return Result.success(results_data)
+
+        except Exception as e:
+            return Result.internal_error(f'获取批改结果失败: {str(e)}')

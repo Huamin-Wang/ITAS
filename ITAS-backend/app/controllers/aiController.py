@@ -28,7 +28,7 @@ def batch_score_assignments():
         if not data:
             return Result.bad_request("请求数据不能为空").to_json(), 400
         result = AiServices.batch_score_assignments(data)
-        return result.to_json(), result.code
+        return result.to_json()
         
     except Exception as e:
         import traceback

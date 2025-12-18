@@ -114,6 +114,7 @@ export default {
         this.$router.push({
           name: "detail_grading",
           params: {
+            courseId: this.course_id,
             quizId: this.quiz_id,
             studentNumber: student.identifier,
           },

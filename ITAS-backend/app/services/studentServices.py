@@ -6,6 +6,7 @@ from app.models.assignment import Assignment
 from app.models.quiz import Quiz
 from app.models.quizQuestion import QuizQuestion
 from app.models.quizResponse import QuizResponse
+from app.models.gradingResults import GradingResult
 from app.models.Result import Result
 from typing import Any
 from datetime import datetime,timezone
@@ -157,58 +158,73 @@ class StudentService:
     #获取小测列表
     @staticmethod
     def get_quizzes_student(data) -> Result:
-       try:
-           from datetime import datetime
-           
-           now = datetime.now()
-           course_id = data.get('course_id')
-           student_number = data.get('student_number')         
-           # 更新已超时的小测
-           Quiz.query.filter(
-               Quiz.course_id == course_id,
-               Quiz.status.in_(['not_started', 'published']),
-               Quiz.end_time.isnot(None),
-               Quiz.end_time <= now
-           ).update(
-               {'status': 'finished'},
-           )
-           
-           # 2. 查询课程的小测列表
-           quizzes = Quiz.query.filter(
-               Quiz.course_id == course_id,
-               Quiz.status != 'draft'
-           ).order_by(Quiz.create_time.desc()).all()
-           
-           if not quizzes:
-               return Result.not_found("课程不存在或无可用小测")
-           
-           # 3. 批量查询学生已提交的小测ID列表
-           submitted_quiz_ids = []
-           if student_number:
-               # 查询学生已提交的所有小测ID
-               submitted_responses = QuizResponse.query.filter(
-                   QuizResponse.student_number == student_number,
-                   QuizResponse.quiz_id.in_([quiz.id for quiz in quizzes])
-               ).with_entities(QuizResponse.quiz_id).all()
-               submitted_quiz_ids = [resp.quiz_id for resp in submitted_responses]
-           
-           # 4. 构建返回数据，添加提交状态
-           quizzes_data = []
-           for quiz in quizzes:
-               quiz_dict = quiz.to_dict()
-               # 添加提交状态字段
-               quiz_dict['is_submitted'] = quiz.id in submitted_quiz_ids
-               quizzes_data.append(quiz_dict)
-           
-           # 如果有更新操作，提交事务
-           db.session.commit()
-           
-           print(f"查询到的小测数量: {len(quizzes)}")
-           return Result.success(quizzes_data)
-           
-       except Exception as e:
-           db.session.rollback()
-           return Result.internal_error(f'获取小测失败: {str(e)}')
+        try:
+            from datetime import datetime
+
+            now = datetime.now()
+            course_id = data.get('course_id')
+            student_number = data.get('student_number')
+
+            # 更新已超时的小测
+            Quiz.query.filter(
+                Quiz.course_id == course_id,
+                Quiz.status.in_(['not_started', 'published']),
+                Quiz.end_time.isnot(None),
+                Quiz.end_time <= now
+            ).update(
+                {'status': 'finished'},
+            )
+
+            # 查询课程的小测列表
+            quizzes = Quiz.query.filter(
+                Quiz.course_id == course_id,
+                Quiz.status != 'draft'
+            ).order_by(Quiz.create_time.desc()).all()
+
+            if not quizzes:
+                return Result.not_found("课程不存在或无可用小测")
+
+            quiz_ids = [quiz.id for quiz in quizzes]
+
+            # 批量查询学生已提交的小测ID列表
+            submitted_quiz_ids = []
+            if student_number:
+                submitted_responses = QuizResponse.query.filter(
+                    QuizResponse.student_number == student_number,
+                    QuizResponse.quiz_id.in_(quiz_ids)
+                ).with_entities(QuizResponse.quiz_id).all()
+                submitted_quiz_ids = [resp.quiz_id for resp in submitted_responses]
+
+            # 批量查询学生已批改的小测ID列表（新增部分）
+            graded_quiz_ids = []
+            if student_number:
+                print(f"正在查询学生 {student_number} 的批改结果...")
+                print(f"小测IDs列表: {quiz_ids}")
+                graded_results = GradingResult.query.filter(
+                    GradingResult.student_number == student_number,
+                    GradingResult.quiz_id.in_(quiz_ids)
+                ).with_entities(GradingResult.quiz_id).all()
+                graded_quiz_ids = [result.quiz_id for result in graded_results]
+                print(f"已批改的小测IDs: {graded_quiz_ids}")
+            # 构建返回数据，添加提交状态和批改状态
+            quizzes_data = []
+            for quiz in quizzes:
+                quiz_dict = quiz.to_dict()
+                # 添加提交状态字段（动态计算）
+                quiz_dict['is_submitted'] = quiz.id in submitted_quiz_ids
+                # 添加批改状态字段（动态计算） - GradingResult表有记录就表示已批改
+                quiz_dict['is_graded'] = quiz.id in graded_quiz_ids
+                quizzes_data.append(quiz_dict)
+
+            # 如果有更新操作，提交事务
+            db.session.commit()
+
+            print(f"查询到的小测数量: {len(quizzes)}")
+            return Result.success(quizzes_data)
+
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'获取小测失败: {str(e)}')
     
     #提交小测  
     @staticmethod
@@ -248,3 +264,4 @@ class StudentService:
         except Exception as e:
             db.session.rollback()
             return Result.internal_error(f'提交小测失败: {str(e)}')
+        

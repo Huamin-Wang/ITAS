@@ -40,7 +40,42 @@
         </ul>
       </div>
 
-      <!-- 已提交的小测 -->
+      <!-- 已批改的小测 -->
+      <div v-if="hasGradedQuizzes" class="quiz-section">
+        <h4 class="quiz-section-title quiz-section-graded">
+          已批改小测
+          <span class="quiz-count-badge">{{ gradedQuizzesCount }}</span>
+        </h4>
+        <ul class="quiz-list">
+          <li
+            v-for="q in gradedQuizzes"
+            :key="q.id"
+            class="quiz-item quiz-item-graded"
+          >
+            <div class="quiz-item-content">
+              <div class="quiz-info">
+                <span
+                  @click="go_to_student_quiz(q.id)"
+                  class="quiz-title graded"
+                >
+                  {{ q.title }}
+                </span>
+                <div class="quiz-meta">
+                  <span class="quiz-deadline">
+                    截止日期：{{ formatDateTime(q.end_time) }}
+                  </span>
+                  <span class="quiz-status-text">已批改</span>
+                </div>
+              </div>
+              <div class="quiz-status">
+                <span class="status-badge status-graded">已批改</span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 已提交但未批改的小测 -->
       <div v-if="hasSubmittedQuizzes" class="quiz-section">
         <h4 class="quiz-section-title quiz-section-submitted">
           已提交小测
@@ -153,9 +188,19 @@ export default {
         (q) => q.status === "published" && !q.is_submitted
       );
     },
+    // 已批改的小测（优先级最高）
+    gradedQuizzes() {
+      // 显示所有已提交且已批改的小测
+      return this.quiz.filter(
+        (q) => q.is_submitted === true && q.is_graded === true
+      );
+    },
+    // 已提交但未批改的小测
     submittedQuizzes() {
-      // 显示所有已提交的小测（包括进行中和已结束的）
-      return this.quiz.filter((q) => q.is_submitted === true);
+      // 显示所有已提交但未批改的小测
+      return this.quiz.filter(
+        (q) => q.is_submitted === true && q.is_graded !== true
+      );
     },
     finishedQuizzes() {
       // 只显示已结束且未提交的小测
@@ -166,6 +211,9 @@ export default {
     publishedQuizzesCount() {
       return this.publishedQuizzes.length;
     },
+    gradedQuizzesCount() {
+      return this.gradedQuizzes.length;
+    },
     submittedQuizzesCount() {
       return this.submittedQuizzes.length;
     },
@@ -174,6 +222,9 @@ export default {
     },
     hasPublishedQuizzes() {
       return this.publishedQuizzes.length > 0;
+    },
+    hasGradedQuizzes() {
+      return this.gradedQuizzes.length > 0;
     },
     hasSubmittedQuizzes() {
       return this.submittedQuizzes.length > 0;
@@ -407,6 +458,10 @@ export default {
   align-items: center;
 }
 
+.quiz-section-graded {
+  color: #52c41a;
+}
+
 .quiz-section-submitted {
   color: #1890ff;
 }
@@ -446,6 +501,11 @@ export default {
   border-left: 4px solid #52c41a;
 }
 
+.quiz-item-graded {
+  background-color: #f6ffed;
+  border-left: 4px solid #52c41a;
+}
+
 .quiz-item-submitted {
   background-color: #f0f8ff;
   border-left: 4px solid #1890ff;
@@ -479,6 +539,16 @@ export default {
 
 .quiz-title:hover {
   color: #096dd9;
+  text-decoration: underline;
+}
+
+.quiz-title.graded {
+  color: #52c41a;
+  cursor: pointer;
+}
+
+.quiz-title.graded:hover {
+  color: #389e0d;
   text-decoration: underline;
 }
 
@@ -532,6 +602,12 @@ export default {
 }
 
 .status-published {
+  background-color: #f6ffed;
+  color: #52c41a;
+  border: 1px solid #b7eb8f;
+}
+
+.status-graded {
   background-color: #f6ffed;
   color: #52c41a;
   border: 1px solid #b7eb8f;

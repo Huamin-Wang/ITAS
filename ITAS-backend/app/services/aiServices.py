@@ -14,7 +14,7 @@ class AiServices:
         try:
             client = OpenAI(
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-                api_key="sk-c558e163455d47aea80d32afbca39fd2",  # 请填入你的API密钥
+                api_key="sk-c558e163455d47aea80d32afbca39fd2",
             )
             completion = client.chat.completions.create(
                 model="qwen-plus",
@@ -56,6 +56,8 @@ class AiServices:
         results = []
         for assignment in assignments_list:
             assignment_id = assignment.get('id', '')
+            quiz_id = assignment.get('quiz_id', '')
+            question_id = assignment.get('question_id', '')
             title = assignment.get('title', '')
             description = assignment.get('description', '')
             student_answer = assignment.get('student_answer', '')
@@ -115,7 +117,9 @@ class AiServices:
                 comment = "评分失败"
             
             results.append({
-                'id': assignment_id,
+                'assignment_id': assignment_id,
+                'quiz_id': quiz_id,
+                'question_id': question_id,
                 'title': title,
                 'total_score': total_score,
                 'score': score,

@@ -230,6 +230,32 @@ export function delete_quiz(data) {
     })
 }
 
+//获取班级学生学号
+export function get_student_numbers(course_id) {
+    return request({
+        url: `/get_student_numbers?course_id=${course_id}`,
+        method: 'get'
+    })
+}
+
+//学生小测提交情况
+export function has_submitted_quiz(data) {
+    return request({
+        url: '/has_submitted_quiz',
+        method: 'post',
+        data: data
+    })
+}
+
+//学生小测提交详情
+export function get_quiz_response(data) {
+    return request({
+        url: '/get_quiz_response',
+        method: 'post',
+        data: data
+    })
+}
+
 //创建备注
 export function create_record(data) {
     return request({
@@ -277,6 +303,33 @@ export function create_resource(data) {
 export function delete_resource(data) {
     return request({
         url: `/delete_resource`,
+        method: 'post',
+        data: data
+    })
+}
+
+//ai自动批改
+export function batch_score_assignments(data) {
+    return request({
+        url: '/batch_score_assignments',
+        method: 'post',
+        data: data
+    })
+}
+
+//存储批改结果
+export function add_grading_results(data) {
+    return request({
+        url: '/add_grading_results',
+        method: 'post',
+        data: data
+    })
+}
+
+//获取批改结果
+export function get_grading_results(data) {
+    return request({
+        url: '/get_grading_results',
         method: 'post',
         data: data
     })

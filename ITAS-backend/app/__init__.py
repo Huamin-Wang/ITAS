@@ -34,7 +34,9 @@ def create_app(config_name='default'):
     db.init_app(app)
     migrate.init_app(app, db)
     # 更全面的 CORS 配置 - 启用凭证支持
-    # CORS(app)
+    # CORS(app,
+    #      origins="*",  # 允许所有来源，生产环境中请根据需要进行限制)
+    # )
     CORS(app, 
          origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5000", "http://127.0.0.1:5000"],  # 明确指定允许的源
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
@@ -74,12 +76,10 @@ def create_app(config_name='default'):
             '/favicon.ico',            # 网站图标
             '/getOpenId',    # 获取openid
             '/minilogin',   #微信登录
-            # 聊天相关路由 - 添加到白名单
-            '/getOpenId',
-            '/minilogin',
             '/unbindOpenId',  #微信解绑
             '/quiz_stream',
-            '/chat/history/clear',
+            '/test_score',
+            '/generate_tags'
         ]
         
         # 检查当前请求路径是否在白名单中

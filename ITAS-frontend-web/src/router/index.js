@@ -29,6 +29,8 @@ import ranking from '../views/teachers/ranking.vue'; //排名
 import random_select from '../views/teachers/random_select.vue'; //随机选择
 import course_quiz from '../views/teachers/course_quiz.vue'; //课堂测试
 import course_resource from '../views/teachers/course_resource.vue'; //资源分享
+import quiz_grading from '../views/teachers/quiz_grading.vue'; //测试批改
+import detail_grading from '../views/teachers/detail_grading.vue'; //测试批改-查看详情
 
 
 
@@ -217,6 +219,22 @@ const routes = [
     component: course_quiz,
     meta: {
       title: '课堂测试'
+    }
+  },
+  {
+    path: '/quiz_grading/:courseId?/:quizId?',
+    name: 'quiz_grading',
+    component: quiz_grading,
+    meta: {
+      title: '小测批改'
+    }
+  },
+  {
+    path: '/detail_grading/:courseId?/:quizId?/:studentNumber?',
+    name: 'detail_grading',
+    component: detail_grading,
+    meta: {
+      title: '小测批改'
     }
   },
   {

@@ -5,7 +5,7 @@ const baseURL = import.meta.env.PROD ? '/api' : 'http://127.0.0.1:5000';
 
 const service = axios.create({
     baseURL: baseURL,
-    timeout: 5000,
+    timeout: 50000,
     withCredentials: true  // 重要：允许携带Cookie
 })
 
