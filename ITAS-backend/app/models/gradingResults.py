@@ -5,8 +5,8 @@ class GradingResult(db.Model):
     __tablename__ = 'grading_results'
     
     id = db.Column(db.Integer, primary_key=True)
-    assignment_id = db.Column(db.String(50), nullable=True)  # 作业ID
-    quiz_id = db.Column(db.String(50), nullable=True)        # 小测ID
+    assignment_id = db.Column(db.Integer, nullable=True)  # 作业ID
+    quiz_id = db.Column(db.Integer, nullable=True)        # 小测ID
     question_id = db.Column(db.Integer, nullable=True)       # 小测题目ID
     student_number = db.Column(db.String(50), nullable=False)  # 学生ID
     title = db.Column(db.Text, nullable=False)               # 作业标题
