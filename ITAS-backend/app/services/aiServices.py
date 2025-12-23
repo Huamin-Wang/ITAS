@@ -1,6 +1,8 @@
 from openai import OpenAI
 from typing import Any, List
-
+from app.services.courseStudentServices import CourseStudentService
+from app.models.course_students import Course_Students
+from app.models.course import Course
 from app.models.Result import Result
 
 import json
@@ -349,200 +351,215 @@ class AiServices:
             return Result.internal_error(f"生成标签失败: {str(e)}")
         
 
-    # 学生知识掌握情况分析
+        # 学生知识掌握情况分析
+    
+    #学生错题分析系
     @staticmethod
     def analyze_student_knowledge(data: dict[str, Any]) -> Result:
         """
-        根据学生的错题分析知识掌握情况和薄弱点
+        调用AI错题分析服务
         输入参数格式:
         {
-            "wrong_questions": [
-                {
-                    "id": "",
-                    "title": "",
-                    "description": "",
-                    "score": {
-                        "total_score": "",
-                        "score": ""
-                    },
-                    "suggestion": ""
-                },
-                ...
-            ]
+            "student_number": "学生学号",
+            "course_id": "课程ID"
         }
         """
-        wrong_questions = data.get('wrong_questions', [])
-        if not wrong_questions:
-            return Result.error("错题列表为空")
+        student_number = data.get('student_number')
+        course_id = data.get('course_id')
         
-        # 收集所有错题信息
-        topics = []
+        if not student_number or not course_id:
+            return Result.bad_request('缺少必要参数: student_number, course_id')
+        
+        # 查询学生姓名
+        student_name = ""
+        try:
+            # 通过学号和课程ID在course_student中查询学生信息
+            course_student = Course_Students.query.filter_by(
+                student_number=student_number,
+                course_id=course_id
+            ).first()
+            if course_student and hasattr(course_student, 'student_name'):
+                student_name = course_student.student_name
+            course = Course.query.get(course_id)
+            if course:
+                course_name = course.name
+        except Exception as e:
+            print(f"查询学生姓名出错: {e}")
+            # 查询出错不影响后续分析，继续执行
+        
+        # 1. 获取学生错题数据
+        wrong_questions_result = CourseStudentService.get_student_wrong_questions({
+            'student_number': student_number,
+            'course_id': course_id
+        })
+        
+        wrong_questions_list = wrong_questions_result.data
+        
+        # 2. 格式化参数供AI分析使用
+        formatted_wrong_questions = []
+        for question in wrong_questions_list:
+            # 注意：grading_results表中的score和total_score已经是decimal类型
+            # 需要转换为字符串或数字格式供AI分析
+            score_info = {
+                "total_score": str(question.get('total_score', '10')),
+                "score": str(question.get('score', '0'))
+            }
+            
+            formatted_wrong_questions.append({
+                "id": str(question.get('id', '')),
+                "title": question.get('title', ''),
+                "description": question.get('description', ''),
+                "score": score_info,
+                "suggestion": question.get('comment', '暂无评语')
+            })
+        wrong_questions = formatted_wrong_questions
+        if not wrong_questions:
+            return Result.success({
+                "student_number": student_number,
+                "student_name": student_name,
+                "course_name": course_name,
+                "summary": "该学生暂无错题记录，学习情况良好。",
+                "quick_stats": {
+                    "wrong_question_count": 0,
+                    "learning_status": "excellent"
+                },
+                "teacher_recommendations": [
+                    "继续保持当前学习状态",
+                    "可适当增加拓展性练习"
+                ]
+            })
+        
+        # 基础统计计算
         total_questions = len(wrong_questions)
-        total_score_sum = 0
-        student_score_sum = 0
+        
+        # 计算得分率
+        total_scores = []
+        student_scores = []
+        question_texts = []  # 收集题目和描述用于AI分析
         
         for question in wrong_questions:
             title = question.get('title', '')
             description = question.get('description', '')
-            suggestion = question.get('suggestion', '')
             score_info = question.get('score', {})
-            student_score = float(score_info.get('score', '0'))
-            total_score = float(score_info.get('total_score', '10'))
             
-            # 计算得分率
-            score_rate = student_score / total_score if total_score > 0 else 0
+            # 收集题目文本用于AI分析
+            if title or description:
+                question_texts.append(f"题目：{title}，描述：{description[:100]}")
             
-            topics.append({
-                'title': title,
-                'description': description,
-                'student_score': student_score,
-                'total_score': total_score,
-                'score_rate': score_rate,
-                'suggestion': suggestion
-            })
-            
-            total_score_sum += total_score
-            student_score_sum += student_score
+            try:
+                total_score = float(score_info.get('total_score', '10'))
+                student_score = float(score_info.get('score', '0'))
+                total_scores.append(total_score)
+                student_scores.append(student_score)
+            except:
+                continue
         
-        # 计算整体平均得分率
-        overall_score_rate = student_score_sum / total_score_sum if total_score_sum > 0 else 0
+        if total_scores:
+            avg_score_rate = sum(student_scores) / sum(total_scores) if sum(total_scores) > 0 else 0
+            avg_score_rate_percent = f"{avg_score_rate:.1%}"
+        else:
+            avg_score_rate_percent = "0%"
         
-        # 构建分析提示词
+        # 根据得分率评估学习状态
+        if avg_score_rate >= 0.75:
+            learning_status = "good"
+        elif avg_score_rate >= 0.6:
+            learning_status = "average"
+        else:
+            learning_status = "needs_improvement"
+        
+        # 构建简洁的AI分析提示
+        question_text_sample = "\n".join(question_texts)
         question = f'''
-        你是一位经验丰富的教学分析师，请根据学生的错题信息，全面分析学生的知识掌握情况和薄弱点。
+        你是一位经验丰富的教师，请根据学生的错题信息，为老师提供简洁明了的学生学习情况分析。
         
-        学生错题信息如下（共{total_questions}题）：
-        {json.dumps(topics, ensure_ascii=False, indent=2)}
+        学生错题概况：
+        - 错题数量：{total_questions}题
+        - 平均得分率：{avg_score_rate_percent}
         
-        整体表现：
-        - 题目总数：{total_questions}
-        - 总分值：{total_score_sum}
-        - 学生得分：{student_score_sum}
-        - 平均得分率：{overall_score_rate:.2%}
+        错题内容：
+        {question_text_sample}
         
-        请进行深入分析，包括但不限于以下方面：
-        1. **知识掌握总体评估**：对学生的整体学习情况进行评价
-        2. **知识点分布分析**：识别题目涉及的主要知识点领域
-        3. **薄弱环节识别**：找出学生最需要加强的知识点
-        4. **错误类型分析**：分析学生错误的常见类型（概念理解、计算、应用等）
-        5. **学习建议**：针对性地提出改进建议和学习计划
+        请用简洁的语言（不超过150字）回答以下问题：
+        1. 该学生当前主要存在哪些学习问题？
+        2. 需要重点关注哪些方面？
+        3. 给老师的教学建议是什么？
         
-        输出格式（请严格按照以下JSON格式输出）：
-        {{
-            "overview": {{
-                "total_questions": {total_questions},
-                "total_score": {total_score_sum},
-                "student_score": {student_score_sum},
-                "average_score_rate": {overall_score_rate:.2%},
-                "overall_assessment": "对学生整体学习情况的简短评价"
-            }},
-            "knowledge_analysis": [
-                {{
-                    "knowledge_area": "知识点领域名称",
-                    "question_count": 该领域的题目数量,
-                    "average_score_rate": "该领域的平均得分率",
-                    "mastery_level": "掌握程度（优秀/良好/一般/薄弱）",
-                    "common_issues": ["常见问题1", "常见问题2"]
-                }},
-                ...
-            ],
-            "weak_points": [
-                {{
-                    "knowledge_point": "薄弱知识点名称",
-                    "severity": "薄弱程度（严重/中等/轻微）",
-                    "related_questions": ["相关题目ID或标题"],
-                    "suggestion": "针对该薄弱点的具体建议"
-                }},
-                ...
-            ],
-            "error_patterns": [
-                {{
-                    "pattern_type": "错误模式类型",
-                    "description": "错误模式描述",
-                    "frequency": "出现频率",
-                    "example": "示例题目"
-                }},
-                ...
-            ],
-            "learning_plan": {{
-                "short_term": ["短期建议1", "短期建议2"],
-                "long_term": ["长期建议1", "长期建议2"],
-                "priority_topics": ["优先学习主题1", "优先学习主题2"],
-                "recommended_resources": ["推荐资源1", "推荐资源2"]
-            }},
-            "summary": "分析总结和总体建议"
-        }}
+        输出格式要求：
+        请用以下格式直接回答，不要添加任何其他内容：
+        [学习问题总结]|[需要关注的方面]|[教学建议]
+        
+        示例：
+        学生对函数概念理解不深，解题步骤不完整|函数定义、参数传递、解题规范性|加强函数基础讲解，设计分步解题练习
         '''
         
+        # 获取AI分析结果
         try:
             answer = AiServices.get_answer(question)
             if answer:
-                json_match = re.search(r'\{.*\}', answer, re.DOTALL)
-                if json_match:
-                    json_str = json_match.group()
-                    result_data = json.loads(json_str)
-                    
-                    # 添加一些统计分析
-                    result_data["statistics"] = {
-                        "weak_point_count": len(result_data.get("weak_points", [])),
-                        "knowledge_areas_count": len(result_data.get("knowledge_analysis", [])),
-                        "error_patterns_count": len(result_data.get("error_patterns", [])),
-                        "priority_levels": {
-                            "high": len([w for w in result_data.get("weak_points", []) if w.get("severity") == "严重"]),
-                            "medium": len([w for w in result_data.get("weak_points", []) if w.get("severity") == "中等"]),
-                            "low": len([w for w in result_data.get("weak_points", []) if w.get("severity") == "轻微"])
-                        }
-                    }
-                    
-                    return Result.success(result_data)
+                # 解析AI返回的结果
+                parts = answer.split("|")
+                if len(parts) >= 3:
+                    problem_summary = parts[0].strip()
+                    focus_areas = parts[1].strip()
+                    teaching_suggestions = parts[2].strip()
                 else:
-                    # 如果没有匹配到JSON，返回默认分析结构
-                    default_result = {
-                        "overview": {
-                            "total_questions": total_questions,
-                            "total_score": total_score_sum,
-                            "student_score": student_score_sum,
-                            "average_score_rate": f"{overall_score_rate:.2%}",
-                            "overall_assessment": "数据不足，无法进行全面分析"
-                        },
-                        "knowledge_analysis": [],
-                        "weak_points": [],
-                        "error_patterns": [],
-                        "learning_plan": {
-                            "short_term": ["请收集更多错题信息以获得准确分析"],
-                            "long_term": ["定期复习巩固基础知识"],
-                            "priority_topics": ["暂无"],
-                            "recommended_resources": []
-                        },
-                        "summary": "需要更多数据来生成准确的分析报告"
-                    }
-                    return Result.success(default_result)
+                    # 如果格式不符合，使用默认值
+                    problem_summary = f"基础知识掌握一般，得分率{avg_score_rate_percent}"
+                    focus_areas = "核心概念和解题方法"
+                    teaching_suggestions = "加强基础讲解，设计针对性练习"
             else:
-                return Result.error("分析学生知识掌握情况失败")
-            
-        except json.JSONDecodeError as e:
-            print(f"JSON解析错误: {e}")
-            default_result = {
-                "overview": {
-                    "total_questions": total_questions,
-                    "total_score": total_score_sum,
-                    "student_score": student_score_sum,
-                    "average_score_rate": f"{overall_score_rate:.2%}",
-                    "overall_assessment": f"分析时发生解析错误: {str(e)}"
-                },
-                "knowledge_analysis": [],
-                "weak_points": [],
-                "error_patterns": [],
-                "learning_plan": {
-                    "short_term": ["请重试分析功能"],
-                    "long_term": ["持续学习，定期检查"],
-                    "priority_topics": ["基础概念"],
-                    "recommended_resources": []
-                },
-                "summary": f"生成分析报告时发生错误: {str(e)}"
-            }
-            return Result.success(default_result)
+                problem_summary = f"基础知识掌握一般，得分率{avg_score_rate_percent}"
+                focus_areas = "核心概念和解题方法"
+                teaching_suggestions = "加强基础讲解，设计针对性练习"
         except Exception as e:
-            print(f"分析学生知识过程中发生错误: {e}")
-            return Result.internal_error(f"分析学生知识掌握情况失败: {str(e)}")
-   
+            print(f"AI分析出错: {e}")
+            problem_summary = f"完成{total_questions}题，得分率{avg_score_rate_percent}"
+            focus_areas = "基础知识点"
+            teaching_suggestions = "加强薄弱环节练习"
+        
+        # 构建返回结果
+        result_data = {
+            # 学生基本信息
+            "student_number": student_number,
+            "student_name": student_name,
+            "course_name": course_name,
+            # 快速概览
+            "quick_stats": {
+                "wrong_question_count": total_questions,
+                "average_score_rate": avg_score_rate_percent,
+                "learning_status": learning_status
+            },
+            
+            # AI分析的核心结果
+            "analysis": {
+                "learning_problems": problem_summary,
+                "focus_areas": focus_areas,
+                "teaching_suggestions": teaching_suggestions
+            },
+            
+            # 详细数据
+            "details": {
+                "score_distribution": {
+                    "low_score": len([i for i in range(len(student_scores)) 
+                                          if total_scores[i] > 0 and student_scores[i]/total_scores[i] < 0.4]),
+                    "medium_score": len([i for i in range(len(student_scores)) 
+                                         if total_scores[i] > 0 and 0.4 <= student_scores[i]/total_scores[i] <= 0.7]),
+                    "high_score": len([i for i in range(len(student_scores)) 
+                                       if total_scores[i] > 0 and student_scores[i]/total_scores[i] > 0.7])
+                },
+                "overall_performance": f"共完成{len(total_scores)}题，总分{sum(total_scores)}，得分{sum(student_scores)}"
+            },
+            "wrong_questions":wrong_questions,
+            # 给老师的直接建议
+            "teacher_recommendations": [
+                f"关注{focus_areas.split('、')[0] if '、' in focus_areas else focus_areas.split('，')[0] if '，' in focus_areas else focus_areas}的教学",
+                teaching_suggestions,
+                "定期检查学习进展，及时调整教学策略"
+            ]
+        }
+        
+        # 添加一个简要的总结文本
+        result_data["summary"] = f"学生{student_name}有{total_questions}道错题，平均得分率{avg_score_rate_percent}。主要问题：{problem_summary}"
+        
+        return Result.success(result_data)

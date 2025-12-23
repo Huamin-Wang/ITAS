@@ -18,7 +18,7 @@ class GradingResult(db.Model):
     comment = db.Column(db.Text, nullable=True)              # 评语
     grading_time = db.Column(db.DateTime, default=datetime.now())  # 批改时间
     status = db.Column(db.String(20), default='completed')   # 状态
-    
+    course_id = db.Column(db.Integer, primary_key=True)      #班级ID
     
     def __repr__(self):
         return f'<GradingResult {self.id}: {self.student_number} - {self.title}>'
@@ -39,4 +39,5 @@ class GradingResult(db.Model):
             'comment': self.comment,
             'grading_time': self.grading_time.isoformat() if self.grading_time else None,
             'status': self.status,
+            'course_id':self.course_id
         }

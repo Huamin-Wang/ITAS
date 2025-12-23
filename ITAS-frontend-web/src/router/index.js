@@ -19,6 +19,7 @@ import assignments from '../views/teachers/assignments.vue'; //课程作业列�
 import assignment_detail from '../views/teachers/assignment_detail.vue'; // 编辑作业
 import attendance_manager from '../views/teachers/attendance_manager.vue'; // 课程考勤管理系统
 import attendance from '../views/teachers/attendance.vue'; // 课程签到
+import analysis_selection from '../views/teachers/analysis_selection.vue'; // 学习状况分析-选择学生
 import course_analysis from '../views/teachers/course_analysis.vue'; // 学习状况分析
 import course_students from '../views/teachers/course_students.vue'; // 课程学生名单
 import courseManager from '../views/teachers/course_manager.vue'; // 课程管理
@@ -148,8 +149,16 @@ const routes = [
     }
   },
   {
-    path: '/course_analysis',
-    name: 'Course_analysis',
+    path: '/analysis_selection/:courseId?',
+    name: 'analysis_selection',
+    component: analysis_selection,
+    meta: {
+      title: '教师端-学生选择'
+    }
+  },
+  {
+    path: '/course_analysis/:courseId?/:studentNumber?',
+    name: 'course_analysis',
     component: course_analysis,
     meta: {
       title: '教师端-学习状况分析'

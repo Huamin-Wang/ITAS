@@ -335,6 +335,15 @@ export function get_grading_results(data) {
     })
 }
 
+//获取错题分析结果
+export function analyze_student_knowledge(data) {
+    return request({
+        url: '/analyze_student_knowledge',
+        method: 'post',
+        data: data
+    })
+}
+
 //学生端 -- 获取当前用户信息
 export function getCurrentStudent(user_id) {
     return request({

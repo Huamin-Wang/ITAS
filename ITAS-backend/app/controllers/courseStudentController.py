@@ -524,3 +524,15 @@ def get_grading_results():
         import traceback
         print(f"获取批改结果错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'获取批改结果时发生错误: {str(e)}').to_json(), 500
+    
+#获取学生近期错题
+@bp.route('/get_student_wrong_questions', methods=['POST'])
+def get_student_wrong_questions():
+    try:
+        data = request.get_json()
+        result = CourseStudentService.get_student_wrong_questions(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取学生错题错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取学生错题时发生错误: {str(e)}').to_json(), 500

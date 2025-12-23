@@ -142,10 +142,9 @@
         <div class="dashboard-card">
           <h3>学习状况分析</h3>
           <p>智能分析学生薄弱知识点，优化教学重点</p>
-          <button disabled style="cursor: not-allowed; opacity: 0.6">
-            功能开发中
+          <button @click="go_to_analysis_selection(this.course.id)">
+            进入分析管理
           </button>
-          <!--                                    <button onclick="location.href='/course/course_analysis/{{course.id}}'">进入分析</button>-->
         </div>
 
         <div class="dashboard-card">
@@ -285,6 +284,10 @@ export default {
       this.$router.push(`/course_resource/${course_id}`);
     },
 
+    //跳转学习状况分析选择页面
+    go_to_analysis_selection(course_id) {
+      this.$router.push(`/analysis_selection/${course_id}`);
+    },
     //跳转ai小问答
     // go_to_chat(course_id) {
     //   this.$router.push(`/chat/${course_id}`);

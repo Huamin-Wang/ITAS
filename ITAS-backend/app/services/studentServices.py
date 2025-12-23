@@ -265,3 +265,5 @@ class StudentService:
             db.session.rollback()
             return Result.internal_error(f'提交小测失败: {str(e)}')
         
+        
+        

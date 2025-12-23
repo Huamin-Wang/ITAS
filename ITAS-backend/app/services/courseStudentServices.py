@@ -1193,3 +1193,28 @@ class CourseStudentService:
 
         except Exception as e:
             return Result.internal_error(f'获取批改结果失败: {str(e)}')
+        
+    #获取学生近期错题
+    def get_student_wrong_questions(data: dict[str, Any]) -> Result:
+        try:
+            student_number = data.get('student_number')
+            course_id = data.get('course_id')
+
+            if not student_number or not course_id:
+                return Result.error('student_number和course_id不能为空')
+
+            # 查询该学生在该课程下所有批改结果中得分小于总分的记录，限制10条
+            wrong_questions = GradingResult.query.filter(
+                GradingResult.student_number == student_number,
+                GradingResult.status == 'completed',
+                GradingResult.score < GradingResult.total_score,
+                GradingResult.course_id == course_id
+            ).order_by(GradingResult.id.desc()).limit(10).all()  # 添加排序和限制
+
+            wrong_questions_data = [question.to_dict() for question in wrong_questions]
+
+            return Result.success(wrong_questions_data)
+
+        except Exception as e:
+            return Result.internal_error(f'获取错题失败: {str(e)}')
+        
