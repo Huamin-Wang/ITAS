@@ -7,6 +7,9 @@ from app.models.assignment import Assignment
 from app.models.quiz import Quiz
 from app.models.quizQuestion import QuizQuestion
 from app.models.quizResponse import QuizResponse
+from app.models.exercise import Exercise
+from app.models.exerciseQuestion import ExerciseQuestion
+from app.models.exerciseResponse import ExerciseResponse
 from app.models.gradingResults import GradingResult
 from app.models.records import Records
 from app.models.resource import Resource
@@ -810,8 +813,6 @@ class CourseStudentService:
         except Exception as e:
             db.session.rollback()
             return Result.internal_error(f'更新小测失败: {str(e)}')
-
-        #发布小测
     
     #发布小测
     @staticmethod
@@ -1217,4 +1218,278 @@ class CourseStudentService:
 
         except Exception as e:
             return Result.internal_error(f'获取错题失败: {str(e)}')
+        
+    #格式化错题
+    @staticmethod
+    def get_student_wrong_questions_for_analysis(data: dict[str, Any]):
+        """
+        获取学生错题数据（为分析服务单独封装）
+        返回格式化的错题列表
+        """
+        try:
+            student_number = data.get('student_number')
+            course_id = data.get('course_id')
+            # 1. 获取学生错题数据
+            wrong_questions_result = CourseStudentService.get_student_wrong_questions({
+                'student_number': student_number,
+                'course_id': course_id
+            })
+            
+            wrong_questions_list = wrong_questions_result.data
+            
+            # 2. 格式化参数供AI分析使用
+            formatted_wrong_questions = []
+            for question in wrong_questions_list:
+                # 注意：grading_results表中的score和total_score已经是decimal类型
+                # 需要转换为字符串或数字格式供AI分析
+                score_info = {
+                    "total_score": str(question.get('total_score', '10')),
+                    "score": str(question.get('score', '0'))
+                }
+                
+                formatted_wrong_questions.append({
+                    "id": str(question.get('id', '')),
+                    "title": question.get('title', ''),
+                    "description": question.get('description', ''),
+                    "score": score_info,
+                    "suggestion": question.get('comment', '暂无评语')
+                })
+            
+            return formatted_wrong_questions
+            
+        except Exception as e:
+            print(f"获取学生错题数据出错: {e}")
+            return []      
+    
+    #保存 AI 生成的习题到数据库
+    @staticmethod
+    def save_generated_exercise(
+        result_data: dict,
+        teacher_id: int,
+        course_id: int,
+        student_number: Any
+    ) -> int:
+        """
+        将 AI 生成的练习题集及题目保存到数据库
+        """
+
+        exercise_data = result_data.get("exercise")
+        questions = result_data.get("questions")
+
+        if not exercise_data or not questions:
+            raise ValueError("生成的习题数据结构不完整")
+
+        try:
+            from datetime import datetime
+            # 1️⃣ 保存 exercise
+            exercise = Exercise(
+                teacher_id=teacher_id,
+                course_id=course_id,
+                student_number = student_number,
+                title=exercise_data["title"],
+                description=exercise_data["description"],
+                status=exercise_data.get("status", "draft"),
+                create_time=datetime.now()
+            )
+            db.session.add(exercise)
+            db.session.flush()  # 获取 exercise.id
+
+            # 2️⃣ 保存 exercise_question
+            question_entities = []
+            for q in questions:
+                options = q.get("options")
+                normalized_options = None
+                if options:
+                    # 情况 1：AI 返回的是 {"A": "...", "B": "..."}
+                    if isinstance(options, dict):
+                        normalized_options = list(options.values())
+                    # 情况 2：AI 已经返回 ["高级语言", "汇编语言"]
+                    elif isinstance(options, list):
+                        normalized_options = options
+
+                    else:
+                        raise ValueError(f"不支持的 options 类型: {type(options)}")
+                correct_answer = q.get("correct_answer")
+                if isinstance(correct_answer, list):
+                    correct_answer = ",".join(correct_answer)
+                question = ExerciseQuestion(
+                    exercise_id=exercise.id,
+                    question_text=q["question_text"],
+                    question_type=q["question_type"],
+                    options=json.dumps(normalized_options, ensure_ascii=False) if normalized_options else None,
+                    correct_answer=correct_answer,
+                    points=int(q.get("points", 10))
+                )
+                question_entities.append(question)
+
+            db.session.add_all(question_entities)
+
+            # 3️⃣ 提交事务
+            db.session.commit()
+
+            return exercise.id
+
+        except Exception as e:
+            db.session.rollback()
+            raise e
+        
+    #获取习题详情
+    @staticmethod
+    def get_exercise_questions(exercise_id: int) -> Result:
+        try:
+            # 获取小测信息
+            exercise = Exercise.query.get(exercise_id)
+            if not exercise:
+                return Result.not_found('小测不存在')
+
+            # 获取题目列表
+            exercise_questions = ExerciseQuestion.query.filter_by(exercise_id=exercise_id).all()
+            questions_list = [question.to_dict() for question in exercise_questions]
+
+            # 组合数据
+            result_data = {
+                'exercise': exercise.to_dict(),
+                'questions': questions_list
+            }
+
+            return Result.success(data=result_data)
+        except Exception as e:
+            return Result.internal_error(f'获取小测详情失败: {str(e)}')
+        
+     #更新小测
+    
+    #更新习题
+    @staticmethod
+    def update_exercise(data: dict[str, Any]) -> Result:
+        try:
+            exercise_id = data.get('id')
+            exercise = Exercise.query.get(exercise_id)
+            if not exercise:
+                return Result.not_found(f'小测 {exercise_id} 未找到')
+            exercise.status = 'published'
+            # 简单字段直接赋值
+            for field in ['title', 'description']:
+                if field in data:
+                    setattr(exercise, field, data.get(field))
+
+
+            # 更新题目信息
+            if 'questions' in data:
+                questions_data = data.get('questions')
+                incoming_question_ids = set()
+
+                for question_data in questions_data:
+                    question_id = question_data.get('id')
+                    if question_id:
+                        # 更新现有题目
+                        question = ExerciseQuestion.query.get(question_id)
+                        if question and question.exercise_id == exercise_id:
+                            # 更新题目的各个字段
+                            question.question_text = question_data.get('question_text', question.question_text)
+                            question.question_type = question_data.get('question_type', question.question_type)
+                            question.correct_answer = question_data.get('correct_answer', question.correct_answer)
+                            question.points = question_data.get('points', question.points)
+
+                            # 处理选项字段
+                            if 'options' in question_data:
+                                question.options = json.dumps(question_data['options'])
+
+                            incoming_question_ids.add(question_id)
+                    else:
+                        # 创建新题目
+                        new_question = ExerciseQuestion(
+                            exercise_id=exercise_id,
+                            question_text=question_data.get('question_text', ''),
+                            question_type=question_data.get('question_type', 'single_choice'),
+                            correct_answer=question_data.get('correct_answer', ''),
+                            points=question_data.get('points', 1),
+                            options=json.dumps(question_data.get('options', []))
+                        )
+                        db.session.add(new_question)
+                        db.session.flush()
+                        incoming_question_ids.add(new_question.id)
+                # 删除不在传入列表中的题目
+                existing_questions = ExerciseQuestion.query.filter_by(exercise_id=exercise_id).all()
+                for existing_question in existing_questions:
+                    if existing_question.id not in incoming_question_ids:
+                        db.session.delete(existing_question)
+
+            db.session.commit()
+            return Result.success(data=exercise.to_dict())
+
+        except Exception as e:
+            db.session.rollback()
+            return Result.internal_error(f'更新小测失败: {str(e)}')
+        
+    #获取学生习题提交详情
+    @staticmethod
+    def get_exercise_response(data: dict[str, Any]) -> Result:
+        try:
+            exercise_id = data.get('exercise_id')
+            student_number = data.get('student_number')
+            if not exercise_id or not student_number:
+                return Result.error("exercise_id和student_number不能为空")
+
+            # 一次性获取所有相关的题目信息
+            exercise_responses = ExerciseResponse.query.filter_by(
+                exercise_id=exercise_id,
+                student_number=student_number
+            ).all()
+
+            # 收集所有题目ID
+            question_ids = [response.question_id for response in exercise_responses]
+
+            # 批量查询题目信息
+            questions = ExerciseQuestion.query.filter(
+                ExerciseQuestion.id.in_(question_ids)
+            ).all()
+
+            # 创建题目ID到题目信息的映射
+            questions_map = {question.id: question.to_dict() for question in questions}
+
+            # 转换为字典列表并添加题目信息
+            responses_list = []
+            for response in exercise_responses:
+                response_dict = {
+                    'id': response.id,
+                    'exercise_id': response.exercise_id,
+                    'student_number': response.student_number,
+                    'response': response.response,
+                    'question_id': response.question_id,
+                }
+
+                # 添加对应的题目信息
+                if response.question_id in questions_map:
+                    response_dict['question'] = questions_map[response.question_id]
+                else:
+                    response_dict['question'] = None
+
+                responses_list.append(response_dict)
+
+            return Result.success(responses_list)
+        except Exception as e:
+            return Result.internal_error(f'获取小测提交详情失败: {str(e)}')
+        
+    #获取批改结果
+    @staticmethod
+    def get_grading_results_e(data: dict[str, Any]) -> Result:
+        try:
+            exercise_id = data.get('exercise_id')
+            student_number = data.get('student_number')
+
+            if not exercise_id or not student_number:
+                return Result.error('exercise_id和student_number不能为空')
+
+            # 查询批改结果
+            grading_results = GradingResult.query.filter_by(
+                exercise_id=exercise_id,
+                student_number=student_number
+            ).all()
+
+            results_data = [result.to_dict() for result in grading_results]
+
+            return Result.success(results_data)
+
+        except Exception as e:
+            return Result.internal_error(f'获取批改结果失败: {str(e)}')
         

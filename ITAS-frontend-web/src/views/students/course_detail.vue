@@ -33,7 +33,7 @@
             <QuizList
               v-if="course.id"
               :course-ids="[course.id]"
-              :student_id="student_id"
+              :student_number="student_number"
             />
           </div>
 
@@ -96,13 +96,28 @@
             <p>
               本课程旨在帮助学生掌握相关知识和技能，通过理论学习和实践操作相结合的方式，培养学生的综合能力。
             </p>
-            <button
-              class="btn coming-soon"
-              style="margin-top: 1rem; width: 100%"
-              onclick="showComingSoon('详细介绍')"
+          </div>
+
+          <!-- 快速操作 -->
+          <div class="section">
+            <h3><span class="section-icon">⚡</span>快速操作</h3>
+            <div
+              class="action-buttons"
+              style="flex-direction: column; gap: 0.5rem"
             >
-              查看详细介绍
-            </button>
+              <button class="btn" @click="showComingSoon('练习题库')">
+                📒 练习题库
+              </button>
+              <button class="btn" @click="showComingSoon('错题分析')">
+                ❌ 错题分析
+              </button>
+              <button
+                class="btn coming-soon"
+                onclick="showComingSoon('学习计划')"
+              >
+                📅 学习计划
+              </button>
+            </div>
           </div>
 
           <!-- 通知公告 -->
@@ -143,43 +158,7 @@
                   >电子教材</a
                 >
               </li>
-              <li>
-                <a
-                  href="#"
-                  class="coming-soon"
-                  onclick="showComingSoon('练习题库'); return false;"
-                  >练习题库</a
-                >
-              </li>
             </ul>
-          </div>
-
-          <!-- 快速操作 -->
-          <div class="section">
-            <h3><span class="section-icon">⚡</span>快速操作</h3>
-            <div
-              class="action-buttons"
-              style="flex-direction: column; gap: 0.5rem"
-            >
-              <button
-                class="btn coming-soon"
-                onclick="showComingSoon('学习笔记')"
-              >
-                📒 学习笔记
-              </button>
-              <button
-                class="btn coming-soon"
-                onclick="showComingSoon('错题本')"
-              >
-                ❌ 错题本
-              </button>
-              <button
-                class="btn coming-soon"
-                onclick="showComingSoon('学习计划')"
-              >
-                📅 学习计划
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -202,15 +181,16 @@ export default {
       error: "",
       loading: true,
       assignments: {},
-      student_id: null,
+      course_id: null,
+      student_number: null,
       showAllAssignments: false,
     };
   },
   methods: {
-    init_student_id() {
+    init_student_number() {
       try {
         const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-        this.student_id = userInfo.user_id;
+        this.student_number = userInfo.identifier;
       } catch (error) {
         console.error("获取用户信息失败:", error);
         return null;
@@ -248,11 +228,26 @@ export default {
         this.$message.error("未提供课程ID");
       }
     },
+
+    //页面转跳
+    showComingSoon(name) {
+      switch (name) {
+        case "错题分析":
+          this.$router.push(`/wrong_questions/${this.course_id}`);
+          break;
+        case "练习题库":
+          this.$router.push(`/student_exercise/${this.course_id}`);
+          break;
+        default:
+          break;
+      }
+    },
   },
   mounted() {
-    this.init_student_id();
+    this.init_student_number();
     this.loadCourseDetail();
     this.fetchAssignments();
+    this.course_id = this.$route.params.courseId;
   },
 };
 </script>

@@ -536,3 +536,56 @@ def get_student_wrong_questions():
         import traceback
         print(f"获取学生错题错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'获取学生错题时发生错误: {str(e)}').to_json(), 500
+    
+#获取生成习题详情
+@bp.route('/get_exercise_questions', methods=['GET'])
+def get_exercise_questions():
+    try:
+        exercise_id = request.args.get('exercise_id', type=int)
+        if exercise_id is None:
+            return Result.bad_request("习题ID是必需的").to_json(), 400
+
+        result = CourseStudentService.get_exercise_questions(exercise_id)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取习题详情错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取习题详情时发生错误: {str(e)}').to_json(), 500
+    
+#更新生成习题
+@bp.route('/update_exercise', methods=['POST'])
+def update_exercise():
+    try:
+        data = request.get_json()
+        if 'id' not in data:
+            return Result.bad_request("小测ID是必需的").to_json(), 400
+        result = CourseStudentService.update_exercise(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"编辑小测错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'编辑小测时发生错误: {str(e)}').to_json(), 500
+    
+#获取学生习题提交详情
+@bp.route('/get_exercise_response', methods=['POST'])
+def get_exercise_response():
+    try:
+        data = request.get_json()
+        result = CourseStudentService.get_exercise_response(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取学生小测提交详情错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取学生小测提交详情时发生错误: {str(e)}').to_json(), 500
+    
+#获取习题批改结果
+@bp.route('/get_grading_results_e', methods=['POST'])
+def get_grading_results_e():
+    try:
+        data = request.get_json()
+        result = CourseStudentService.get_grading_results_e(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取批改结果错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取批改结果时发生错误: {str(e)}').to_json(), 500

@@ -344,6 +344,59 @@ export function analyze_student_knowledge(data) {
     })
 }
 
+//生成习题
+export function generate_exercises(data) {
+    return request({
+        url: '/generate_exercises',
+        method: 'post',
+        data: data
+    })
+}
+
+//获取生成习题详情
+export function get_exercise_questions(exercise_id) {
+    return request({
+        url: `/get_exercise_questions?exercise_id=${exercise_id}`,
+        method: 'get'
+    })
+}
+
+//更新习题状态(包括发布)
+export function update_exercise(data) {
+    return request({
+        url: '/update_exercise',
+        method: 'post',
+        data: data
+    })
+}
+
+//习题提交并自动批改
+export function submit_exercise(data) {
+    return request({
+        url: '/submit_exercise',
+        method: 'post',
+        data: data
+    })
+}
+
+//获取习题批改详情
+export function get_grading_results_e(data) {
+    return request({
+        url: '/get_grading_results_e',
+        method: 'post',
+        data: data
+    })
+}
+
+//获取学生习题提交详情
+export function get_exercise_response(data) {
+    return request({
+        url: '/get_exercise_response',
+        method: 'post',
+        data: data
+    })
+}
+
 //学生端 -- 获取当前用户信息
 export function getCurrentStudent(user_id) {
     return request({
@@ -427,3 +480,20 @@ export function submit_quiz(data) {
     })
 }
 
+//学生端 -- 错题分析
+export function analyze_student_knowledge_s(data) {
+    return request({
+        url: '/analyze_student_knowledge_s',
+        method: 'post',
+        data: data
+    })
+}
+
+//学生端 -- 获取生成习题列表
+export function get_exercises_student(data) {
+    return request({
+        url: '/get_exercises_student',
+        method: 'post',
+        data: data
+    })
+}

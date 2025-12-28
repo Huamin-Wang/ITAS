@@ -190,11 +190,7 @@
             >
               生成专项练习
             </button> -->
-            <button
-              class="action-button"
-              disabled
-              style="cursor: not-allowed; opacity: 0.6"
-            >
+            <button class="action-button" @click="generate_exercise()">
               生成专项练习
             </button>
           </div>
@@ -272,6 +268,36 @@
           </button> -->
         </div>
       </div>
+      <div v-if="generatingExercise" class="global-loading-overlay">
+        <div class="global-loading-container">
+          <div class="global-loading-spinner"></div>
+          <p>正在生成专项练习，请稍候...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 新增：练习编辑弹窗 -->
+    <div v-if="showExerciseDialog" class="exercise-dialog-overlay">
+      <div class="exercise-dialog">
+        <div class="dialog-header">
+          <h3>编辑专项练习</h3>
+          <button class="close-btn" @click="closeExerciseDialog">×</button>
+        </div>
+        <div class="dialog-body">
+          <ExerciseEditor
+            v-if="currentExerciseId"
+            :mode="'edit'"
+            :exerciseId="currentExerciseId"
+            :courseId="course_id"
+            @success="closeExerciseDialog"
+            @cancel="closeExerciseDialog"
+          />
+          <div v-else class="loading-container">
+            <div class="loading-spinner"></div>
+            <p>正在加载练习...</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <footer>
@@ -281,9 +307,13 @@
 </template>
 
 <script>
-import { analyze_student_knowledge } from "@/http/api.js";
+import { analyze_student_knowledge, generate_exercises } from "@/http/api.js";
+import ExerciseEditor from "@/components/ExerciseEditor.vue";
 export default {
   name: "student_analysis",
+  components: {
+    ExerciseEditor,
+  },
   data() {
     return {
       loading: true,
@@ -296,10 +326,13 @@ export default {
         class: "",
       },
       analysisData: {},
+      showExerciseDialog: false,
+      currentExerciseId: null,
+      generatingExercise: false, //生成习题加载控制
     };
   },
   computed: {
-    // 直接使用后端返回的学习状态，无需前端计算
+    // 直接使用后端返回的学习状态
     statusClass() {
       const status =
         this.analysisData.quick_stats?.learning_status || "average";
@@ -336,16 +369,12 @@ export default {
       this.error = null;
 
       try {
-        // 调用实际的API接口
         const params = {
           student_number: this.student_number,
           course_id: this.course_id,
         };
 
         const result = await analyze_student_knowledge(params);
-
-        console.log("API返回数据:", result);
-
         if (result.code === 200 && result.data) {
           this.analysisData = result.data;
 
@@ -355,9 +384,6 @@ export default {
             id: this.student_number || "无",
             class: result.data.course_name || "未获取到班级信息",
           };
-
-          console.log("设置分析数据:", this.analysisData);
-          console.log("设置学生信息:", this.studentInfo);
         } else {
           throw new Error(result.message || "获取数据失败");
         }
@@ -428,9 +454,47 @@ export default {
       return match ? match[1] : "无";
     },
 
-    generateLearningMaterials() {
-      alert("生成专项练习功能开发中...");
-      // 实际实现中，这里会调用API生成针对性的练习材料
+    // 生成习题方法
+    async generate_exercise() {
+      // 设置生成练习的加载状态
+      this.generatingExercise = true;
+
+      try {
+        const params = {
+          student_number: this.student_number,
+          course_id: this.course_id,
+          teacher_id: JSON.parse(localStorage.getItem("userInfo")).user_id,
+        };
+
+        const response = await generate_exercises(params);
+
+        if (response.code === 200) {
+          // 获取生成的练习ID
+          this.currentExerciseId = response.data.exercise_id;
+          // 显示弹窗
+          this.showExerciseDialog = true;
+          this.$message.success("练习生成成功，请在弹窗中编辑");
+        } else {
+          this.$message.error("生成练习失败: " + response.message);
+        }
+      } catch (error) {
+        console.error("生成练习失败:", error);
+        this.$message.error("生成练习失败，请稍后重试");
+      } finally {
+        // 无论成功或失败，都结束加载状态
+        this.generatingExercise = false;
+      }
+    },
+
+    // generate_exercise() {
+    //   this.currentExerciseId = 2;
+    //   this.showExerciseDialog = true;
+    // },
+
+    // 弹窗相关方法
+    closeExerciseDialog() {
+      this.showExerciseDialog = false;
+      this.currentExerciseId = null;
     },
 
     adjustLearningPlan() {
@@ -451,11 +515,6 @@ export default {
     // 从路由参数获取学生学号和课程ID
     this.student_number = this.$route.params.studentNumber || "";
     this.course_id = this.$route.params.courseId;
-
-    console.log("组件挂载，参数:", {
-      student_number: this.student_number,
-      course_id: this.course_id,
-    });
 
     // 加载学生分析数据
     this.fetchStudentAnalysis();
@@ -774,5 +833,112 @@ footer {
 .problem-tags,
 .focus-points {
   margin: 10px 0;
+}
+
+/* 弹窗样式 */
+.exercise-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.exercise-dialog {
+  width: 90%;
+  max-width: 1000px;
+  max-height: 90vh;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #001529;
+  color: white;
+}
+
+.dialog-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.8rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.3s;
+}
+
+.close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .exercise-dialog {
+    width: 95%;
+    height: 95vh;
+  }
+}
+
+/* 全局加载遮罩样式 */
+.global-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.global-loading-container {
+  background-color: white;
+  padding: 40px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  min-width: 300px;
+}
+
+.global-loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1890ff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
 }
 </style>

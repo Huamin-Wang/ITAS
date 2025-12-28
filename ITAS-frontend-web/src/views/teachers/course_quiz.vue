@@ -57,7 +57,9 @@
                   <span @click.stop="editQuiz(quiz.id)" class="btn btn-edit"
                     >编辑</span
                   >
-                  <span @click.stop="releaseQuiz(quiz.id)" class="btn btn-release"
+                  <span
+                    @click.stop="releaseQuiz(quiz.id)"
+                    class="btn btn-release"
                     >发布</span
                   >
                   <span @click.stop="deleteQuiz(quiz.id)" class="btn btn-delete"

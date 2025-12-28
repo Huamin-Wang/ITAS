@@ -65,7 +65,7 @@ def generate_exercises():
         print(f"生成试题错误详情: {traceback.format_exc()}")
         return Result.internal_error(f'生成试题过程中发生错误: {str(e)}').to_json(), 500
     
-#学生错题分析
+#错题分析(教师端)
 @bp.route('/analyze_student_knowledge', methods=['POST'])
 def analyze_student_knowledge():
     try:
@@ -73,6 +73,21 @@ def analyze_student_knowledge():
         if not data:
             return Result.bad_request("请求数据不能为空").to_json(), 400
         result = AiServices.analyze_student_knowledge(data)
+        return result.to_json(), result.code
+        
+    except Exception as e:
+        import traceback
+        print(f"学生错题分析错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'学生错题分析过程中发生错误: {str(e)}').to_json(), 500
+    
+#错题分析(学生端)
+@bp.route('/analyze_student_knowledge_s', methods=['POST'])
+def analyze_student_knowledge_s():
+    try:
+        data = request.get_json()
+        if not data:
+            return Result.bad_request("请求数据不能为空").to_json(), 400
+        result = AiServices.analyze_student_knowledge_s(data)
         return result.to_json(), result.code
         
     except Exception as e:

@@ -310,4 +310,32 @@ def submit_quiz():
     except Exception as e:
         import traceback
         print(f"提交小测错误详情: {traceback.format_exc()}")
-        return
+        return Result.internal_error(f'提交小测错误详情: {str(e)}').to_json(), 500
+    
+# 学生中心 -- 获取生成习题列表
+@bp.route('/get_exercises_student', methods=['POST'])
+def get_exercises_student():
+    try:
+        data = request.get_json()
+        if not all(key in data for key in ['student_number', 'course_id']):
+            return Result.bad_request("缺少必要的字段").to_json(), 400
+
+        result = StudentService.get_exercises_student(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"获取小测列表错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'获取小测列表时发生错误: {str(e)}').to_json(), 500
+    
+# 学生端 -- 提交习题并自动批改
+@bp.route('/submit_exercise', methods=['POST'])
+def submit_exercise():
+    try:
+        data = request.get_json()
+        result = StudentService.submit_exercise(data)
+        return result.to_json(), result.code
+    except Exception as e:
+        import traceback
+        print(f"提交习题错误详情: {traceback.format_exc()}")
+        return Result.internal_error(f'提交习题错误详情: {str(e)}').to_json(), 500
+    

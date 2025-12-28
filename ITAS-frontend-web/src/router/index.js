@@ -12,7 +12,9 @@ import submission_detail from '../views/students/submission_detail.vue'; //提�
 import submissions from '../views/students/submissions.vue'; //提交作业
 import course_detail from '../views/students/course_detail.vue'; //课程详情
 import student_quiz from '../views/students/student_quiz.vue'; //学生小测
-
+import wrong_questions from '../views/students/wrong_questions.vue'; //学生错题分析
+import student_exercise from '../views/students/student_exercise.vue'; //学生练习题库
+import exercise_detail from '../views/students/exercise_detail.vue'; //学生习题详情
 //teachers
 import TeacherProfile from '../views/teachers/teacher_profile.vue'; //教师中心
 import assignments from '../views/teachers/assignments.vue'; //课程作业列表
@@ -114,6 +116,30 @@ const routes = [
     component: student_quiz,
     meta: {
       title: '学生端-小测详情'
+    }
+  },
+  {
+    path: '/wrong_questions/:courseId?',
+    name: 'wrong_questions',
+    component: wrong_questions,
+    meta: {
+      title: '学生端-错题分析'
+    }
+  },
+  {
+    path: '/student_exercise/:courseId?',
+    name: 'student_exercise',
+    component: student_exercise,
+    meta: {
+      title: '学生端-练习题库'
+    }
+  },
+  {
+    path: '/exercise_detail/:courseId?/:exerciseId?',
+    name: 'exercise_detail',
+    component: exercise_detail,
+    meta: {
+      title: '学生端-习题详情'
     }
   },
   {

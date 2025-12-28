@@ -1,9 +1,17 @@
 <template>
-  <div class="student-quiz-container">
+  <div class="student-exercise-container">
+    <!-- 自动批改提示遮罩 -->
+    <div v-if="isAutoGrading" class="global-loading-overlay">
+      <div class="global-loading-container">
+        <div class="global-loading-spinner"></div>
+        <p>正在自动批改中，请稍候...</p>
+      </div>
+    </div>
+
     <!-- 头部区域 -->
-    <div class="quiz-header">
+    <div class="exercise-header">
       <div class="header-content">
-        <h2 class="quiz-title">{{ quiz.title }}</h2>
+        <h2 class="exercise-title">{{ exercise.title }}</h2>
         <div v-if="hasGradingResults" class="total-score-display">
           <span class="score-label">总分:</span>
           <span class="score-value">{{ calculateTotalScore() }}</span>
@@ -12,22 +20,19 @@
         </div>
       </div>
 
-      <div class="quiz-details">
+      <div class="exercise-details">
         <div class="detail-item">
           <span class="detail-label">描述:</span>
-          <span class="detail-content">{{ quiz.description }}</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">截止时间:</span>
-          <span class="detail-content">{{
-            formatDateTime(quiz.end_time)
-          }}</span>
+          <span class="detail-content">{{ exercise.description }}</span>
         </div>
       </div>
     </div>
 
     <!-- 题目列表 -->
-    <div class="questions-container">
+    <div
+      class="questions-container"
+      :class="{ 'grading-disabled': isAutoGrading }"
+    >
       <div
         class="question-item"
         v-for="(question, index) in questions"
@@ -85,7 +90,7 @@
                 :name="'q' + question.id"
                 :value="String.fromCharCode(65 + optIndex)"
                 v-model="question.student_answer"
-                :disabled="question.gradingResult"
+                :disabled="question.gradingResult || isAutoGrading"
               />
               <span class="option-letter"
                 >{{ String.fromCharCode(65 + optIndex) }}.</span
@@ -131,7 +136,7 @@
                 type="checkbox"
                 :value="String.fromCharCode(65 + optIndex)"
                 v-model="question.student_answer"
-                :disabled="question.gradingResult"
+                :disabled="question.gradingResult || isAutoGrading"
               />
               <span class="option-letter"
                 >{{ String.fromCharCode(65 + optIndex) }}.</span
@@ -163,7 +168,7 @@
                 :name="'q' + question.id"
                 value="true"
                 v-model="question.student_answer"
-                :disabled="question.gradingResult"
+                :disabled="question.gradingResult || isAutoGrading"
               />
               <span class="option-text">正确</span>
             </label>
@@ -185,7 +190,7 @@
                 :name="'q' + question.id"
                 value="false"
                 v-model="question.student_answer"
-                :disabled="question.gradingResult"
+                :disabled="question.gradingResult || isAutoGrading"
               />
               <span class="option-text">错误</span>
             </label>
@@ -204,7 +209,7 @@
               }"
               placeholder="请输入你的回答..."
               v-model="question.student_answer"
-              :disabled="question.gradingResult"
+              :disabled="question.gradingResult || isAutoGrading"
               :readonly="question.gradingResult"
               rows="4"
             ></textarea>
@@ -255,15 +260,15 @@
     </div>
 
     <!-- 底部操作区域 -->
-    <div class="quiz-footer">
+    <div class="exercise-footer">
       <button
-        v-if="!hasGradingResults"
         class="btn btn-submit"
-        @click="submitQuiz"
+        @click="submitExercise"
+        :disabled="isAutoGrading"
       >
-        提交小测
+        {{ isAutoGrading ? "正在批改中..." : "提交习题" }}
       </button>
-      <button class="btn btn-back" @click="go_to_student_profile()">
+      <button class="btn btn-back" @click="goBack" :disabled="isAutoGrading">
         返回
       </button>
     </div>
@@ -272,19 +277,20 @@
 
 <script>
 import {
-  get_quiz_questions,
-  submit_quiz,
-  get_quiz_response,
-  get_grading_results,
+  get_exercise_questions,
+  submit_exercise,
+  get_exercise_response,
+  get_grading_results_e,
 } from "@/http/api.js";
 
 export default {
-  name: "StudentQuizPage",
+  name: "StudentExerciseDetail",
   data() {
     return {
-      quiz: {},
+      exercise: {},
       questions: [],
       gradingResults: [],
+      isAutoGrading: false, // 新增：自动批改状态
     };
   },
   computed: {
@@ -293,22 +299,22 @@ export default {
     },
   },
   mounted() {
-    this.loadQuizData();
+    this.loadExerciseData();
   },
   methods: {
-    async loadQuizData() {
+    async loadExerciseData() {
       try {
-        const quizId = this.$route.params.quizId;
+        const exerciseId = this.$route.params.exerciseId;
         const studentNumber = JSON.parse(
           localStorage.getItem("userInfo")
         ).identifier;
 
         // 1. 获取题目数据
-        const quizRes = await get_quiz_questions(quizId);
-        this.quiz = quizRes.data.quiz;
+        const exerciseRes = await get_exercise_questions(exerciseId);
+        this.exercise = exerciseRes.data.exercise;
 
         // 初始化 questions
-        this.questions = quizRes.data.questions.map((q) => ({
+        this.questions = exerciseRes.data.questions.map((q) => ({
           ...q,
           student_answer:
             q.question_type === "multiple_choice"
@@ -320,10 +326,10 @@ export default {
         // 2. 尝试获取学生已有的答案数据
         try {
           const params = {
-            quiz_id: quizId,
+            exercise_id: exerciseId,
             student_number: studentNumber,
           };
-          const responseRes = await get_quiz_response(params);
+          const responseRes = await get_exercise_response(params);
 
           if (responseRes.data && responseRes.data.length > 0) {
             // 有答案数据，填充到 questions 中
@@ -335,21 +341,21 @@ export default {
         }
 
         // 3. 获取批改结果
-        await this.loadGradingResults(quizId, studentNumber);
+        await this.loadGradingResults(exerciseId, studentNumber);
       } catch (error) {
-        this.$message.error("加载小测失败");
-        console.error("加载小测失败:", error);
+        this.$message.error("加载习题失败");
+        console.error("加载习题失败:", error);
       }
     },
 
     // 加载批改结果
-    async loadGradingResults(quizId, studentNumber) {
+    async loadGradingResults(exerciseId, studentNumber) {
       try {
         const params = {
-          quiz_id: quizId,
+          exercise_id: exerciseId,
           student_number: studentNumber,
         };
-        const gradingRes = await get_grading_results(params);
+        const gradingRes = await get_grading_results_e(params);
 
         if (gradingRes.code === 200 && gradingRes.data.length > 0) {
           this.gradingResults = gradingRes.data;
@@ -459,9 +465,23 @@ export default {
       }, 0);
     },
 
-    submitQuiz() {
+    submitExercise() {
       if (!this.questions || this.questions.length === 0) {
         this.$message.error("没有题目可提交");
+        return;
+      }
+
+      // 检查是否有未回答的题目
+      const hasUnanswered = this.questions.some((q) => {
+        if (q.question_type === "multiple_choice") {
+          return !q.student_answer || q.student_answer.length === 0;
+        } else {
+          return !q.student_answer || q.student_answer.trim() === "";
+        }
+      });
+
+      if (hasUnanswered) {
+        this.$message.warning("还有未回答的题目，请完成所有题目后再提交");
         return;
       }
 
@@ -477,7 +497,7 @@ export default {
         }
 
         return {
-          quiz_id: q.quiz_id,
+          exercise_id: q.exercise_id,
           question_id: q.id,
           student_answer: finalAnswer,
           student_number: JSON.parse(localStorage.getItem("userInfo"))
@@ -487,13 +507,23 @@ export default {
 
       console.log("最终提交：", submitData);
 
-      submit_quiz(submitData)
+      // 开始自动批改
+      this.isAutoGrading = true;
+      this.$message.info("正在自动批改中，请稍候...");
+
+      submit_exercise(submitData)
         .then(() => {
-          this.$router.push("/student_profile");
-          this.$message.success("提交成功！");
+          this.$message.success("提交成功！自动批改完成");
+          // 重新加载数据以获取批改结果
+          return this.loadExerciseData();
         })
-        .catch(() => {
-          this.$message.error("提交失败");
+        .catch((error) => {
+          this.$message.error("提交失败：" + (error.message || "请重试"));
+          console.error("提交失败:", error);
+        })
+        .finally(() => {
+          // 无论成功失败，都结束批改状态
+          this.isAutoGrading = false;
         });
     },
 
@@ -502,16 +532,66 @@ export default {
       return isoString.slice(0, 16).replace("T", " ");
     },
 
-    go_to_student_profile() {
-      this.$router.push("/student_profile");
+    goBack() {
+      // 返回习题合集页面
+      this.$router.push(`/student_exercise/${this.$route.params.courseId}`);
     },
   },
 };
 </script>
 
 <style scoped>
+/* ==================== 自动批改遮罩样式 ==================== */
+/* ==================== 全局加载遮罩样式 ==================== */
+.global-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.global-loading-container {
+  background-color: white;
+  padding: 40px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  min-width: 300px;
+}
+
+.global-loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #1890ff;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* 批改过程中禁用交互 */
+.grading-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 /* ==================== 整体布局样式 ==================== */
-.student-quiz-container {
+.student-exercise-container {
   width: 100%;
   position: relative;
   background-color: #fff;
@@ -521,7 +601,7 @@ export default {
 }
 
 /* ==================== 头部样式 ==================== */
-.quiz-header {
+.exercise-header {
   margin-bottom: 30px;
   padding-bottom: 20px;
   border-bottom: 1px solid #eee;
@@ -534,7 +614,7 @@ export default {
   margin-bottom: 20px;
 }
 
-.quiz-title {
+.exercise-title {
   color: #2c3e50;
   margin: 0;
   font-size: 1.8rem;
@@ -572,7 +652,7 @@ export default {
   color: #666;
 }
 
-.quiz-details {
+.exercise-details {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -725,6 +805,7 @@ export default {
 .option input[type="radio"]:disabled,
 .option input[type="checkbox"]:disabled {
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .option-letter {
@@ -772,6 +853,7 @@ export default {
 .short-answer:disabled {
   background-color: #f5f5f5;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* ==================== 批改详情样式 ==================== */
@@ -845,7 +927,7 @@ export default {
 }
 
 /* ==================== 底部样式 ==================== */
-.quiz-footer {
+.exercise-footer {
   display: flex;
   justify-content: center;
   gap: 20px;
@@ -870,10 +952,17 @@ export default {
   color: white;
 }
 
-.btn-submit:hover {
+.btn-submit:hover:not(:disabled) {
   background-color: #2980b9;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.btn-submit:disabled {
+  background-color: #a0d2ff;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .btn-back {
@@ -881,15 +970,22 @@ export default {
   color: white;
 }
 
-.btn-back:hover {
+.btn-back:hover:not(:disabled) {
   background-color: #7f8c8d;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(149, 165, 166, 0.3);
 }
 
+.btn-back:disabled {
+  background-color: #c8d6d9;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .student-quiz-container {
+  .student-exercise-container {
     padding: 15px;
   }
 
@@ -918,7 +1014,7 @@ export default {
     min-width: auto;
   }
 
-  .quiz-footer {
+  .exercise-footer {
     flex-direction: column;
     gap: 10px;
   }

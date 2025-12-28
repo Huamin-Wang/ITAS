@@ -7,7 +7,8 @@ class GradingResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     assignment_id = db.Column(db.Integer, nullable=True)  # 作业ID
     quiz_id = db.Column(db.Integer, nullable=True)        # 小测ID
-    question_id = db.Column(db.Integer, nullable=True)       # 小测题目ID
+    exercise_id = db.Column(db.Integer, nullable=True)    # 生成习题ID
+    question_id = db.Column(db.Integer, nullable=True)       # 小测题目ID/生成习题题目ID
     student_number = db.Column(db.String(50), nullable=False)  # 学生ID
     title = db.Column(db.Text, nullable=False)               # 作业标题
     description = db.Column(db.Text, nullable=True)          # 作业描述

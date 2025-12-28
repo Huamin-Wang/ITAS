@@ -25,7 +25,6 @@ class AiServices:
                     {"role": "user", "content": question},
                 ],
             )
-            print(f"回答：\n{completion.choices[0].message.content}")
             return completion.choices[0].message.content
         except Exception as e:
             print(f"大模型调用出错: {e}")
@@ -60,6 +59,7 @@ class AiServices:
             assignment_id = assignment.get('id', '')
             quiz_id = assignment.get('quiz_id', '')
             question_id = assignment.get('question_id', '')
+            exercise_id = assignment.get('exercise_id','')
             title = assignment.get('title', '')
             description = assignment.get('description', '')
             student_answer = assignment.get('student_answer', '')
@@ -121,12 +121,14 @@ class AiServices:
             results.append({
                 'assignment_id': assignment_id,
                 'quiz_id': quiz_id,
+                'exercise_id':exercise_id,
                 'question_id': question_id,
                 'title': title,
                 'total_score': total_score,
                 'score': score,
                 'comment': comment,
-                'suggestion': f"建议：{comment}"
+                'suggestion': f"建议：{comment}",
+                'reference_answer': reference_answer
             })
         
         return Result.success({'results': results})
@@ -208,7 +210,18 @@ class AiServices:
             ]
         }
         """
-        wrong_questions = data.get('wrong_questions', [])
+        teacher_id = data.get("teacher_id")
+        course_id = data.get("course_id")
+
+        if not teacher_id or not course_id:
+            return Result.bad_request("缺少必要参数: teacher_id, course_id")
+
+        params = {
+            'student_number' : data.get('student_number'),
+            'course_id' : data.get('course_id')
+        }
+
+        wrong_questions = CourseStudentService.get_student_wrong_questions_for_analysis(params)
         if not wrong_questions:
             return Result.error("错题列表为空")
         
@@ -232,35 +245,52 @@ class AiServices:
         
         # 构建生成习题的提示词
         question = f'''
-        你是一位经验丰富的老师，请根据学生的错题信息，生成5道新的习题，帮助学生巩固薄弱知识点。
+        你是一位经验丰富的老师，请根据学生的错题信息，生成一份新的“练习题集”，用于巩固学生的薄弱知识点。
         
         学生错题信息如下：
         {json.dumps(topics, ensure_ascii=False, indent=2)}
         
-        生成要求：
-        1. 针对学生错误的知识点设计新题
-        2. 题目难度适中，符合学生当前水平
-        3. 题型可以多样化（选择题、填空题、简答题等）
-        4. 每道题需要提供参考答案和解析
+        生成要求（必须严格遵守）：
+        1. 生成 1 份练习题集（exercise）
+        2. 练习题集下包含 5 道题目（questions）
+        3. 每一道题目 **必须且只能选择以下四种题型之一**：
+           - single_choice（单选题）
+           - multiple_choice（多选题）
+           - true_false（判断题）
+           - short_answer（简答题）
+        4. 不允许出现除上述四种以外的题型
+        5. 每道题只能属于一种题型，不得混合
+        6. 所有题目必须围绕学生的错误知识点
+        7. 每道题必须给出正确答案
+        8. 只有 single_choice 和 multiple_choice 题型可以有 options
+        9. true_false 和 short_answer 题型的 options 必须为 null
+        10. 每道题必须设置合理的分值（points，整数）
         
-        输出格式（请严格按照以下JSON格式输出）：
+        请严格按照以下 JSON 格式输出，不要输出任何多余文本：
+        
         {{
-            "exercises": [
-                {{
-                    "title": "题目1",
-                    "type": "题型（如：选择题、填空题等）",
-                    "content": "题目内容",
-                    "difficulty": "难度级别（简单/中等/困难）",
-                    "answer": "参考答案",
-                    "analysis": "题目解析",
-                    "related_knowledge": ["相关知识点1", "相关知识点2"]
-                }},
-                ...
-            ],
-            "summary": "总体建议和说明"
+          "exercise": {{
+            "title": "练习题集标题",
+            "description": "本练习题集针对学生薄弱知识点的说明",
+            "status": "draft"
+          }},
+          "questions": [
+            {{
+              "question_text": "题目内容",
+              "question_type": "single_choice | multiple_choice | true_false | short_answer",
+              "options": {{
+                "A": "选项A",
+                "B": "选项B",
+                "C": "选项C",
+                "D": "选项D"
+              }},
+              "correct_answer": "正确答案",
+              "points": 10
+            }}
+          ]
         }}
         '''
-        
+     
         try:
             answer = AiServices.get_answer(question)
             if answer:
@@ -268,21 +298,25 @@ class AiServices:
                 if json_match:
                     json_str = json_match.group()
                     result_data = json.loads(json_str)
-                    return Result.success(result_data)
+                    exercise_id = CourseStudentService.save_generated_exercise(
+                                    result_data=result_data,
+                                    teacher_id=teacher_id,
+                                    course_id=course_id,
+                                    student_number = data.get('student_number')
+                    )
+                    return Result.success({"exercise_id": exercise_id})
                 else:
                     # 如果没有匹配到JSON，返回默认结构
                     default_result = {
-                        "exercises": [],
                         "summary": "未能生成习题，请重试"
                     }
-                    return Result.success(default_result)
+                    return Result.success({"exercise_id": None,"summary": "未能生成习题，请重试"})
             else:
                 return Result.error("生成习题失败")
             
         except json.JSONDecodeError as e:
             print(f"JSON解析错误: {e}")
             default_result = {
-                "exercises": [],
                 "summary": f"生成习题时发生解析错误: {str(e)}"
             }
             return Result.success(default_result)
@@ -353,7 +387,231 @@ class AiServices:
 
         # 学生知识掌握情况分析
     
-    #学生错题分析系
+    #错题分析(学生端)
+    @staticmethod
+    def analyze_student_knowledge_s(data: dict[str, Any]) -> Result:
+        """
+        调用AI错题分析服务（学生视角）
+        输入参数格式:
+        {
+            "student_number": "学生学号",
+            "course_id": "课程ID"
+        }
+        """
+        student_number = data.get('student_number')
+        course_id = data.get('course_id')
+        
+        if not student_number or not course_id:
+            return Result.bad_request('缺少必要参数: student_number, course_id')
+        
+        # 查询学生姓名
+        student_name = ""
+        course_name = ""
+        try:
+            # 通过学号和课程ID在course_student中查询学生信息
+            course_student = Course_Students.query.filter_by(
+                student_number=student_number,
+                course_id=course_id
+            ).first()
+            if course_student and hasattr(course_student, 'student_name'):
+                student_name = course_student.student_name
+            course = Course.query.get(course_id)
+            if course:
+                course_name = course.name
+        except Exception as e:
+            print(f"查询学生信息出错: {e}")
+            # 查询出错不影响后续分析，继续执行
+        
+        # 使用拆分的方法获取错题数据
+        wrong_questions = CourseStudentService.get_student_wrong_questions_for_analysis(data)
+        
+        if not wrong_questions:
+            return Result.success({
+                "student_number": student_number,
+                "student_name": student_name,
+                "course_name": course_name,
+                "summary": "你目前没有错题记录，继续保持良好的学习状态！",
+                "quick_stats": {
+                    "wrong_question_count": 0,
+                    "learning_status": "excellent",
+                    "progress_level": "优秀"
+                },
+                "self_recommendations": [
+                    "继续保持当前学习节奏",
+                    "可以尝试一些拓展性练习挑战自己",
+                    "定期复习已掌握知识点"
+                ],
+                "encouragement": "你的学习状态非常好，继续保持！"
+            })
+        
+        # 基础统计计算
+        total_questions = len(wrong_questions)
+        
+        # 计算得分率
+        total_scores = []
+        student_scores = []
+        question_texts = []  # 收集题目和描述用于AI分析
+        
+        for question in wrong_questions:
+            title = question.get('title', '')
+            description = question.get('description', '')
+            score_info = question.get('score', {})
+            
+            # 收集题目文本用于AI分析
+            if title or description:
+                question_texts.append(f"题目：{title}，描述：{description[:100]}")
+            
+            try:
+                total_score = float(score_info.get('total_score', '10'))
+                student_score = float(score_info.get('score', '0'))
+                total_scores.append(total_score)
+                student_scores.append(student_score)
+            except:
+                continue
+            
+        if total_scores:
+            avg_score_rate = sum(student_scores) / sum(total_scores) if sum(total_scores) > 0 else 0
+            avg_score_rate_percent = f"{avg_score_rate:.1%}"
+        else:
+            avg_score_rate_percent = "0%"
+        
+        # 根据得分率评估学习状态
+        if avg_score_rate >= 0.8:
+            learning_status = "good"
+            progress_level = "优秀"
+            encouragement = "做得很好！继续保持！"
+        elif avg_score_rate >= 0.6:
+            learning_status = "average"
+            progress_level = "良好"
+            encouragement = "有进步空间，继续加油！"
+        else:
+            learning_status = "needs_improvement"
+            progress_level = "需加强"
+            encouragement = "别灰心，发现问题就是进步的开始！"
+        
+        # 构建针对学生的AI分析提示
+        question_text_sample = "\n".join(question_texts)
+        question = f'''
+        你是一位亲切的学习导师，请根据学生的错题信息，为学生提供个性化的学习分析和鼓励。
+        
+        学生错题概况：
+        - 错题数量：{total_questions}题
+        - 平均得分率：{avg_score_rate_percent}
+        - 学生姓名：{student_name}
+        - 课程：{course_name}
+        
+        错题内容：
+        {question_text_sample}
+        
+        请用亲切、鼓励的语气（不超过150字）回答以下问题：
+        1. 这位同学当前学习的主要优势和不足是什么？
+        2. 建议重点提升哪些方面？
+        3. 有什么具体的学习建议和方法？
+        
+        输出格式要求：
+        请用以下格式直接回答，不要添加任何其他内容：
+        [学习情况分析]|[需要提升的方面]|[学习建议和方法]
+        
+        示例：
+        你对基础概念掌握得不错，但在应用题理解和解题步骤方面需要加强|应用题型分析、解题规范性、知识点综合运用|1.每天练习2道应用题型 2.整理错题本记录易错点 3.尝试用不同方法解同一道题
+        
+        注意：要用第二人称"你"来称呼学生，语气要亲切、鼓励，不要使用批评性语言。
+        '''
+        
+        # 获取AI分析结果
+        try:
+            answer = AiServices.get_answer(question)
+            if answer:
+                # 解析AI返回的结果
+                parts = answer.split("|")
+                if len(parts) >= 3:
+                    learning_analysis = parts[0].strip()
+                    improvement_areas = parts[1].strip()
+                    learning_suggestions = parts[2].strip()
+                else:
+                    # 如果格式不符合，使用默认值
+                    learning_analysis = f"你的基础知识掌握情况一般，得分率{avg_score_rate_percent}"
+                    improvement_areas = "核心概念理解和解题方法"
+                    learning_suggestions = "建议加强基础练习，整理错题本"
+            else:
+                learning_analysis = f"你的基础知识掌握情况一般，得分率{avg_score_rate_percent}"
+                improvement_areas = "核心概念理解和解题方法"
+                learning_suggestions = "建议加强基础练习，整理错题本"
+        except Exception as e:
+            print(f"AI分析出错: {e}")
+            learning_analysis = f"你完成了{total_questions}题，得分率{avg_score_rate_percent}"
+            improvement_areas = "基础知识点掌握"
+            learning_suggestions = "建议加强薄弱环节的练习"
+        
+        # 根据学习状态生成个性化鼓励语
+        if learning_status == "good":
+            personalized_encouragement = f"太棒了{student_name}同学！你的学习状态很好，继续保持这个势头！"
+        elif learning_status == "average":
+            personalized_encouragement = f"{student_name}同学，你有很好的学习基础，再努力一下会有更大进步！"
+        else:
+            personalized_encouragement = f"{student_name}同学，学习路上遇到困难是正常的，坚持下去就是胜利！"
+        
+        # 构建针对学生的返回结果
+        result_data = {
+            # 学生基本信息
+            "student_number": student_number,
+            "student_name": student_name,
+            "course_name": course_name,
+            
+            # 学习状态概览
+            "learning_overview": {
+                "wrong_question_count": total_questions,
+                "average_score_rate": avg_score_rate_percent,
+                "learning_status": learning_status,
+                "progress_level": progress_level,
+                "encouragement": personalized_encouragement
+            },
+            
+            # AI学习分析
+            "learning_analysis": {
+                "analysis_summary": learning_analysis,
+                "improvement_areas": improvement_areas,
+                "learning_suggestions": learning_suggestions
+            },
+            
+            # 学习数据详情
+            "learning_data": {
+                "score_distribution": {
+                    "low_score": len([i for i in range(len(student_scores)) 
+                                          if total_scores[i] > 0 and student_scores[i]/total_scores[i] < 0.4]),
+                    "medium_score": len([i for i in range(len(student_scores)) 
+                                         if total_scores[i] > 0 and 0.4 <= student_scores[i]/total_scores[i] <= 0.7]),
+                    "high_score": len([i for i in range(len(student_scores)) 
+                                       if total_scores[i] > 0 and student_scores[i]/total_scores[i] > 0.7])
+                },
+                "performance_summary": f"共完成{len(total_scores)}题，总分{sum(total_scores)}，得分{sum(student_scores)}"
+            },
+            
+            # 错题列表
+            "wrong_questions": wrong_questions,
+            
+            # 个性化学习建议
+            "self_recommendations": [
+                f"重点提升{improvement_areas.split('、')[0] if '、' in improvement_areas else improvement_areas.split('，')[0] if '，' in improvement_areas else improvement_areas}",
+                learning_suggestions,
+                "每天花15分钟复习错题",
+                "遇到难题及时向老师或同学请教"
+            ],
+            
+            # 学习鼓励和激励
+            "motivation": {
+                "encouragement": encouragement,
+                "tip_of_the_day": "每天进步一点点，坚持带来大改变！",
+                "next_goal": f"目标：将得分率提升到{(avg_score_rate + 0.1):.1%}"
+            }
+        }
+        
+        # 添加一个简要的总结文本
+        result_data["summary"] = f"{student_name}同学，你有{total_questions}道错题需要关注，当前得分率{avg_score_rate_percent}。{learning_analysis}"
+        
+        return Result.success(result_data)
+
+    #错题分析(教师端)
     @staticmethod
     def analyze_student_knowledge(data: dict[str, Any]) -> Result:
         """
@@ -388,32 +646,8 @@ class AiServices:
             # 查询出错不影响后续分析，继续执行
         
         # 1. 获取学生错题数据
-        wrong_questions_result = CourseStudentService.get_student_wrong_questions({
-            'student_number': student_number,
-            'course_id': course_id
-        })
-        
-        wrong_questions_list = wrong_questions_result.data
-        
-        # 2. 格式化参数供AI分析使用
-        formatted_wrong_questions = []
-        for question in wrong_questions_list:
-            # 注意：grading_results表中的score和total_score已经是decimal类型
-            # 需要转换为字符串或数字格式供AI分析
-            score_info = {
-                "total_score": str(question.get('total_score', '10')),
-                "score": str(question.get('score', '0'))
-            }
-            
-            formatted_wrong_questions.append({
-                "id": str(question.get('id', '')),
-                "title": question.get('title', ''),
-                "description": question.get('description', ''),
-                "score": score_info,
-                "suggestion": question.get('comment', '暂无评语')
-            })
-        wrong_questions = formatted_wrong_questions
-        if not wrong_questions:
+        wrong_questions = CourseStudentService.get_student_wrong_questions_for_analysis(data)
+        if wrong_questions:
             return Result.success({
                 "student_number": student_number,
                 "student_name": student_name,
