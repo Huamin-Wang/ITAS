@@ -647,7 +647,7 @@ class AiServices:
         
         # 1. 获取学生错题数据
         wrong_questions = CourseStudentService.get_student_wrong_questions_for_analysis(data)
-        if wrong_questions:
+        if not wrong_questions:
             return Result.success({
                 "student_number": student_number,
                 "student_name": student_name,
