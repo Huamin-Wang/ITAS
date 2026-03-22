@@ -16,7 +16,7 @@ class AiServices:
         try:
             client = OpenAI(
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-                api_key="sk-c558e163455d47aea80d32afbca39fd2",
+                api_key="sk-d15761f420a2438dbe879444e65d213f",
             )
             completion = client.chat.completions.create(
                 model="qwen-plus",
